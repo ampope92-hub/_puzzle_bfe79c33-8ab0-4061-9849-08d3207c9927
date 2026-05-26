@@ -75,14 +75,14 @@ class TestAutoSolveMode:
         """Auto-solve output must contain a 'Score: X/Y' line."""
         stdout, _, _ = run_auto_solve()
         lines = stdout.strip().split("\n")
-        score_lines = [l for l in lines if l.startswith("Score:")]
+        score_lines = [line for line in lines if line.startswith("Score:")]
         assert len(score_lines) == 1, f"Expected exactly one Score line, got: {score_lines}"
 
     def test_perfect_score(self):
         """All levels must pass with known solutions — score should be 50/50."""
         stdout, _, _ = run_auto_solve()
         lines = stdout.strip().split("\n")
-        score_lines = [l for l in lines if l.startswith("Score:")]
+        score_lines = [line for line in lines if line.startswith("Score:")]
         assert len(score_lines) == 1
         score_line = score_lines[0]
         parts = score_line.replace("Score:", "").strip().split("/")
@@ -288,6 +288,6 @@ class TestDeterminism:
         """Running auto-solve twice should produce the same score line."""
         stdout1, _, _ = run_auto_solve()
         stdout2, _, _ = run_auto_solve()
-        score1 = [l for l in stdout1.split("\n") if l.startswith("Score:")][0]
-        score2 = [l for l in stdout2.split("\n") if l.startswith("Score:")][0]
+        score1 = [line for line in stdout1.split("\n") if line.startswith("Score:")][0]
+        score2 = [line for line in stdout2.split("\n") if line.startswith("Score:")][0]
         assert score1 == score2, f"Non-deterministic scores: '{score1}' vs '{score2}'"
