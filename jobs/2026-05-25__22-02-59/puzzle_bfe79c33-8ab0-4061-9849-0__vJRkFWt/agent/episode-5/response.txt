@@ -1,6 +1,0 @@
-{
-  "analysis": "Yes. The script /app/ffpuzzle.py exists, creates /app/assets and /app/output, implements exactly 5 lavfi-generated levels with strict ffprobe validation, supports interactive and deterministic --auto-solve modes, prints required PASS/FAIL lines and final Score: X/Y, generates all required output artifacts, and writes /app/manifest.json as a JSON array with the required fields. Auto-solve now reports Score: 50/50 and manifest shows all levels passed.",
-  "plan": "Mark task complete.",
-  "commands": [],
-  "task_complete": true
-}

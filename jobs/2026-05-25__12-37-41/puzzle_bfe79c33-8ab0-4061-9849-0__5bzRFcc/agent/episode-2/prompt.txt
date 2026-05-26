@@ -1,6 +1,0 @@
-New Terminal Output:
-
-root@58558dad90b8:/app# ffprobe -v quiet -print_format json -show_streams /app/output/level2_output.mp4 | python3 -c "import json,sys; d=json.load(sys.stdin); p
-rint(d['streams'][0].get('pix_fmt'))"
-yuvj420p
-root@58558dad90b8:/app#

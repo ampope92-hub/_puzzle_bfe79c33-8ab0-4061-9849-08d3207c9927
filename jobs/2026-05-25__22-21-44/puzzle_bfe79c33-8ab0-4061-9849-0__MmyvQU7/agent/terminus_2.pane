@@ -1,770 +1,0 @@
-[?2004hroot@36bf42240db9:/app# asciinema rec --stdin /logs/agent/recording.cast
-[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
-[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
-[?2004hroot@36bf42240db9:/app# clear
-[?2004l[H[J[3J[?2004hroot@36bf42240db9:/app# cat > /app/ffpuzzle.py << 'PYTHON_EOF'
-[?2004l[?2004h> #!/usr/bin/env python3
-[?2004l[?2004h> import os
-[?2004l[?2004h> import sys
-[?2004l[?2004h> import json
-[?2004l[?2004h> import subprocess
-[?2004l[?2004h> import base64
-[?2004l[?2004h> import argparse
-[?2004l[?2004h> 
-[?2004l[?2004h> ASSETS_DIR = "/app/assets"
-[?2004l[?2004h> OUTPUT_DIR = "/app/output"
-[?2004l[?2004h> MANIFEST_PATH = "/app/manifest.json"
-[?2004l[?2004h> 
-[?2004l[?2004h> # Solutions are base64-encoded and reversed to avoid plaintext exposure
-[?2004l[?2004h> def _encode_solution(s):
-[?2004l[?2004h>     return base64.b64encode(s[::-1].encode()).decode()
-[?2004l[?2004h> 
-[?2004l[?2004h> def _decode_solution(s):
-[?2004l[?2004h>     return base64.b64decode(s.encode()).decode()[::-1]
-[?2004l[?2004h> 
-[?2004l[?2004h> # Obfuscated solutions (reversed then base64 encoded)
-[?2004l[?2004h> SOLUTIONS_ENCODED = [
-[?2004l[?2004h>     _encode_solution("scale=320:240"),
-[?2004l[?2004h>     _encode_solution("format=gray"),
-[?2004l[?2004h>     _encode_solution("atrim=0:3"),
-[?2004l[?2004h>     _encode_solution("crop=200:200"),
-[?2004l[?2004h>     _encode_solution("scale=320:240,hflip"),
-[?2004l[?2004h> ]
-[?2004l[?2004h> 
-[?2004l[?2004h> # Remove the helper that reveals the encoding scheme
-[?2004l[?2004h> # Solutions are stored as pre-computed base64 strings
-[?2004l[?2004h> 
-[?2004l[?2004h> LEVELS = [
-[?2004l[?2004h>     {
-[?2004l[?2004h>         "number": 1,
-[?2004l[?2004h>         "name": "Scale Down",
-[?2004l[?2004h>         "description": "Scale a 640x480 video down to 320x240.",
-[?2004l[?2004h>         "input_file": "level1_input.mp4",
-[?2004l[?2004h>         "output_file": "level1_output.mp4",
-[?2004l[?2004h>         "gen_input": lambda: gen_video_input("level1_input.mp4", 640, 480, 3, "mp4"),
-[?2004l[?2004h>         "ffmpeg_extra_args": [],
-[?2004l[?2004h>         "validate": lambda: validate_video_dimensions("level1_output.mp4", 320, 240),
-[?2004lected_w and h == expected_h
-[?2004h>     },
-[?2004l[?2004h>     {
-[?2004l[?2004h>         "number": 2,
-[?2004l[?2004h>         "name": "Grayscale Conversion",
-[?2004l[?2004h>         "description": "Convert a video to grayscale (output pixel format must be 'gray'). Output uses .avi container with rawvideo codec.",
-[?2004l[?2004h>         "input_file": "level2_input.avi",
-[?2004l[?2004h>         "output_file": "level2_output.avi",
-[?2004l[?2004h>         "gen_input": lambda: gen_video_input("level2_input.avi", 640, 480, 3, "avi"),
-[?2004l[?2004h>         "ffmpeg_extra_args": ["-c:v", "rawvideo"],
-[?2004l[?2004h>         "validate": lambda: validate_pixel_format("level2_output.avi", "gray"),
-[?2004l[?2004h>     },
-[?2004l[?2004h>     {
-[?2004l[?2004h>         "number": 3,
-[?2004l  r[?2004h>         "name": "Audio Trim",
-[?2004leturn False
-    duration = Non[?2004h>         "description": "Trim a 10-second audio clip to exactly 3 seconds.",
-[?2004l[?2004h>         "input_file": "level3_input.wav",
-[?2004l[?2004h>         "output_file": "level3_output.wav",
-[?2004l[?2004h>         "gen_input": lambda: gen_audio_input("level3_input.wav", 10),
-[?2004l [?2004h>         "ffmpeg_extra_args": [],
-[?2004l    if stream.get("codec_type") =[?2004h>         "validate": lambda: validate_audio_duration("level3_output.wav", 2.9, 3.1),
-[?2004ltion")
-                if dur:
-    [?2004h>     },
-[?2004l[?2004h>     {
-[?2004l[?2004h>         "number": 4,
-[?2004l[?2004h>         "name": "Center Crop",
-[?2004l[?2004h>         "description": "Crop the center 200x200 region from a 640x480 video.",
-[?2004l[?2004h>         "input_file": "level4_input.mp4",
-[?2004ltion(level_idx):
-   [?2004h>         "output_file": "level4_output.mp4",
-[?2004l[?2004h>         "gen_input": lambda: gen_video_input("level4_input.mp4", 640, 480, 3, "mp4"),
-[?2004l[?2004h>         "ffmpeg_extra_args": [],
-[?2004l[?2004h>         "validate": lambda: validate_video_dimensions("level4_output.mp4", 200, 200),
-[?2004l
-    
-    input_path = os.path.join[?2004h>     },
-[?2004l[?2004h>     {
-[?2004l(ASSETS_DIR, [?2004h>         "number": 5,
-[?2004l[?2004h>         "name": "Scale and Flip",
-[?2004l[?2004h>         "description": "Take a 640x480 video, scale it to 320x240, AND apply a horizontal flip.",
-[?2004l[?2004h>         "input_file": "level5_input.mp4",
-[?2004l[?2004h>         "output_file": "level5_output.mp4",
-[?2004l[?2004h>         "gen_input": lambda: gen_video_input("level5_input.mp4", 640, 480, 3, "mp4"),
-[?2004l[?2004h>         "ffmpeg_extra_args": [],
-[?2004l[?2004h>         "validate": lambda: validate_video_dimensions("level5_output.mp4", 320, 240),
-[?2004l[?2004h>     },
-[?2004l[?2004h> ]
-[?2004level["val[?2004h> 
-[?2004li[?2004h> 
-[?2004l[?2004h> def ensure_dirs():
-[?2004l[?2004h>     os.makedirs(ASSETS_DIR, exist_ok=True)
-[?2004l[?2004h>     os.makedirs(OUTPUT_DIR, exist_ok=True)
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def gen_video_input(filename, width, height, duration, fmt):
-[?2004l[?2004h>     output_path = os.path.join(ASSETS_DIR, filename)
-[?2004l[?2004h>     if fmt == "avi":
-[?2004l[?2004h>         cmd = [
-[?2004l[?2004h>             "ffmpeg", "-y", "-f", "lavfi", "-i",
-[?2004l[?2004h>             f"testsrc=size={width}x{height}:duration={duration}:rate=25",
-[?2004l[?2004h>             "-c:v", "rawvideo", output_path
-[?2004l[?2004h>         ]
-[?2004l[?2004h>     else:
-[?2004l[?2004h>         cmd = [
-[?2004l[?2004h>             "ffmpeg", "-y", "-f", "lavfi", "-i",
-[?2004l[?2004h>             f"testsrc=size={width}x{height}:duration={duration}:rate=25",
-[?2004l[?2004h>             "-c:v", "libx264", "-pix_fmt", "yuv420p", output_path
-[?2004l[?2004h>         ]
-[?2004l[?2004h>     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-[?2004l[?2004h>     return output_path
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l([?2004h> def gen_audio_input(filename, duration):
-[?2004l[?2004h>     output_path = os.path.join(ASSETS_DIR, filename)
-[?2004l[?2004h>     cmd = [
-[?2004l[?2004h>         "ffmpeg", "-y", "-f", "lavfi", "-i",
-[?2004l[?2004h>         f"sine=frequency=440:duration={duration}",
-[?2004l[?2004h>         output_path
-[?2004l([?2004h>     ]
-[?2004l[?2004h>     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-[?2004l[?2004h>     return output_path
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def run_ffmpeg_filter(input_path, output_path, filtergraph, extra_args=None, is_audio=False):
-[?2004l[?2004h>     cmd = ["ffmpeg", "-y", "-i", input_path]
-[?2004l[?2004h>     if is_audio:
-[?2004l[?2004h>         cmd += ["-af", filtergraph]
-[?2004l[?2004h>     else:
-[?2004l[?2004h>         cmd += ["-vf", filtergraph]
-[?2004l[?2004h>     if extra_args:
-[?2004l your[?2004h>         cmd += extra_args
-[?2004l[?2004h>     cmd += [output_path]
-[?2004l[?2004h>     result = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-[?2004l[?2004h>     return result.returncode == 0
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004lve[?2004h> def probe_file(filepath):
-[?2004lr"],
-             [?2004h>     cmd = [
-[?2004lname[?2004h>         "ffprobe", "-v", "quiet", "-print_format", "json",
-[?2004l[?2004h>         "-show_format", "-show_streams", filepath
-[?2004l[?2004h>     ]
-[?2004lnue
-  [?2004h>     result = subprocess.run(cmd, capture_output=True, text=True)
-[?2004l[?2004h>     if result.returncode != 0:
-[?2004l[?2004h>         return None
-[?2004l[?2004h>     return json.loads(result.stdout)
-[?2004l       total_score += 10
-        else:[?2004h> 
-[?2004l[?2004h> 
-[?2004l
- [?2004h> def validate_video_dimensions(filename, expected_w, expected_h):
-[?2004l[?2004h>     filepath = os.path.join(OUTPUT_DIR, filename)
-[?2004l[?2004h>     info = probe_file(filepath)
-[?2004l[?2004h>     if not info:
-[?2004l[?2004h>         return False
-[?2004l[?2004h>     for stream in info.get("streams", []):
-[?2004l[?2004h>         if stream.get("codec_type") == "video":
-[?2004l[?2004h>             w = stream.get("width")
-[?2004l[?2004h>             h = stream.get("height")
-[?2004l[?2004h>             return w == expected_w and h == expected_h
-[?2004l[?2004h>     return False
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def validate_pixel_format(filename, expected_fmt):
-[?2004l[?2004h>     filepath = os.path.join(OUTPUT_DIR, filename)
-[?2004l[?2004h>     info = probe_file(filepath)
-[?2004l[?2004h>     if not info:
-[?2004l[?2004h>         return False
-[?2004l[?2004h>     for stream in info.get("streams", []):
-[?2004l[?2004h>         if stream.get("codec_type") == "video":
-[?2004l[?2004h>             pix_fmt = stream.get("pix_fmt")
-[?2004l[?2004h>             return pix_fmt == expected_fmt
-[?2004l[?2004h>     return False
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def validate_audio_duration(filename, min_dur, max_dur):
-[?2004l[?2004h>     filepath = os.path.join(OUTPUT_DIR, filename)
-[?2004l[?2004h>     info = probe_file(filepath)
-[?2004l[?2004h>     if not info:
-[?2004l[?2004h>         return False
-[?2004l[?2004h>     duration = None
-[?2004l[?2004h>     # Try format duration first
-[?2004l[?2004h>     fmt_dur = info.get("format", {}).get("duration")
-[?2004l[?2004h>     if fmt_dur:
-[?2004l[?2004h>         duration = float(fmt_dur)
-[?2004l[?2004h>     else:
-[?2004l[?2004h>         # Try stream duration
-[?2004l[?2004h>         for stream in info.get("streams", []):
-[?2004l[?2004h>             if stream.get("codec_type") == "audio":
-[?2004l[?2004h>                 dur = stream.get("duration")
-[?2004l[?2004h>                 if dur:
-[?2004l[?2004h>                     duration = float(dur)
-[?2004l[?2004h>                     break
-[?2004l[?2004h>     if duration is None:
-[?2004l[?2004h>         return False
-[?2004l[?2004h>     return min_dur <= duration <= max_dur
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def get_solution(level_idx):
-[?2004l[?2004h>     return _decode_solution(SOLUTIONS_ENCODED[level_idx])
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def run_level(level, filtergraph):
-[?2004l[?2004h>     """Run a single level with given filtergraph. Returns True if passed."""
-[?2004l[?2004h>     # Generate input
-[?2004l[?2004h>     level["gen_input"]()
-[?2004l[?2004h>     
-[?2004l[?2004h>     input_path = os.path.join(ASSETS_DIR, level["input_file"])
-[?2004l[?2004h>     output_path = os.path.join(OUTPUT_DIR, level["output_file"])
-[?2004l[?2004h>     
-[?2004l[?2004h>     # Determine if audio level
-[?2004l[?2004h>     is_audio = level["number"] == 3
-[?2004l[?2004h>     
-[?2004l[?2004h>     # Run ffmpeg with the filtergraph
-[?2004l[?2004h>     success = run_ffmpeg_filter(
-[?2004l[?2004h>         input_path, output_path, filtergraph,
-[?2004l[?2004h>         extra_args=level["ffmpeg_extra_args"],
-[?2004l[?2004h>         is_audio=is_audio
-[?2004l[?2004h>     )
-[?2004l[?2004h>     
-[?2004l[?2004h>     if not success:
-[?2004l[?2004h>         return False
-[?2004l[?2004h>     
-[?2004l[?2004h>     # Validate output
-[?2004l[?2004h>     return level["validate"]()
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def auto_solve():
-[?2004l[?2004h>     """Run all levels with known correct solutions."""
-[?2004l[?2004h>     ensure_dirs()
-[?2004l[?2004h>     manifest = []
-[?2004l[?2004h>     total_score = 0
-[?2004l[?2004h>     total_possible = len(LEVELS) * 10
-[?2004l[?2004h>     
-[?2004l[?2004h>     for i, level in enumerate(LEVELS):
-[?2004l[?2004h>         solution = get_solution(i)
-[?2004l[?2004h>         print(f"Level {level['number']}: {level['name']}")
-[?2004l[?2004h>         
-[?2004l[?2004h>         passed = run_level(level, solution)
-[?2004l[?2004h>         
-[?2004l[?2004h>         if passed:
-[?2004l[?2004h>             print("  PASS")
-[?2004l[?2004h>             total_score += 10
-[?2004l[?2004h>         else:
-[?2004l[?2004h>             print("  FAIL")
-[?2004l[?2004h>         
-[?2004l[?2004h>         manifest.append({
-[?2004l[?2004h>             "level": level["number"],
-[?2004l[?2004h>             "filename": level["output_file"],
-[?2004l[?2004h>             "passed": passed
-[?2004l[?2004h>         })
-[?2004l[?2004h>     
-[?2004l[?2004h>     print(f"Score: {total_score}/{total_possible}")
-[?2004l[?2004h>     
-[?2004l[?2004h>     with open(MANIFEST_PATH, "w") as f:
-[?2004l[?2004h>         json.dump(manifest, f, indent=2)
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def interactive_mode():
-[?2004l[?2004h>     """Run the game in interactive mode."""
-[?2004l[?2004h>     ensure_dirs()
-[?2004l[?2004h>     manifest = []
-[?2004l[?2004h>     total_score = 0
-[?2004l[?2004h>     total_possible = len(LEVELS) * 10
-[?2004l[?2004h>     
-[?2004l[?2004h>     print("=" * 50)
-[?2004l[?2004h>     print("  FFmpeg Filtergraph Puzzle Game")
-[?2004l[?2004h>     print("=" * 50)
-[?2004l[?2004h>     print()
-[?2004l[?2004h>     
-[?2004l[?2004h>     for i, level in enumerate(LEVELS):
-[?2004l[?2004h>         print(f"Level {level['number']}: {level['name']}")
-[?2004l[?2004h>         print(f"  {level['description']}")
-[?2004l[?2004h>         print(f"  Input: {level['input_file']}")
-[?2004l[?2004h>         print(f"  Output: {level['output_file']}")
-[?2004l[?2004h>         print()
-[?2004l[?2004h>         
-[?2004l[?2004h>         filtergraph = input("Enter your filtergraph expression: ").strip()
-[?2004l[?2004h>         
-[?2004l[?2004h>         if not filtergraph:
-[?2004l[?2004h>             print("  FAIL (empty input)")
-[?2004l[?2004h>             manifest.append({
-[?2004l[?2004h>                 "level": level["number"],
-[?2004l[?2004h>                 "filename": level["output_file"],
-[?2004l[?2004h>                 "passed": False
-[?2004l[?2004h>             })
-[?2004l[?2004h>             print()
-[?2004l[?2004h>             continue
-[?2004l[?2004h>         
-[?2004l[?2004h>         passed = run_level(level, filtergraph)
-[?2004l[?2004h>         
-[?2004l[?2004h>         if passed:
-[?2004l[?2004h>             print("  PASS")
-[?2004l[?2004h>             total_score += 10
-[?2004l[?2004h>         else:
-[?2004l[?2004h>             print("  FAIL")
-[?2004l[?2004h>         
-[?2004l[?2004h>         manifest.append({
-[?2004l[?2004h>             "level": level["number"],
-[?2004l[?2004h>             "filename": level["output_file"],
-[?2004l[?2004h>             "passed": passed
-[?2004l[?2004h>         })
-[?2004l[?2004h>         print()
-[?2004l[?2004h>     
-[?2004l[?2004h>     print(f"Score: {total_score}/{total_possible}")
-[?2004l[?2004h>     
-[?2004l[?2004h>     with open(MANIFEST_PATH, "w") as f:
-[?2004l[?2004h>         json.dump(manifest, f, indent=2)
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def main():
-[?2004l[?2004h>     parser = argparse.ArgumentParser(description="FFmpeg Filtergraph Puzzle Game")
-[?2004l[?2004h>     parser.add_argument("--auto-solve", action="store_true",
-[?2004l[?2004h>                         help="Automatically solve all levels with known solutions")
-[?2004l[?2004h>     args = parser.parse_args()
-[?2004l[?2004h>     
-[?2004l[?2004h>     if args.auto_solve:
-[?2004l[?2004h>         auto_solve()
-[?2004l[?2004h>     else:
-[?2004l[?2004h>         interactive_mode()
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> if __name__ == "__main__":
-[?2004l[?2004h>     main()
-[?2004l[?2004h> PYTHON_EOF
-[?2004l[?2004hroot@36bf42240db9:/app# chmod +x /app/ffpuzzle.py
-[?2004l[?2004hroot@36bf42240db9:/app# python3 /app/ffpuzzle.py --auto-solve
-[?2004lLevel 1: Scale Down
-  PASS
-Level 2: Grayscale Conversion
-  PASS
-Level 3: Audio Trim
-  PASS
-Level 4: Center Crop
-  PASS
-Level 5: Scale and Flip
-  PASS
-Score: 50/50
-[?2004hroot@36bf42240db9:/app# cat /app/manifest.json
-[?2004l[
-  {
-    "level": 1,
-    "filename": "level1_output.mp4",
-    "passed": true
-  },
-  {
-    "level": 2,
-    "filename": "level2_output.avi",
-    "passed": true
-  },
-  {
-    "level": 3,
-    "filename": "level3_output.wav",
-    "passed": true
-  },
-  {
-    "level": 4,
-    "filename": "level4_output.mp4",
-    "passed": true
-  },
-  {
-    "level": 5,
-    "filename": "level5_output.mp4",
-    "passed": true
-  }
-][?2004hroot@36bf42240db9:/app# ls -la /app/output/
-[?2004ltotal 22820
-drwxr-xr-x 2 root root     4096 May 26 03:32 .
-drwxr-xr-x 1 root root     4096 May 26 03:32 ..
--rw-r--r-- 1 root root    17001 May 26 03:32 level1_output.mp4
--rw-r--r-- 1 root root 23047562 May 26 03:32 level2_output.avi
--rw-r--r-- 1 root root   264678 May 26 03:32 level3_output.wav
--rw-r--r-- 1 root root     3830 May 26 03:32 level4_output.mp4
--rw-r--r-- 1 root root    16563 May 26 03:32 level5_output.mp4
-[?2004hroot@36bf42240db9:/app# ls -la /app/assets/
-[?2004ltotal 68464
-drwxr-xr-x 2 root root     4096 May 26 03:32 .
-drwxr-xr-x 1 root root     4096 May 26 03:32 ..
--rw-r--r-- 1 root root    23460 May 26 03:32 level1_input.mp4
--rw-r--r-- 1 root root 69137082 May 26 03:32 level2_input.avi
--rw-r--r-- 1 root root   882078 May 26 03:32 level3_input.wav
--rw-r--r-- 1 root root    23460 May 26 03:32 level4_input.mp4
--rw-r--r-- 1 root root    23460 May 26 03:32 level5_input.mp4
-[?2004hroot@36bf42240db9:/app# grep -n 'scale\|hflip\|gray\|atrim\|crop' /app/ffpuzzle.py | grep -v '#\|description\|validate\|def\|print\|encode_solution'
-[?2004l45:        "name": "Grayscale Conversion",
-[?2004hroot@36bf42240db9:/app# python3 -c "
-[?2004l[?2004h> import base64
-[?2004l[?2004h> solutions = ['scale=320:240', 'format=gray', 'atrim=0:3', 'crop=200:200', 'scale=320:240,hflip']
-[?2004l[?2004h> for s in solutions:
-[?2004l[?2004h>     encoded = base64.b64encode(s[::-1].encode()).decode()
-[?2004l[?2004h>     print(repr(encoded))
-[?2004l[?2004h> "
-[?2004l'MDQyOjAyMz1lbGFjcw=='
-'eWFyZz10YW1yb2Y='
-'MzowPW1pcnRh'
-'MDAyOjAwMj1wb3Jj'
-'cGlsZmgsMDQyOjAyMz1lbGFjcw=='
-[?2004hroot@36bf42240db9:/app# cat > /app/ffpuzzle.py << 'PYTHON_EOF'
-[?2004laph]
-    else:
-        cmd += ["-vf", [?2004h> #!/usr/bin/env python3
-[?2004lt[?2004h> import os
-[?2004l[?2004h> import sys
-[?2004l[?2004h> import json
-[?2004l[?2004h> import subprocess
-[?2004l extra_args
-    cmd += [outp[?2004h> import base64
-[?2004l[?2004h> import argparse
-[?2004l[?2004h> 
-[?2004l[?2004h> ASSETS_DIR = "/app/assets"
-[?2004l[?2004h> OUTPUT_DIR = "/app/output"
-[?2004l[?2004h> MANIFEST_PATH = "/app/manifest.json"
-[?2004l[?2004h> 
-[?2004l[?2004h> # Solutions are obfuscated (reversed then base64 encoded)
-[?2004lde == 0
-
-
-def probe_file(filepath):
-    cmd = [
-        "ff[?2004h> SOLUTIONS_ENCODED = [
-[?2004l[?2004h>     'MDQyOjAyMz1lbGFjcw==',
-[?2004l[?2004h>     'eWFyZz10YW1yb2Y=',
-[?2004l[?2004h>     'MzowPW1pcnRh',
-[?2004l[?2004h>     'MDAyOjAwMj1wb3Jj',
-[?2004l[?2004h>     'cGlsZmgsMDQyOjAyMz1lbGFjcw==',
-[?2004l[?2004h> ]
-[?2004l[?2004h> 
-[?2004l[?2004h> def _decode_solution(s):
-[?2004l[?2004h>     return base64.b64decode(s.encode()).decode()[::-1]
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> LEVELS = [
-[?2004l[?2004h>     {
-[?2004l[?2004h>         "number": 1,
-[?2004l[?2004h>         "name": "Scale Down",
-[?2004l[?2004h>         "description": "Scale a 640x480 video down to 320x240.",
-[?2004l[?2004h>         "input_file": "level1_input.mp4",
-[?2004l)
-    info = probe_file(filepath)
-    if n[?2004h>         "output_file": "level1_output.mp4",
-[?2004l[?2004h>         "gen_input": lambda: gen_video_input("level1_input.mp4", 640, 480, 3, "mp4"),
-[?2004l[?2004h>         "ffmpeg_extra_args": [],
-[?2004l[?2004h>         "validate": lambda: validate_video_dimensions("level1_output.mp4", 320, 240),
-[?2004l[?2004h>     },
-[?2004l[?2004h>     {
-[?2004l[?2004h>         "number": 2,
-[?2004l[?2004h>         "name": "Grayscale Conversion",
-[?2004lmat(filename, expected_fmt):
-    [?2004h>         "description": "Convert a video to grayscale (output pixel format must be 'gray'). Output uses .avi container with rawvideo codec.",
-[?2004l[?2004h>         "input_file": "level2_input.avi",
-[?2004l[?2004h>         "output_file": "level2_output.avi",
-[?2004l[?2004h>         "gen_input": lambda: gen_video_input("level2_input.avi", 640, 480, 3, "avi"),
-[?2004l False
-
-
-[?2004h>         "ffmpeg_extra_args": ["-c:v", "rawvideo"],
-[?2004l[?2004h>         "validate": lambda: validate_pixel_format("level2_output.avi", "gray"),
-[?2004l[?2004h>     },
-[?2004l[?2004h>     {
-[?2004l[?2004h>         "number": 3,
-[?2004l[?2004h>         "name": "Audio Trim",
-[?2004l[?2004h>         "description": "Trim a 10-second audio clip to exactly 3 seconds.",
-[?2004l[?2004h>         "input_file": "level3_input.wav",
-[?2004l[?2004h>         "output_file": "level3_output.wav",
-[?2004l[?2004h>         "gen_input": lambda: gen_audio_input("level3_input.wav", 10),
-[?2004l[?2004h>         "ffmpeg_extra_args": [],
-[?2004l[?2004h>         "validate": lambda: validate_audio_duration("level3_output.wav", 2.9, 3.1),
-[?2004l[?2004h>     },
-[?2004l[?2004h>     {
-[?2004l   if dura[?2004h>         "number": 4,
-[?2004l[?2004h>         "name": "Center Crop",
-[?2004l[?2004h>         "description": "Crop the center 200x200 region from a 640x480 video.",
-[?2004l[?2004h>         "input_file": "level4_input.mp4",
-[?2004l[?2004h>         "output_file": "level4_output.mp4",
-[?2004l[?2004h>         "gen_input": lambda: gen_video_input("level4_input.mp4", 640, 480, 3, "mp4"),
-[?2004l[?2004h>         "ffmpeg_extra_args": [],
-[?2004l[?2004h>         "validate": lambda: validate_video_dimensions("level4_output.mp4", 200, 200),
-[?2004l[?2004h>     },
-[?2004l[?2004h>     {
-[?2004l[?2004h>         "number": 5,
-[?2004l[?2004h>         "name": "Scale and Flip",
-[?2004l[?2004h>         "description": "Take a 640x480 video, scale it to 320x240, AND apply a horizontal flip.",
-[?2004l[?2004h>         "input_file": "level5_input.mp4",
-[?2004l[?2004h>         "output_file": "level5_output.mp4",
-[?2004l[?2004h>         "gen_input": lambda: gen_video_input("level5_input.mp4", 640, 480, 3, "mp4"),
-[?2004l[?2004h>         "ffmpeg_extra_args": [],
-[?2004l[?2004h>         "validate": lambda: validate_video_dimensions("level5_output.mp4", 320, 240),
-[?2004l[?2004h>     },
-[?2004l[?2004h> ]
-[?2004lv[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def ensure_dirs():
-[?2004l[?2004h>     os.makedirs(ASSETS_DIR, exist_ok=True)
-[?2004l[?2004h>     os.makedirs(OUTPUT_DIR, exist_ok=True)
-[?2004l[?2004h> 
-[?2004l[[?2004h> 
-[?2004l[?2004h> def gen_video_input(filename, width, height, duration, fmt):
-[?2004l[?2004h>     output_path = os.path.join(ASSETS_DIR, filename)
-[?2004l[?2004h>     if fmt == "avi":
-[?2004l[?2004h>         cmd = [
-[?2004l      else:
-    [?2004h>             "ffmpeg", "-y", "-f", "lavfi", "-i",
-[?2004lanifest.append([?2004h>             f"testsrc=size={width}x{height}:duration={duration}:rate=25",
-[?2004l[?2004h>             "-c:v", "rawvideo", output_path
-[?2004l[?2004h>         ]
-[?2004l[?2004h>     else:
-[?2004l[?2004h>         cmd = [
-[?2004l[?2004h>             "ffmpeg", "-y", "-f", "lavfi", "-i",
-[?2004l[?2004h>             f"testsrc=size={width}x{height}:duration={duration}:rate=25",
-[?2004l[?2004h>             "-c:v", "libx264", "-pix_fmt", "yuv420p", output_path
-[?2004l[?2004h>         ]
-[?2004l[?2004h>     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-[?2004l[?2004h>     return output_path
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def gen_audio_input(filename, duration):
-[?2004l[?2004h>     output_path = os.path.join(ASSETS_DIR, filename)
-[?2004l[?2004h>     cmd = [
-[?2004l[?2004h>         "ffmpeg", "-y", "-f", "lavfi", "-i",
-[?2004l[?2004h>         f"sine=frequency=440:duration={duration}",
-[?2004l[?2004h>         output_path
-[?2004l[?2004h>     ]
-[?2004l[?2004h>     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-[?2004l[?2004h>     return output_path
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def run_ffmpeg_filter(input_path, output_path, filtergraph, extra_args=None, is_audio=False):
-[?2004l[?2004h>     cmd = ["ffmpeg", "-y", "-i", input_path]
-[?2004l[?2004h>     if is_audio:
-[?2004l  [?2004h>         cmd += ["-af", filtergraph]
-[?2004l[?2004h>     else:
-[?2004l[?2004h>         cmd += ["-vf", filtergraph]
-[?2004l[?2004h>     if extra_args:
-[?2004l[?2004h>         cmd += extra_args
-[?2004l[?2004h>     cmd += [output_path]
-[?2004l[?2004h>     result = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-[?2004l[?2004h>     return result.returncode == 0
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l [?2004h> def probe_file(filepath):
-[?2004l[?2004h>     cmd = [
-[?2004l[?2004h>         "ffprobe", "-v", "quiet", "-print_format", "json",
-[?2004l[?2004h>         "-show_format", "-show_streams", filepath
-[?2004lle[?2004h>     ]
-[?2004lname":[?2004h>     result = subprocess.run(cmd, capture_output=True, text=True)
-[?2004l[?2004h>     if result.returncode != 0:
-[?2004l[?2004h>         return None
-[?2004l[?2004h>     return json.loads(result.stdout)
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def validate_video_dimensions(filename, expected_w, expected_h):
-[?2004l[?2004h>     filepath = os.path.join(OUTPUT_DIR, filename)
-[?2004l[?2004h>     info = probe_file(filepath)
-[?2004l[?2004h>     if not info:
-[?2004l[?2004h>         return False
-[?2004l[?2004h>     for stream in info.get("streams", []):
-[?2004l[?2004h>         if stream.get("codec_type") == "video":
-[?2004l[?2004h>             w = stream.get("width")
-[?2004l[?2004h>             h = stream.get("height")
-[?2004l[?2004h>             return w == expected_w and h == expected_h
-[?2004l[?2004h>     return False
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004ln[?2004h> def validate_pixel_format(filename, expected_fmt):
-[?2004l[?2004h>     filepath = os.path.join(OUTPUT_DIR, filename)
-[?2004l[?2004h>     info = probe_file(filepath)
-[?2004l[?2004h>     if not info:
-[?2004l[?2004h>         return False
-[?2004l[?2004h>     for stream in info.get("streams", []):
-[?2004l[?2004h>         if stream.get("codec_type") == "video":
-[?2004l[?2004h>             pix_fmt = stream.get("pix_fmt")
-[?2004l[?2004h>             return pix_fmt == expected_fmt
-[?2004l[?2004h>     return False
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def validate_audio_duration(filename, min_dur, max_dur):
-[?2004l[?2004h>     filepath = os.path.join(OUTPUT_DIR, filename)
-[?2004l[?2004h>     info = probe_file(filepath)
-[?2004l[?2004h>     if not info:
-[?2004l[?2004h>         return False
-[?2004l[?2004h>     duration = None
-[?2004l[?2004h>     fmt_dur = info.get("format", {}).get("duration")
-[?2004l[?2004h>     if fmt_dur:
-[?2004l[?2004h>         duration = float(fmt_dur)
-[?2004l[?2004h>     else:
-[?2004l[?2004h>         for stream in info.get("streams", []):
-[?2004l[?2004h>             if stream.get("codec_type") == "audio":
-[?2004l[?2004h>                 dur = stream.get("duration")
-[?2004l[?2004h>                 if dur:
-[?2004l[?2004h>                     duration = float(dur)
-[?2004l[?2004h>                     break
-[?2004l[?2004h>     if duration is None:
-[?2004l[?2004h>         return False
-[?2004l[?2004h>     return min_dur <= duration <= max_dur
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def get_solution(level_idx):
-[?2004l[?2004h>     return _decode_solution(SOLUTIONS_ENCODED[level_idx])
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def run_level(level, filtergraph):
-[?2004l[?2004h>     """Run a single level with given filtergraph. Returns True if passed."""
-[?2004l[?2004h>     level["gen_input"]()
-[?2004l[?2004h> 
-[?2004l[?2004h>     input_path = os.path.join(ASSETS_DIR, level["input_file"])
-[?2004l[?2004h>     output_path = os.path.join(OUTPUT_DIR, level["output_file"])
-[?2004l[?2004h> 
-[?2004l[?2004h>     is_audio = level["number"] == 3
-[?2004l[?2004h> 
-[?2004l[?2004h>     success = run_ffmpeg_filter(
-[?2004l[?2004h>         input_path, output_path, filtergraph,
-[?2004l[?2004h>         extra_args=level["ffmpeg_extra_args"],
-[?2004l[?2004h>         is_audio=is_audio
-[?2004l[?2004h>     )
-[?2004l[?2004h> 
-[?2004l[?2004h>     if not success:
-[?2004l[?2004h>         return False
-[?2004l[?2004h> 
-[?2004l[?2004h>     return level["validate"]()
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def auto_solve():
-[?2004l[?2004h>     """Run all levels with known correct solutions."""
-[?2004l[?2004h>     ensure_dirs()
-[?2004l[?2004h>     manifest = []
-[?2004l[?2004h>     total_score = 0
-[?2004l[?2004h>     total_possible = len(LEVELS) * 10
-[?2004l[?2004h> 
-[?2004l[?2004h>     for i, level in enumerate(LEVELS):
-[?2004l[?2004h>         solution = get_solution(i)
-[?2004l[?2004h>         print(f"Level {level['number']}: {level['name']}")
-[?2004l[?2004h> 
-[?2004l[?2004h>         passed = run_level(level, solution)
-[?2004l[?2004h> 
-[?2004l[?2004h>         if passed:
-[?2004l[?2004h>             print("  PASS")
-[?2004l[?2004h>             total_score += 10
-[?2004l[?2004h>         else:
-[?2004l[?2004h>             print("  FAIL")
-[?2004l[?2004h> 
-[?2004l[?2004h>         manifest.append({
-[?2004l[?2004h>             "level": level["number"],
-[?2004l[?2004h>             "filename": level["output_file"],
-[?2004l[?2004h>             "passed": passed
-[?2004l[?2004h>         })
-[?2004l[?2004h> 
-[?2004l[?2004h>     print(f"Score: {total_score}/{total_possible}")
-[?2004l[?2004h> 
-[?2004l[?2004h>     with open(MANIFEST_PATH, "w") as f:
-[?2004l[?2004h>         json.dump(manifest, f, indent=2)
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def interactive_mode():
-[?2004l[?2004h>     """Run the game in interactive mode."""
-[?2004l[?2004h>     ensure_dirs()
-[?2004l[?2004h>     manifest = []
-[?2004l[?2004h>     total_score = 0
-[?2004l[?2004h>     total_possible = len(LEVELS) * 10
-[?2004l[?2004h> 
-[?2004l[?2004h>     print("=" * 50)
-[?2004l[?2004h>     print("  FFmpeg Filtergraph Puzzle Game")
-[?2004l[?2004h>     print("=" * 50)
-[?2004l[?2004h>     print()
-[?2004l[?2004h> 
-[?2004l[?2004h>     for i, level in enumerate(LEVELS):
-[?2004l[?2004h>         print(f"Level {level['number']}: {level['name']}")
-[?2004l[?2004h>         print(f"  {level['description']}")
-[?2004l[?2004h>         print(f"  Input: {level['input_file']}")
-[?2004l[?2004h>         print(f"  Output: {level['output_file']}")
-[?2004l[?2004h>         print()
-[?2004l[?2004h> 
-[?2004l[?2004h>         filtergraph = input("Enter your filtergraph expression: ").strip()
-[?2004l[?2004h> 
-[?2004l[?2004h>         if not filtergraph:
-[?2004l[?2004h>             print("  FAIL (empty input)")
-[?2004l[?2004h>             manifest.append({
-[?2004l[?2004h>                 "level": level["number"],
-[?2004l[?2004h>                 "filename": level["output_file"],
-[?2004l[?2004h>                 "passed": False
-[?2004l[?2004h>             })
-[?2004l[?2004h>             print()
-[?2004l[?2004h>             continue
-[?2004l[?2004h> 
-[?2004l[?2004h>         passed = run_level(level, filtergraph)
-[?2004l[?2004h> 
-[?2004l[?2004h>         if passed:
-[?2004l[?2004h>             print("  PASS")
-[?2004l[?2004h>             total_score += 10
-[?2004l[?2004h>         else:
-[?2004l[?2004h>             print("  FAIL")
-[?2004l[?2004h> 
-[?2004l[?2004h>         manifest.append({
-[?2004l[?2004h>             "level": level["number"],
-[?2004l[?2004h>             "filename": level["output_file"],
-[?2004l[?2004h>             "passed": passed
-[?2004l[?2004h>         })
-[?2004l[?2004h>         print()
-[?2004l[?2004h> 
-[?2004l[?2004h>     print(f"Score: {total_score}/{total_possible}")
-[?2004l[?2004h> 
-[?2004l[?2004h>     with open(MANIFEST_PATH, "w") as f:
-[?2004l[?2004h>         json.dump(manifest, f, indent=2)
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> def main():
-[?2004l[?2004h>     parser = argparse.ArgumentParser(description="FFmpeg Filtergraph Puzzle Game")
-[?2004l[?2004h>     parser.add_argument("--auto-solve", action="store_true",
-[?2004l[?2004h>                         help="Automatically solve all levels with known solutions")
-[?2004l[?2004h>     args = parser.parse_args()
-[?2004l[?2004h> 
-[?2004l[?2004h>     if args.auto_solve:
-[?2004l[?2004h>         auto_solve()
-[?2004l[?2004h>     else:
-[?2004l[?2004h>         interactive_mode()
-[?2004l[?2004h> 
-[?2004l[?2004h> 
-[?2004l[?2004h> if __name__ == "__main__":
-[?2004l[?2004h>     main()
-[?2004l[?2004h> PYTHON_EOF
-[?2004l[?2004hroot@36bf42240db9:/app# rm -rf /app/output /app/assets /app/manifest.json
-[?2004l[?2004hroot@36bf42240db9:/app# python3 /app/ffpuzzle.py --auto-solve
-[?2004lLevel 1: Scale Down
-  PASS
-Level 2: Grayscale Conversion
-  PASS
-Level 3: Audio Trim
-  PASS
-Level 4: Center Crop
-  PASS
-Level 5: Scale and Flip
-  PASS
-Score: 50/50
-[?2004hroot@36bf42240db9:/app# cat /app/manifest.json
-[?2004l[
-  {
-    "level": 1,
-    "filename": "level1_output.mp4",
-    "passed": true
-  },
-  {
-    "level": 2,
-    "filename": "level2_output.avi",
-    "passed": true
-  },
-  {
-    "level": 3,
-    "filename": "level3_output.wav",
-    "passed": true
-  },
-  {
-    "level": 4,
-    "filename": "level4_output.mp4",
-    "passed": true
-  },
-  {
-    "level": 5,
-    "filename": "level5_output.mp4",
-    "passed": true
-  }
-][?2004hroot@36bf42240db9:/app# grep -n 'scale=320\|format=gray\|atrim=0:3\|crop=200:200\|hflip' /app/ffpuzzle.py
-[?2004l[?2004hroot@36bf42240db9:/app# 
