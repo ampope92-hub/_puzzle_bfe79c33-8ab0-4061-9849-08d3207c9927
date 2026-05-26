@@ -1,0 +1,15 @@
+{
+  "analysis": "The issue is that even though libx264 technically supports gray, when you encode and then probe it, ffprobe still reports `yuvj420p` because H.264's monochrome subsampling is decoded that way. I need to use a different codec/container that properly preserves and reports the gray pixel format.",
+  "plan": "I'll use the `ffv1` codec in a `.mkv` container for Level 2, which properly preserves and reports the gray pixel format. I'll rewrite the Level 2 configuration.",
+  "commands": [
+    {
+      "keystrokes": "ffmpeg -y -i /app/assets/level2_input.mp4 -vf \"format=gray\" -c:v ffv1 /app/output/level2_test.mkv 2>&1 | tail -3\n",
+      "duration": 5.0
+    },
+    {
+      "keystrokes": "ffprobe -v quiet -print_format json -show_streams /app/output/level2_test.mkv | python3 -c \"import json,sys; d=json.load(sys.stdin); print(d['streams'][0]['pix_fmt'])\"\n",
+      "duration": 1.0
+    }
+  ],
+  "task_complete": false
+}

@@ -1,0 +1,263 @@
+{
+    "results": {
+        "tool": {
+            "name": "pytest",
+            "version": "8.4.1"
+        },
+        "summary": {
+            "tests": 23,
+            "passed": 11,
+            "failed": 12,
+            "skipped": 0,
+            "pending": 0,
+            "other": 0,
+            "start": 1779730166.3419073,
+            "stop": 1779730187.0623548
+        },
+        "tests": [
+            {
+                "name": "test_outputs.py::TestGameScriptExists::test_script_exists",
+                "status": "passed",
+                "duration": 0.0004117420030524954,
+                "start": 1779730166.3703458,
+                "stop": 1779730166.37106,
+                "retries": 0,
+                "file_path": "test_outputs.py"
+            },
+            {
+                "name": "test_outputs.py::TestGameScriptExists::test_script_is_python",
+                "status": "passed",
+                "duration": 0.0235701490091742,
+                "start": 1779730166.37122,
+                "stop": 1779730166.395029,
+                "retries": 0,
+                "file_path": "test_outputs.py"
+            },
+            {
+                "name": "test_outputs.py::TestAutoSolveMode::test_auto_solve_flag_accepted",
+                "status": "passed",
+                "duration": 0.901263720006682,
+                "start": 1779730166.3952274,
+                "stop": 1779730167.2966983,
+                "retries": 0,
+                "file_path": "test_outputs.py"
+            },
+            {
+                "name": "test_outputs.py::TestAutoSolveMode::test_score_line_present",
+                "status": "passed",
+                "duration": 1.0818619499987108,
+                "start": 1779730167.2968946,
+                "stop": 1779730168.379248,
+                "retries": 0,
+                "file_path": "test_outputs.py"
+            },
+            {
+                "name": "test_outputs.py::TestAutoSolveMode::test_perfect_score",
+                "status": "passed",
+                "duration": 1.0331784209993202,
+                "start": 1779730168.3795671,
+                "stop": 1779730169.41296,
+                "retries": 0,
+                "file_path": "test_outputs.py"
+            },
+            {
+                "name": "test_outputs.py::TestAutoSolveMode::test_all_levels_printed",
+                "status": "passed",
+                "duration": 0.9818041599937715,
+                "start": 1779730169.413153,
+                "stop": 1779730170.3951633,
+                "retries": 0,
+                "file_path": "test_outputs.py"
+            },
+            {
+                "name": "test_outputs.py::TestAssetGeneration::test_assets_directory_exists",
+                "status": "passed",
+                "duration": 0.9080825359997107,
+                "start": 1779730170.3953726,
+                "stop": 1779730171.3036547,
+                "retries": 0,
+                "file_path": "test_outputs.py"
+            },
+            {
+                "name": "test_outputs.py::TestAssetGeneration::test_input_files_generated",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 1.010737128999608,
+                "start": 1779730171.3038526,
+                "stop": 1779730172.329622,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestAssetGeneration object at 0x77a3a86d7ed0>\n\n    def test_input_files_generated(self):\n        \"\"\"Each level should produce an input file in assets/.\"\"\"\n        run_auto_solve()\n        expected = [\n            \"level1_input.mp4\",\n            \"level2_input.avi\",\n            \"level3_input.wav\",\n            \"level4_input.mp4\",\n            \"level5_input.mp4\",\n        ]\n        for fname in expected:\n            path = ASSETS_DIR / fname\n>           assert path.exists(), f\"Missing input asset: {path}\"\nE           AssertionError: Missing input asset: /app/assets/level1_input.mp4\nE           assert False\nE            +  where False = exists()\nE            +    where exists = PosixPath('/app/assets/level1_input.mp4').exists\n\n/tests/test_outputs.py:119: AssertionError",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::TestOutputArtifacts::test_output_directory_exists",
+                "status": "passed",
+                "duration": 1.0396668840039638,
+                "start": 1779730172.329925,
+                "stop": 1779730173.3698418,
+                "retries": 0,
+                "file_path": "test_outputs.py"
+            },
+            {
+                "name": "test_outputs.py::TestOutputArtifacts::test_output_files_generated",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 1.2017629769979976,
+                "start": 1779730173.3700576,
+                "stop": 1779730174.57799,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestOutputArtifacts object at 0x77a3a8618190>\n\n    def test_output_files_generated(self):\n        \"\"\"Each level should produce an output file in output/.\"\"\"\n        run_auto_solve()\n        expected = [\n            \"level1_output.mp4\",\n            \"level2_output.avi\",\n            \"level3_output.wav\",\n            \"level4_output.mp4\",\n            \"level5_output.mp4\",\n        ]\n        for fname in expected:\n            path = OUTPUT_DIR / fname\n>           assert path.exists(), f\"Missing output artifact: {path}\"\nE           AssertionError: Missing output artifact: /app/output/level1_output.mp4\nE           assert False\nE            +  where False = exists()\nE            +    where exists = PosixPath('/app/output/level1_output.mp4').exists\n\n/tests/test_outputs.py:141: AssertionError",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::TestLevel1ScaleDown::test_output_dimensions",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 1.0304439320025267,
+                "start": 1779730174.578505,
+                "stop": 1779730175.6130016,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestLevel1ScaleDown object at 0x77a3a86182d0>\n\n    def test_output_dimensions(self):\n        \"\"\"Level 1 output must be exactly 320x240.\"\"\"\n        run_auto_solve()\n        info = ffprobe_stream(OUTPUT_DIR / \"level1_output.mp4\", \"video\")\n>       assert int(info[\"width\"]) == 320, f\"Expected width 320, got {info['width']}\"\n                   ^^^^^^^^^^^^^\nE       KeyError: 'width'\n\n/tests/test_outputs.py:150: KeyError",
+                "message": "The test failed in the call phase"
+            },
+            {
+                "name": "test_outputs.py::TestLevel2Grayscale::test_pixel_format",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 1.0409365550003713,
+                "start": 1779730175.6132154,
+                "stop": 1779730176.657995,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestLevel2Grayscale object at 0x77a3a8618410>\n\n    def test_pixel_format(self):\n        \"\"\"Level 2 output must have gray pixel format.\"\"\"\n        run_auto_solve()\n        info = ffprobe_stream(OUTPUT_DIR / \"level2_output.avi\", \"video\")\n>       assert info[\"pix_fmt\"] == \"gray\", f\"Expected pix_fmt 'gray', got '{info['pix_fmt']}'\"\n               ^^^^^^^^^^^^^^^\nE       KeyError: 'pix_fmt'\n\n/tests/test_outputs.py:159: KeyError",
+                "message": "The test failed in the call phase"
+            },
+            {
+                "name": "test_outputs.py::TestLevel3TrimAudio::test_audio_duration",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.9967331480002031,
+                "start": 1779730176.6582177,
+                "stop": 1779730177.6596396,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestLevel3TrimAudio object at 0x77a3a8618550>\n\n    def test_audio_duration(self):\n        \"\"\"Level 3 output audio must be approximately 3 seconds.\"\"\"\n        run_auto_solve()\n        fmt = ffprobe_format(OUTPUT_DIR / \"level3_output.wav\")\n>       duration = float(fmt[\"duration\"])\n                         ^^^^^^^^^^^^^^^\nE       KeyError: 'duration'\n\n/tests/test_outputs.py:167: KeyError",
+                "message": "The test failed in the call phase"
+            },
+            {
+                "name": "test_outputs.py::TestLevel4CenterCrop::test_cropped_dimensions",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.9662612359898048,
+                "start": 1779730177.6598303,
+                "stop": 1779730178.6295962,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestLevel4CenterCrop object at 0x77a3a8618690>\n\n    def test_cropped_dimensions(self):\n        \"\"\"Level 4 output must be exactly 200x200.\"\"\"\n        run_auto_solve()\n        info = ffprobe_stream(OUTPUT_DIR / \"level4_output.mp4\", \"video\")\n>       assert int(info[\"width\"]) == 200, f\"Expected width 200, got {info['width']}\"\n                   ^^^^^^^^^^^^^\nE       KeyError: 'width'\n\n/tests/test_outputs.py:176: KeyError",
+                "message": "The test failed in the call phase"
+            },
+            {
+                "name": "test_outputs.py::TestLevel5ScaleAndFlip::test_output_dimensions",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 1.0039493210060755,
+                "start": 1779730178.629819,
+                "stop": 1779730179.6372278,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestLevel5ScaleAndFlip object at 0x77a3a86187d0>\n\n    def test_output_dimensions(self):\n        \"\"\"Level 5 output must be 320x240 (scaled down).\"\"\"\n        run_auto_solve()\n        info = ffprobe_stream(OUTPUT_DIR / \"level5_output.mp4\", \"video\")\n>       assert int(info[\"width\"]) == 320, f\"Expected width 320, got {info['width']}\"\n                   ^^^^^^^^^^^^^\nE       KeyError: 'width'\n\n/tests/test_outputs.py:185: KeyError",
+                "message": "The test failed in the call phase"
+            },
+            {
+                "name": "test_outputs.py::TestLevel5ScaleAndFlip::test_hflip_applied",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 1.0466723869976704,
+                "start": 1779730179.6374006,
+                "stop": 1779730180.6880357,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestLevel5ScaleAndFlip object at 0x77a3a8618910>\n\n    def test_hflip_applied(self):\n        \"\"\"Level 5 output frames must differ from a scale-only version (hflip applied).\"\"\"\n        run_auto_solve()\n        input_path = ASSETS_DIR / \"level5_input.mp4\"\n        output_path = OUTPUT_DIR / \"level5_output.mp4\"\n        ref_path = OUTPUT_DIR / \"level5_ref_nohflip.mp4\"\n        subprocess.run(\n            [\n                \"ffmpeg\", \"-y\", \"-i\", str(input_path),\n                \"-vf\", \"scale=320:240\",\n                \"-c:v\", \"libx264\", \"-pix_fmt\", \"yuv420p\",\n                str(ref_path),\n            ],\n            capture_output=True,\n        )\n    \n        def frame_hash(path):\n            r = subprocess.run(\n                [\"ffmpeg\", \"-i\", str(path), \"-f\", \"hash\", \"-hash\", \"md5\", \"-\"],\n                capture_output=True, text=True,\n            )\n            for line in r.stdout.strip().split(\"\\n\"):\n                if line.startswith(\"MD5=\"):\n                    return line.strip()\n            return None\n    \n        ref_hash = frame_hash(ref_path)\n        out_hash = frame_hash(output_path)\n>       assert ref_hash is not None and out_hash is not None, \"Could not compute frame hashes\"\nE       AssertionError: Could not compute frame hashes\nE       assert (None is not None)\n\n/tests/test_outputs.py:216: AssertionError",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::TestManifest::test_manifest_exists",
+                "status": "passed",
+                "duration": 0.9440059919943451,
+                "start": 1779730180.6882699,
+                "stop": 1779730181.632494,
+                "retries": 0,
+                "file_path": "test_outputs.py"
+            },
+            {
+                "name": "test_outputs.py::TestManifest::test_manifest_is_valid_json",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.889334259009047,
+                "start": 1779730181.6326847,
+                "stop": 1779730182.4098933,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestManifest object at 0x77a3a8618b90>\n\n    def test_manifest_is_valid_json(self):\n        \"\"\"manifest.json must be parseable JSON.\"\"\"\n        run_auto_solve()\n        text = MANIFEST_PATH.read_text()\n        data = json.loads(text)\n>       assert isinstance(data, list), \"Manifest should be a JSON array\"\nE       AssertionError: Manifest should be a JSON array\nE       assert False\nE        +  where False = isinstance({'files': [{'filename': 'level1.mp4', 'level': 1, 'message': 'ok', 'path': '/app/output/level1.mp4', ...}, {'filename'...put/level4.mp4', ...}, {'filename': 'level5.mp4', 'level': 5, 'message': 'ok', 'path': '/app/output/level5.mp4', ...}]}, list)\n\n/tests/test_outputs.py:231: AssertionError",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::TestManifest::test_manifest_has_all_levels",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.9388890760092181,
+                "start": 1779730182.4100754,
+                "stop": 1779730183.3524897,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestManifest object at 0x77a3a8675810>\n\n    def test_manifest_has_all_levels(self):\n        \"\"\"Manifest should have an entry for each of the 5 levels.\"\"\"\n        run_auto_solve()\n        data = json.loads(MANIFEST_PATH.read_text())\n>       level_ids = {entry[\"level\"] for entry in data}\n                     ^^^^^^^^^^^^^^\nE       TypeError: string indices must be integers, not 'str'\n\n/tests/test_outputs.py:237: TypeError",
+                "message": "The test failed in the call phase"
+            },
+            {
+                "name": "test_outputs.py::TestManifest::test_manifest_entries_have_required_fields",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.9001959989982424,
+                "start": 1779730183.3526497,
+                "stop": 1779730184.2564757,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestManifest object at 0x77a3a8675940>\n\n    def test_manifest_entries_have_required_fields(self):\n        \"\"\"Each manifest entry must have level, filename, and passed fields.\"\"\"\n        run_auto_solve()\n        data = json.loads(MANIFEST_PATH.read_text())\n        for entry in data:\n>           assert \"level\" in entry, f\"Missing 'level' in manifest entry: {entry}\"\nE           AssertionError: Missing 'level' in manifest entry: files\nE           assert 'level' in 'files'\n\n/tests/test_outputs.py:246: AssertionError",
+                "message": "The test failed in the call phase due to an assertion error"
+            },
+            {
+                "name": "test_outputs.py::TestManifest::test_manifest_all_passed",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 0.9739269639903796,
+                "start": 1779730184.256653,
+                "stop": 1779730185.2348058,
+                "retries": 0,
+                "file_path": "test_outputs.py",
+                "trace": "self = <test_outputs.TestManifest object at 0x77a3a8710050>\n\n    def test_manifest_all_passed(self):\n        \"\"\"In auto-solve mode all manifest entries should show passed=true.\"\"\"\n        run_auto_solve()\n        data = json.loads(MANIFEST_PATH.read_text())\n        for entry in data:\n>           assert entry[\"passed\"] is True, (\n                   ^^^^^^^^^^^^^^^\n                f\"Level {entry['level']} not marked as passed in manifest\"\n            )\nE           TypeError: string indices must be integers, not 'str'\n\n/tests/test_outputs.py:255: TypeError",
+                "message": "The test failed in the call phase"
+            },
+            {
+                "name": "test_outputs.py::TestInteractiveMode::test_help_flag",
+                "status": "passed",
+                "duration": 0.03887132299860241,
+                "start": 1779730185.235076,
+                "stop": 1779730185.2741733,
+                "retries": 0,
+                "file_path": "test_outputs.py"
+            },
+            {
+                "name": "test_outputs.py::TestDeterminism::test_score_deterministic",
+                "status": "passed",
+                "duration": 1.7876013249988318,
+                "start": 1779730185.2743654,
+                "stop": 1779730187.0621579,
+                "retries": 0,
+                "file_path": "test_outputs.py"
+            }
+        ]
+    }
+}

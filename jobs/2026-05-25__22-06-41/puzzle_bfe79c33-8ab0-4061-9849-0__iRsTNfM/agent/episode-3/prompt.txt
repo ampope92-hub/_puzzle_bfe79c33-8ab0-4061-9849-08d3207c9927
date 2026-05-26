@@ -1,0 +1,214 @@
+New Terminal Output:
+
+root@bdb2c244d77b:/app# rm -f /app/ffpuzzle.py
+root@bdb2c244d77b:/app# python3 - <<'PY'
+> import base64
+> script = r'''#!/usr/bin/env python3
+> import argparse
+> import base64
+> import json
+> import os
+> import subprocess
+> from dataclasses import dataclass
+> from typing import Callable, Dict, List, Optional, Tuple
+>
+> ASSETS_DIR = "/app/assets"
+> OUTPUT_DIR = "/app/output"
+> MANIFEST_PATH = "/app/manifest.json"
+>
+>
+> def run(cmd: List[str]) -> subprocess.CompletedProcess:
+>     return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+>
+>
+td> def ensure_dirs() -> None:
+>     os.makedirs(ASSETS_DIR, exist_ok=True)
+>     os.makedirs(OUTPUT_DIR, exist_ok=True)
+>
+ >
+ > def safe_unlink(path: str) -> None:
+>     try:
+>         os.unlink(path)
+>     except FileNotFoundError:
+>         pass
+>
+>
+> def ffprobe_json(path: str) -> Dict:
+>     cp = run([
+>         "ffprobe",
+>         "-v", "error",
+>         "-print_format", "json",
+>         "-show_format",
+>         "-show_streams",
+>         path,
+>     ])
+>     if cp.returncode != 0:
+ut_path)
+        h_ref = frame_has>         raise RuntimeError(f"ffprobe failed: {cp.stderr.strip()}")
+>     return json.loads(cp.stdout)
+>
+>
+> def get_first_stream(probe: Dict, codec_type: str) -> Dict:
+>     for s in probe.get("streams", []):
+>         if s.get("codec_type") == codec_type:
+>             return s
+>     raise KeyError(f"No {codec_type} stream found")
+>
+put.mp4">
+> def obf_encode(plain: str) -> str:
+>     return base64.b64encode(plain[::-1].encode("utf-8")).decode("ascii")
+>
+>
+> def obf_decode(token: str) -> str:
+>     raw = base64.b64decode(token.encode("ascii"))
+>     return raw.decode("utf-8")[::-1]
+>
+>
+> @dataclass
+> class Level:
+>     num: int
+>     name: str
+>     description: str
+>     input_path: str
+>     output_path: str
+>     build_input: Callable[[], None]
+>     validate: Callable[[str], Tuple[bool, str]]
+>     solution_token: str
+>
+>
+> # ----------------- input generators (lavfi only) -----------------
+>
+y> def gen_video_mp4_640x480(path: str) -> None:
+>     run([
+>         "ffmpeg", "-y", "-v", "error",
+>         "-f", "lavfi", "-i", "testsrc2=size=640x480:rate=30",
+>         "-t", "2",
+>         "-pix_fmt", "yuv420p",
+>         path,
+>     ])
+>
+>
+> def gen_video_avi_raw_640x480(path: str) -> None:
+>     run([
+>         "ffmpeg", "-y", "-v", "error",
+>         "-f", "lavfi", "-i", "testsrc2=size=640x480:rate=30",
+>         "-t", "2",
+>         "-c:v", "rawvideo",
+ver>         path,
+>     ])
+>
+>
+> def gen_audio_wav_10s(path: str) -> None:
+>     run([
+>         "ffmpeg", "-y", "-v", "error",
+>         "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000",
+>         "-t", "10",
+>         "-c:a", "pcm_s16le",
+>         path,
+>     ])
+>
+,>
+> # ----------------- validators -----------------
+>
+> def validate_wh(out_path: str, w_exp: int, h_exp: int) -> Tuple[bool, str]:
+>     try:
+>         probe = ffprobe_json(out_path)
+>         v = get_first_stream(probe, "video")
+>         w = int(v.get("width", -1))
+>         h = int(v.get("height", -1))
+>         if w == w_exp and h == h_exp:
+>             return True, "ok"
+>         return False, f"expected {w_exp}x{h_exp}, got {w}x{h}"
+e>     except Exception as e:
+>         return False, str(e)
+s.pat>
+>
+> def validate_pixfmt_gray(out_path: str) -> Tuple[bool, str]:
+>     try:
+>         probe = ffprobe_json(out_path)
+>         v = get_first_stream(probe, "video")
+>         pix = v.get("pix_fmt")
+>         if pix == "gray":
+>             return True, "ok"
+>         return False, f"expected pix_fmt=gray, got {pix}"
+>     except Exception as e:
+>         return False, str(e)
+>
+>
+> def validate_audio_dur_approx_3s(out_path: str) -> Tuple[bool, str]:
+>     try:
+>         probe = ffprobe_json(out_path)
+>         a = get_first_stream(probe, "audio")
+>         dur = a.get("duration") or probe.get("format", {}).get("duration")
+>         if dur is None:
+>             return False, "duration not found"
+f l>         d = float(dur)
+>         if 2.9 <= d <= 3.1:
+>             return True, "ok"
+>         return False, f"expected ~3.0s, got {d:.3f}s"
+>     except Exception as e:
+>         return False, str(e)
+>
+>
+> def validate_scale_and_hflip(out_path: str, in_path: str) -> Tuple[bool, str]:
+>     ok, msg = validate_wh(out_path, 320, 240)
+>     if not ok:
+>         return ok, msg
+>
+l>     import hashlib
+>
+>     def frame_hash(video_path: str) -> str:
+>         cp = subprocess.run(
+>             [
+>                 "ffmpeg", "-v", "error",
+>                 "-i", video_path,
+>                 "-vf", "select=eq(n\\,0)",
+>                 "-frames:v", "1",
+>                 "-f", "rawvideo",
+>                 "-pix_fmt", "rgb24",
+>                 "-",
+rncode != 0:
+        >             ],
+>             stdout=subprocess.PIPE,
+>             stderr=subprocess.PIPE,
+>         )
+>         if cp.returncode != 0:
+>             raise RuntimeError(cp.stderr.decode("utf-8", errors="ignore").
+[... output limited to 10000 bytes; 71 interior bytes omitted ...]
+F9pbnB1dD1sYW1iZGEgcD1sNF9pbjogZ2Vu
+X3ZpZGVvX21wNF82NDB4NDgwKHApLAogICAgICAgICAgICAgIHZhbGlkYXRlPWxhbWJkYSBvdXQ6IHZhbGlkYXRlX3doKG91dCwgMjAwLCAyMDApLAogICAgICAgICAgICAgIHNvbHV0aW9uX3Rva2VuPXRvazQp
+LAogICAgICAgIExldmVsKDUsICJTY2FsZSArIGhmbGlwIiwgIlNjYWxlIHRvIDMyMHgyNDAgQU5EIGFwcGx5IGEgaG9yaXpvbnRhbCBmbGlwLiIsIGw1X2luLAogICAgICAgICAgICAgIG9zLnBhdGguam9pbihP
+VVRQVVRfRElSLCAibGV2ZWw1X291dHB1dC5tcDQiKSwKICAgICAgICAgICAgICBidWlsZF9pbnB1dD1sYW1iZGEgcD1sNV9pbjogZ2VuX3ZpZGVvX21wNF82NDB4NDgwKHApLAogICAgICAgICAgICAgIHZhbGlk
+YXRlPWxhbWJkYSBvdXQsIGlucD1sNV9pbjogdmFsaWRhdGVfc2NhbGVfYW5kX2hmbGlwKG91dCwgaW5wKSwKICAgICAgICAgICAgICBzb2x1dGlvbl90b2tlbj10b2s1KSwKICAgIF0KCgpkZWYgZmZtcGVnX2Fw
+cGx5KGxldmVsOiBMZXZlbCwgZmlsdGVyZ3JhcGg6IHN0cikgLT4gVHVwbGVbYm9vbCwgc3RyXToKICAgIHNhZmVfdW5saW5rKGxldmVsLm91dHB1dF9wYXRoKQoKICAgIGlmIGxldmVsLm51bSA9PSAyOgogICAg
+ICAgIGNtZCA9IFsKICAgICAgICAgICAgImZmbXBlZyIsICIteSIsICItdiIsICJlcnJvciIsCiAgICAgICAgICAgICItaSIsIGxldmVsLmlucHV0X3BhdGgsCiAgICAgICAgICAgICItdmYiLCBmaWx0ZXJncmFw
+aCwKICAgICAgICAgICAgIi1jOnYiLCAicmF3dmlkZW8iLAogICAgICAgICAgICBsZXZlbC5vdXRwdXRfcGF0aCwKICAgICAgICBdCiAgICBlbGlmIGxldmVsLm51bSA9PSAzOgogICAgICAgIGNtZCA9IFsKICAg
+ICAgICAgICAgImZmbXBlZyIsICIteSIsICItdiIsICJlcnJvciIsCiAgICAgICAgICAgICItaSIsIGxldmVsLmlucHV0X3BhdGgsCiAgICAgICAgICAgICItYWYiLCBmaWx0ZXJncmFwaCwKICAgICAgICAgICAg
+Ii1jOmEiLCAicGNtX3MxNmxlIiwKICAgICAgICAgICAgbGV2ZWwub3V0cHV0X3BhdGgsCiAgICAgICAgXQogICAgZWxzZToKICAgICAgICBjbWQgPSBbCiAgICAgICAgICAgICJmZm1wZWciLCAiLXkiLCAiLXYi
+LCAiZXJyb3IiLAogICAgICAgICAgICAiLWkiLCBsZXZlbC5pbnB1dF9wYXRoLAogICAgICAgICAgICAiLXZmIiwgZmlsdGVyZ3JhcGgsCiAgICAgICAgICAgICItcGl4X2ZtdCIsICJ5dXY0MjBwIiwKICAgICAg
+ICAgICAgbGV2ZWwub3V0cHV0X3BhdGgsCiAgICAgICAgXQoKICAgIGNwID0gcnVuKGNtZCkKICAgIGlmIGNwLnJldHVybmNvZGUgIT0gMDoKICAgICAgICByZXR1cm4gRmFsc2UsIGNwLnN0ZGVyci5zdHJpcCgp
+IG9yICJmZm1wZWcgZmFpbGVkIgogICAgcmV0dXJuIFRydWUsICJvayIKCgpkZWYgcnVuX2xldmVsKGxldmVsOiBMZXZlbCwgZmlsdGVyZ3JhcGg6IHN0cikgLT4gVHVwbGVbYm9vbCwgc3RyXToKICAgIGlmIG5v
+dCBvcy5wYXRoLmV4aXN0cyhsZXZlbC5pbnB1dF9wYXRoKToKICAgICAgICBsZXZlbC5idWlsZF9pbnB1dCgpCgogICAgb2ssIG1zZyA9IGZmbXBlZ19hcHBseShsZXZlbCwgZmlsdGVyZ3JhcGgpCiAgICBpZiBu
+b3Qgb2s6CiAgICAgICAgcmV0dXJuIEZhbHNlLCBmInJlbmRlcjoge21zZ30iCgogICAgcGFzc2VkLCB2bXNnID0gbGV2ZWwudmFsaWRhdGUobGV2ZWwub3V0cHV0X3BhdGgpCiAgICBpZiBub3QgcGFzc2VkOgog
+ICAgICAgIHJldHVybiBGYWxzZSwgZiJ2YWxpZGF0ZToge3Ztc2d9IgogICAgcmV0dXJuIFRydWUsICJvayIKCgpkZWYgYXV0b19zb2x2ZShsZXZlbHM6IExpc3RbTGV2ZWxdKSAtPiBpbnQ6CiAgICBtYW5pZmVz
+dCA9IFtdCiAgICBzY29yZSA9IDAKCiAgICBmb3IgbHZsIGluIGxldmVsczoKICAgICAgICBwcmludChmIkxldmVsIHtsdmwubnVtfToge2x2bC5uYW1lfSIpCiAgICAgICAgZmlsdCA9IG9iZl9kZWNvZGUobHZs
+LnNvbHV0aW9uX3Rva2VuKQogICAgICAgIHBhc3NlZCwgXyA9IHJ1bl9sZXZlbChsdmwsIGZpbHQpCiAgICAgICAgaWYgcGFzc2VkOgogICAgICAgICAgICBwcmludCgiICBQQVNTIikKICAgICAgICAgICAgc2Nv
+cmUgKz0gMTAKICAgICAgICBlbHNlOgogICAgICAgICAgICBwcmludCgiICBGQUlMIikKCiAgICAgICAgbWFuaWZlc3QuYXBwZW5kKHsKICAgICAgICAgICAgImxldmVsIjogbHZsLm51bSwKICAgICAgICAgICAg
+ImZpbGVuYW1lIjogb3MucGF0aC5iYXNlbmFtZShsdmwub3V0cHV0X3BhdGgpLAogICAgICAgICAgICAicGFzc2VkIjogYm9vbChwYXNzZWQpLAogICAgICAgIH0pCgogICAgd2l0aCBvcGVuKE1BTklGRVNUX1BB
+VEgsICJ3IiwgZW5jb2Rpbmc9InV0Zi04IikgYXMgZjoKICAgICAgICBqc29uLmR1bXAobWFuaWZlc3QsIGYsIGluZGVudD0yKQogICAgICAgIGYud3JpdGUoIlxuIikKCiAgICBwcmludChmIlNjb3JlOiB7c2Nv
+cmV9L3tsZW4obGV2ZWxzKSAqIDEwfSIpCiAgICByZXR1cm4gMCBpZiBzY29yZSA9PSBsZW4obGV2ZWxzKSAqIDEwIGVsc2UgMQoKCmRlZiBpbnRlcmFjdGl2ZShsZXZlbHM6IExpc3RbTGV2ZWxdKSAtPiBpbnQ6
+CiAgICB0b3RhbCA9IDAKICAgIGVhcm5lZCA9IDAKCiAgICBmb3IgbHZsIGluIGxldmVsczoKICAgICAgICB0b3RhbCArPSAxMAogICAgICAgIHByaW50KGYiTGV2ZWwge2x2bC5udW19OiB7bHZsLm5hbWV9IikK
+ICAgICAgICBwcmludChsdmwuZGVzY3JpcHRpb24pCiAgICAgICAgdHJ5OgogICAgICAgICAgICB1c2VyX2ZpbHQgPSBpbnB1dCgiPiAiKS5zdHJpcCgpCiAgICAgICAgZXhjZXB0IEVPRkVycm9yOgogICAgICAg
+ICAgICBwcmludCgiXG5FeGl0aW5nLiIpCiAgICAgICAgICAgIGJyZWFrCgogICAgICAgIGlmIG5vdCB1c2VyX2ZpbHQ6CiAgICAgICAgICAgIHByaW50KCIgIEZBSUwiKQogICAgICAgICAgICBjb250aW51ZQoK
+ICAgICAgICBwYXNzZWQsIGRldGFpbCA9IHJ1bl9sZXZlbChsdmwsIHVzZXJfZmlsdCkKICAgICAgICBpZiBwYXNzZWQ6CiAgICAgICAgICAgIHByaW50KCIgIFBBU1MiKQogICAgICAgICAgICBlYXJuZWQgKz0g
+MTAKICAgICAgICBlbHNlOgogICAgICAgICAgICBwcmludCgiICBGQUlMIikKICAgICAgICAgICAgcHJpbnQoZiIgIHtkZXRhaWx9IikKCiAgICBwcmludChmIlNjb3JlOiB7ZWFybmVkfS97dG90YWx9IikKICAg
+IHJldHVybiAwCgoKZGVmIG1haW4oYXJndjogT3B0aW9uYWxbTGlzdFtzdHJdXSA9IE5vbmUpIC0+IGludDoKICAgIGFwID0gYXJncGFyc2UuQXJndW1lbnRQYXJzZXIoZGVzY3JpcHRpb249IkZGbXBlZyBmaWx0
+ZXJncmFwaCBwdXp6bGUgZ2FtZSIpCiAgICBhcC5hZGRfYXJndW1lbnQoIi0tYXV0by1zb2x2ZSIsIGFjdGlvbj0ic3RvcmVfdHJ1ZSIsIGhlbHA9IlJ1biBhbGwgbGV2ZWxzIHdpdGggYnVpbHQtaW4gc29sdXRp
+b25zIikKICAgIGFyZ3MgPSBhcC5wYXJzZV9hcmdzKGFyZ3YpCgogICAgZW5zdXJlX2RpcnMoKQogICAgbGV2ZWxzID0gbWFrZV9sZXZlbHMoKQoKICAgIGlmIGFyZ3MuYXV0b19zb2x2ZToKICAgICAgICByZXR1
+cm4gYXV0b19zb2x2ZShsZXZlbHMpCiAgICByZXR1cm4gaW50ZXJhY3RpdmUobGV2ZWxzKQoKCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICByYWlzZSBTeXN0ZW1FeGl0KG1haW4oKSkK
+root@bdb2c244d77b:/app# python3 - <<'PY'
+> import base64, sys
+> b64 = sys.stdin.read().strip()
+> # no-op placeholder
+> PY
+root@bdb2c244d77b:/app#

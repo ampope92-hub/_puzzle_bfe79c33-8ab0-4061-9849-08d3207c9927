@@ -1,0 +1,115 @@
+{
+    "id": "366666e9-9982-4cd5-bd47-f0ad4d72a48a",
+    "task_name": "puzzle_bfe79c33-8ab0-4061-9849-08d3207c9927",
+    "trial_name": "puzzle_bfe79c33-8ab0-4061-9849-0__MmyvQU7",
+    "trial_uri": "file:///home/ampope/snorkel/Terminus_Project/puzzle_bfe79c33-8ab0-4061-9849-08d3207c9927/jobs/2026-05-25__22-21-44/puzzle_bfe79c33-8ab0-4061-9849-0__MmyvQU7",
+    "task_id": {
+        "path": "/home/ampope/snorkel/Terminus_Project/puzzle_bfe79c33-8ab0-4061-9849-08d3207c9927"
+    },
+    "source": null,
+    "task_checksum": "478f9a63b15081c9cde16324d2fe29606296895bf38d439e0b8ae2a48c2756fa",
+    "config": {
+        "task": {
+            "path": "/home/ampope/snorkel/Terminus_Project/puzzle_bfe79c33-8ab0-4061-9849-08d3207c9927",
+            "git_url": null,
+            "git_commit_id": null,
+            "name": null,
+            "ref": null,
+            "overwrite": false,
+            "download_dir": null,
+            "source": null
+        },
+        "trial_name": "puzzle_bfe79c33-8ab0-4061-9849-0__MmyvQU7",
+        "trials_dir": "jobs/2026-05-25__22-21-44",
+        "timeout_multiplier": 1.0,
+        "agent_timeout_multiplier": null,
+        "verifier_timeout_multiplier": null,
+        "agent_setup_timeout_multiplier": null,
+        "environment_build_timeout_multiplier": null,
+        "agent": {
+            "name": "terminus-2",
+            "import_path": null,
+            "model_name": "openai/@anthropic/claude-opus-4-6",
+            "override_timeout_sec": null,
+            "override_setup_timeout_sec": null,
+            "max_timeout_sec": null,
+            "kwargs": {},
+            "env": {}
+        },
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "suppress_override_warnings": false,
+            "mounts": null,
+            "env": {},
+            "kwargs": {}
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "env": {},
+            "disable": false
+        },
+        "artifacts": [],
+        "job_id": "ccac465a-9127-48f0-b5d2-0cb34b4927da"
+    },
+    "agent_info": {
+        "name": "terminus-2",
+        "version": "2.0.0",
+        "model_info": {
+            "name": "@anthropic/claude-opus-4-6",
+            "provider": "openai"
+        }
+    },
+    "agent_result": {
+        "n_input_tokens": 86005,
+        "n_cache_tokens": 0,
+        "n_output_tokens": 9747,
+        "cost_usd": null,
+        "rollout_details": [],
+        "metadata": {
+            "n_episodes": 7,
+            "api_request_times_msec": [
+                644034.0085029602,
+                6765.150308609009,
+                8699.758052825928,
+                32238.590240478516,
+                7369.2991733551025,
+                6110.299110412598,
+                9326.595783233643
+            ],
+            "summarization_count": 0
+        }
+    },
+    "verifier_result": {
+        "rewards": {
+            "reward": 1.0
+        }
+    },
+    "exception_info": null,
+    "started_at": "2026-05-26T03:21:45.171459Z",
+    "finished_at": "2026-05-26T03:36:01.384347Z",
+    "environment_setup": {
+        "started_at": "2026-05-26T03:21:45.230317Z",
+        "finished_at": "2026-05-26T03:21:50.537377Z"
+    },
+    "agent_setup": {
+        "started_at": "2026-05-26T03:21:50.537440Z",
+        "finished_at": "2026-05-26T03:21:53.063949Z"
+    },
+    "agent_execution": {
+        "started_at": "2026-05-26T03:21:53.064034Z",
+        "finished_at": "2026-05-26T03:34:58.455821Z"
+    },
+    "verifier": {
+        "started_at": "2026-05-26T03:34:59.147309Z",
+        "finished_at": "2026-05-26T03:35:58.682302Z"
+    },
+    "step_results": null
+}

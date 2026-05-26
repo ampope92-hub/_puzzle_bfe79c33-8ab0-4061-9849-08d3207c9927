@@ -1,0 +1,15 @@
+New Terminal Output:
+
+root@505f01f97e68:/app# python3 -c "
+> import base64
+> solutions = ['scale=320:240', 'format=gray', 'atrim=0:3', 'crop=200:200', 'scale=320:240,hflip']
+> for s in solutions:
+>     encoded = base64.b64encode(s[::-1].encode()).decode()
+>     print(repr(encoded))
+> "
+'MDQyOjAyMz1lbGFjcw=='
+'eWFyZz10YW1yb2Y='
+'MzowPW1pcnRh'
+'MDAyOjAwMj1wb3Jj'
+'cGlsZmgsMDQyOjAyMz1lbGFjcw=='
+root@505f01f97e68:/app#

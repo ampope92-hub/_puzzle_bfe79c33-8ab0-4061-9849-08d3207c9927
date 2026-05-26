@@ -1,0 +1,37 @@
+{
+    "id": "29afd0ca-b4c7-4925-abfc-d532d8bb2a14",
+    "started_at": "2026-05-25T11:54:09.340212",
+    "updated_at": "2026-05-25T11:54:53.778594",
+    "finished_at": "2026-05-25T11:54:53.778594",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 1,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "terminus-2__@openai/gpt-5.2__adhoc": {
+                "n_trials": 0,
+                "n_errors": 1,
+                "metrics": [
+                    {
+                        "mean": 0.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {},
+                "exception_stats": {
+                    "APIError": [
+                        "puzzle_bfe79c33-8ab0-4061-9849-0__82AeHLB"
+                    ]
+                }
+            }
+        },
+        "n_input_tokens": 0,
+        "n_cache_tokens": 0,
+        "n_output_tokens": 0,
+        "cost_usd": null
+    }
+}

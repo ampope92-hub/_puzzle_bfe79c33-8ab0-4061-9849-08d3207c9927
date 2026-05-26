@@ -1,0 +1,83 @@
+New Terminal Output:
+
+root@bdb2c244d77b:/app#
+152:              solution_token="Mi8pMDAyLWhpKD15OjIvKTAwMi13aSg9eDowMDI9aDowMDI9dz1wb3Jj"),
+155:              solution_token="Mi8pMDAyLWhpKD15OjIvKTAwMi13aSg9eDowMDI9aDowMDI9dz1wb3Jj"),
+158:              solution_token="Mi8pMDAyLWhpKD15OjIvKTAwMi13aSg9eDowMDI9aDowMDI9dz1wb3Jj"),
+161:              solution_token="Mi8pMDAyLWhpKD15OjIvKTAwMi13aSg9eDowMDI9aDowMDI9dz1wb3Jj"),
+164:              solution_token="Mi8pMDAyLWhpKD15OjIvKTAwMi13aSg9eDowMDI9aDowMDI9dz1wb3Jj"),
+root@bdb2c244d77b:/app#
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+patched tokens
+root@bdb2c244d77b:/app#
+152:              solution_token="MDQyOjAyMz1lbGFjcw=="),
+155:              solution_token="eWFyZz10YW1yb2Y="),
+158:              solution_token="MzowPW1pcnRh"),
+161:              solution_token="Mi8pMDAyLWhpKD15OjIvKTAwMi13aSg9eDowMDI9aDowMDI9dz1wb3Jj"),
+164:              solution_token="cGlsZmgsMDQyOjAyMz1lbGFjcw=="),
+root@bdb2c244d77b:/app#
+root@bdb2c244d77b:/app#
+root@bdb2c244d77b:/app#
+Level 1: Scale down
+  PASS
+Level 2: Grayscale
+  PASS
+Level 3: Audio trim
+  PASS
+Level 4: Center crop
+  PASS
+Level 5: Scale + hflip
+  PASS
+Score: 50/50
+rc=0
+root@bdb2c244d77b:/app#
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.avi",
+    "passed": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "passed": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "passed": true
+  }
+]
+root@bdb2c244d77b:/app#

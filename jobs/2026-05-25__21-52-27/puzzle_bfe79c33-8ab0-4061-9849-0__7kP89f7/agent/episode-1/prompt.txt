@@ -1,0 +1,328 @@
+New Terminal Output:
+root@e5fbd4ec3cda:/app# ls -la
+total 8
+drwxr-xr-x 2 root root 4096 May 25 16:41 .
+drwxr-xr-x 1 root root 4096 May 26 02:52 ..
+root@e5fbd4ec3cda:/app# cat > /app/ffpuzzle.py <<'PY'
+et("codec_type") == codec_type:
+            return s
+    raise KeyError(f"No {codec_type} stream found")
+
+
+def parse_duration_seconds(probe: Dict) -> Optional[float]:
+    # Prefer format.duration, fall back to stream.duration
+    fmt = probe.get("format", {})
+    dur = fmt.get("duration")
+    if dur is not None:
+        try:
+            return float(dur)
+        except ValueError:
+            pass
+    # fall back to first audio/video stream duration if available
+    for s in probe.get("streams", []):
+        if "duration" in s and s.get("duration") is not None:
+            try:
+                return float(s["duration"])
+            except ValueError:
+                continue
+    return None
+
+
+def run_ffmpeg_filter(input_path: str, output_path: str, filtergraph: str, *, is_audio: bool, extra_output_args: Optional[List[str]] = None) -> Tuple[bool, str]
+:
+    # Use -filter_complex to allow general filtergraphs; keep mapping simple.
+    # For video: map v:0; For audio: map a:0
+    extra_output_args = extra_output_args or []
+
+    cmd = ["ffmpeg", "-y", "-v", "error", "-i", input_path, "-filter_complex", filtergraph]
+    if is_audio:
+        cmd += ["-map", "[a]" if "[a]" in filtergraph else "0:a:0"]
+    else:
+        cmd += ["-map", "[v]" if "[v]" in filtergraph else "0:v:0"]
+    cmd += extra_output_args
+    cmd += [output_path]
+
+    cp = run(cmd)
+    if cp.returncode != 0:
+        return False, cp.stderr.strip() or cp.stdout.strip()
+    return True, ""
+
+
+@dataclass
+class Level:
+    num: int
+    name: str
+    description: str
+    input_filename: str
+    output_filename: str
+    is_audio: bool
+    generate_input: Callable[[str], None]
+    validate: Callable[[str], Tuple[bool, str]]
+    # output args (container/codec specifics)
+    extra_output_args: List[str]
+
+
+# ---- Input generation ----
+
+def gen_level1(path: str) -> None:
+    # 640x480 synthetic video, 2 seconds
+    run([
+        "ffmpeg", "-y", "-v", "error",
+        "-f", "lavfi", "-i", "testsrc2=size=640x480:rate=30",
+        "-t", "2",
+        "-pix_fmt", "yuv420p",
+        path,
+    ])
+
+
+def gen_level2(path: str) -> None:
+    # Use AVI container, rawvideo, fixed pix_fmt to make gray validation strict.
+    run([
+        "ffmpeg", "-y", "-v", "error",
+        "-f", "lavfi", "-i", "testsrc2=size=640x480:rate=30",
+        "-t", "2",
+        "-c:v", "rawvideo",
+        "-pix_fmt", "yuv420p",
+        path,
+    ])
+
+
+def gen_level3(path: str) -> None:
+    # 10-second audio clip
+    run([
+        "ffmpeg", "-y", "-v", "error",
+        "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000",
+        "-t", "10",
+        "-c:a", "pcm_s16le",
+        path,
+    ])
+
+
+def gen_level4(path: str) -> None:
+    run([
+        "ffmpeg", "-y", "-v", "error",
+        "-f", "lavfi", "-i", "testsrc2=size=640x480:rate=30",
+        "-t", "2",
+        "-pix_fmt", "yuv420p",
+        path,
+    ])
+
+
+def gen_level5(path: str) -> None:
+    run([
+        "ffmpeg", "-y", "-v", "error",
+        "-f", "lavfi", "-i", "testsrc2=size=640x480:rate=30",
+        "-t", "2",
+        "-pix_fmt", "yuv420p",
+ > #!/usr/bin/env python3
+> import argparse
+> import base64
+> import json
+> import os
+> import subprocess
+> import sys
+> from dataclasses import dataclass
+> from typing import Callable, Dict, List, Optional, Tuple
+>
+> ASSETS_DIR = "/app/assets"
+> OUTPUT_DIR = "/app/output"
+> MANIFEST_PATH = "/app/manifest.json"
+>
+>
+> def run(cmd: List[str]) -> subprocess.CompletedProcess:
+>     return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+.>
+>
+> def ensure_dirs() -> None:
+>     os.makedirs(ASSETS_DIR, exist_ok=True)
+>     os.makedirs(OUTPUT_DIR, exist_ok=True)
+>
+>
+> def ffprobe_json(path: str) -> Dict:
+>     cp = run([
+>         "ffprobe", "-v", "error",
+a>         "-show_streams",
+>         "-show_format",
+>         "-print_format", "json",
+>         path,
+>     ])
+>     if cp.returncode != 0:
+uration_seconds(p)
+    if dur is None:
+        r>         raise RuntimeError(f"ffprobe failed for {path}: {cp.stderr.strip()}")
+>     return json.loads(cp.stdout)
+>
+>
+> def get_first_stream(probe: Dict, codec_type: str) -> Dict:
+>     for s in probe.get("streams", []):
+>         if s.get("codec_type") == codec_type:
+>             return s
+>     raise KeyError(f"No {codec_type} stream found")
+>
+>
+> def parse_duration_seconds(probe: Dict) -> Optional[float]:
+>     # Prefer format.duration, fall back to stream.duration
+>     fmt = probe.get("format", {})
+>     dur = fmt.get("duration")
+>     if dur is not None:
+>         try:
+>             return float(dur)
+>         except ValueError:
+>             pass
+>     # fall back to first audio/video stream duration if available
+>     for s in probe.get("streams", []):
+>         if "duration" in s and s.get("duration") is not None:
+>            
+[... output limited to 10000 bytes; 70 interior bytes omitted ...]
+audio=True,
+>             generate_input=gen_level3,
+>             validate=val_audio_trim_3s,
+>             extra_output_args=["-c:a", "pcm_s16le"],
+>         ),
+>         Level(
+>             num=4,
+>             name="Center crop",
+>             description="Crop the center 200x200 region from a 640x480 video.\nEnter a filtergraph.",
+>             input_filename="level4_input.mp4",
+>             output_filename="level4_output.mp4",
+>             is_audio=False,
+>             generate_input=gen_level4,
+>             validate=val_crop_center_200,
+>             extra_output_args=["-pix_fmt", "yuv420p"],
+>         ),
+>         Level(
+>             num=5,
+>             name="Scale + hflip",
+>             description="Multi-step: take a 640x480 video, scale it to 320x240, AND apply a horizontal flip.\nEnter a filtergraph.",
+>             input_filename="level5_input.mp4",
+>             output_filename="level5_output.mp4",
+>             is_audio=False,
+>             generate_input=gen_level5,
+>             validate=val_scale_and_hflip,
+>             extra_output_args=["-pix_fmt", "yuv420p"],
+>         ),
+>     ]
+>
+>     # attach solution blob onto object via closure lookup
+>     for lvl in levels:
+>         setattr(lvl, "_sol_blob", sol_blobs[lvl.num])
+>     return levels
+>
+>
+> def ensure_inputs(levels: List[Level]) -> None:
+>     for lvl in levels:
+>         in_path = os.path.join(ASSETS_DIR, lvl.input_filename)
+>         if not os.path.exists(in_path):
+>             lvl.generate_input(in_path)
+>
+>
+> def attempt_level(lvl: Level, filtergraph: str) -> Tuple[bool, str, str]:
+>     in_path = os.path.join(ASSETS_DIR, lvl.input_filename)
+>     out_path = os.path.join(OUTPUT_DIR, lvl.output_filename)
+>
+>     ok, err = run_ffmpeg_filter(
+>         in_path,
+>         out_path,
+>         filtergraph,
+>         is_audio=lvl.is_audio,
+>         extra_output_args=lvl.extra_output_args,
+>     )
+>     if not ok:
+>         return False, out_path, f"ffmpeg error: {err}"
+>
+>     passed, msg = lvl.validate(out_path)
+>     if not passed:
+>         return False, out_path, msg
+>     return True, out_path, ""
+>
+>
+> def interactive(levels: List[Level]) -> int:
+>     score = 0
+>     for lvl in levels:
+>         print(f"Level {lvl.num}: {lvl.name}")
+>         print(lvl.description)
+>         try:
+>             fg = input("> ").strip()
+>         except EOFError:
+>             print("  FAIL")
+>             continue
+>
+>         passed, _, msg = attempt_level(lvl, fg)
+>         if passed:
+>             print("  PASS")
+>             score += 10
+>         else:
+>             print("  FAIL")
+>             if msg:
+>                 print(f"  Reason: {msg}")
+>     print(f"Score: {score}/{len(levels)*10}")
+>     return 0
+>
+>
+> def auto_solve(levels: List[Level]) -> int:
+>     manifest = []
+>     score = 0
+>
+>     for lvl in levels:
+>         print(f"Level {lvl.num}: {lvl.name}")
+>         blob = getattr(lvl, "_sol_blob")
+>         fg = decode_solution(blob)
+>         passed, _, msg = attempt_level(lvl, fg)
+>         if passed:
+>             print("  PASS")
+>             score += 10
+>         else:
+>             print("  FAIL")
+>             if msg:
+>                 print(f"  Reason: {msg}")
+>
+>         manifest.append({
+>             "level": lvl.num,
+>             "filename": lvl.output_filename,
+>             "passed": bool(passed),
+>         })
+>
+>     with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
+>         json.dump(manifest, f, indent=2)
+>         f.write("\n")
+>
+>     print(f"Score: {score}/{len(levels)*10}")
+>     return 0 if score == len(levels) * 10 else 1
+>
+>
+> def main(argv: Optional[List[str]] = None) -> int:
+>     ap = argparse.ArgumentParser(description="FFmpeg filtergraph puzzle game")
+>     ap.add_argument("--auto-solve", action="store_true", help="Run deterministically with built-in solutions")
+>     args = ap.parse_args(argv)
+>
+>     ensure_dirs()
+>     levels = build_levels()
+>     ensure_inputs(levels)
+>
+>     if args.auto_solve:
+>         return auto_solve(levels)
+>     return interactive(levels)
+>
+>
+> if __name__ == "__main__":
+>     raise SystemExit(main())
+> PY
+root@e5fbd4ec3cda:/app# chmod +x /app/ffpuzzle.py
+root@e5fbd4ec3cda:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Downscale
+Traceback (most recent call last):
+  File "/app/ffpuzzle.py", line 454, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/app/ffpuzzle.py", line 449, in main
+    return auto_solve(levels)
+  File "/app/ffpuzzle.py", line 415, in auto_solve
+    fg = decode_solution(blob)
+  File "/app/ffpuzzle.py", line 274, in decode_solution
+    raw = base64.b64decode(b64.encode("ascii")).decode("utf-8")
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf4 in position 13: invalid continuation byte
+root@e5fbd4ec3cda:/app# -ლა /app/assets /app/output || true
+bash: -ლა: command not found
+root@e5fbd4ec3cda:/app# cat /app/manifest.json
+cat: /app/manifest.json: No such file or directory
+root@e5fbd4ec3cda:/app#

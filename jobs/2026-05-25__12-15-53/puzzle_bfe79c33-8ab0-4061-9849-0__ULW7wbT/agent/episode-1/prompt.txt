@@ -1,0 +1,319 @@
+New Terminal Output:
+root@571751f755b8:/app# ls -la /app
+total 8
+drwxr-xr-x 2 root root 4096 May 25 16:41 .
+drwxr-xr-x 1 root root 4096 May 25 17:16 ..
+root@571751f755b8:/app# mkdir -p /app/assets /app/output
+root@571751f755b8:/app# cat > /app/ffpuzzle.py <<'PY'
+> #!/usr/bin/env python3
+> import argparse
+> import json
+> import os
+> import shlex
+> import subprocess
+l> import sys
+> from dataclasses import dataclass
+> from typing import Callable, Dict, List, Optional, Tuple
+>
+d1 > APP_DIR = "/app"
+> ASSETS_DIR = os.path.join(APP_DIR, "assets")
+> OUTPUT_DIR = os.path.join(APP_DIR, "output")
+> MANIFEST_PATH = os.path.join(APP_DIR, "manifest.json")
+>
+>
+> def run(cmd: List[str]) -> Tuple[int, str, str]:
+>     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+>     out, err = p.communicate()
+>     return p.returncode, out, err
+>
+>
+> def ffprobe_json(path: str) -> Dict:
+eg">     code, out, err = run([
+>         "ffprobe",
+ner", "-v", "error",
+            ">         "-v", "error",
+>         "-print_format", "json",
+rat>         "-show_streams",
+>         "-show_format",
+   "-vf", "scale=320:240,hflip",>         path,
+>     ])
+>     if code != 0:
+>         raise RuntimeError(f"ffprobe failed for {path}: {err.strip()}")
+ code>     return json.loads(out)
+>
+>
+> def get_first_stream(probe: Dict, codec_type: str) -> Optional[Dict]:
+>     for s in probe.get("streams", []):
+>         if s.get("codec_type") == codec_type:
+>             return s
+            "-i", pat>     return None
+>
+>
+> def ensure_dirs() -> None:
+>     os.makedirs(ASSETS_DIR, exist_ok=True)
+frames:v", "10",
+            "-f", "framemd5", out_md5,
+            "-y>     os.makedirs(OUTPUT_DIR, exist_ok=True)
+t_>
+c>
+> @dataclass
+> class Level:
+>     number: int
+!= 0:
+            ret>     name: str
+>     description: str
+>     media_type: str  # "video" or "audio"
+>     # returns: (ffmpeg args that create input) and input extension
+ ref >     input_spec: Callable[[], Tuple[List[str], str]]
+>     # expected extension for output (container)
+>     out_ext: str
+>     # validation function takes output path -> (ok, details)
+>     validate: Callable[[str], Tuple[bool, str]]
+>     # known correct filtergraph
+ (ok2, (d1 + ("; flip+scale=OK>     solution: str
+" if ok2 else "; f>
+l>
+> # ---- Level input generators (lavfi only) ----
+>
+> def input_video_640x480_5s() -> Tuple[List[str], str]:
+>     # deterministic synthetic video
+>     # testsrc2 is stable; force 30 fps for predictable timebase
+_path(level_num: int, ext: str) -> str:
+    return os.path.join(OUTPUT_DIR, f"level{level_num:02d}.{ext}")
+
+>     return ([
+>         "-f", "lavfi",
+l, >         "-i", "testsrc2=size=640x480:rate=30:duration=5",
+>     ], "mp4")
+>
+>
+> def input_video_640x480_5s_color() -> Tuple[List[str], str]:
+input_args, _in_ext = level.input_spec()
+
+    # Always re-encode to determini>     return ([
+>         "-f", "lavfi",
+>         "-i", "testsrc=size=640x480:rate=30:duration=5",
+>     ], "mp4")
+>
+>
+> def input_audio_10s() -> Tuple[List[str], str]:
+>     # deterministic sine wave
+>     return ([
+or">         "-f", "lavfi",
+>         "-i", "sine=frequency=440:sample_rate=48000:duration=10",
+>     ], "wav")
+>
+>
+> # ---- Validators (ffprobe JSON) ----
+>
+> def validate_video_dims(w: int, h: int) -> Callable[[str], Tuple[bool, str]]:
+>     def _v(path: str) -> Tuple[bool, str]:
+>         probe = ffprobe_json(path)
+", "+faststa>         vs = get_first_stream(probe, "video")
+>         if not vs:
+>             return False, "no video stream"
+>         aw, ah = vs.get("width"), vs.get("height")
+>         ok = (aw == w and ah == h)
+>         return ok, f"width={aw} height={ah}"
+>     return _v
+>
+>
+> def validate_video_grayscale() -> Callable[[str], Tuple[bool, str]]:
+l.validate(out_path)
+>     def _v(path: str) -> Tuple[bool, str]:
+>         probe = ffprobe_json(path)
+lse, f">         vs = get_first_stream(probe, "video")
+>         if not vs:
+>             return False, "no video stream"
+>         pix = vs.get("pix_fmt")
+le Down",
+  >         # Accept common grayscale formats only
+>         ok = pix in ("gray", "gray8", "gray16le", "gray16be")
+>         return ok, f"pix_fmt={pix}"
+>     return _v
+>
+ >
+ > def validate_audio_duration_exact(target: float, tol: float = 0.02) -> Callable[[str], Tuple[bool, str]]:
+>     def _v(path: str) -> Tuple[bool, str]:
+>         probe = ffprobe_json(path)
+>         fmt = probe.get("format", {})
+>         dur_s = fmt.get("duration")
+>         try:
+>             dur = float(dur_s)
+>         except Exception:
+>             return False, f"duration={dur_s}"
+>         ok = abs(dur - target) <= tol
+>         return ok, f"duration={dur:.6f} (target {target})"
+>     return _v
+>
+>
+> def validate_crop_dims(w: int, h: int) -> Callable[[str], Tuple[bool, str]]:
+>     # For a crop, output dims should match crop size.
+>     return validate_video_dims(w, h)
+>
+>
+> def validate_scaled_and_flipped(w: int, h: int) -> Callable[[str], Tuple[bool, str]]:
+>     #
+[... output limited to 10000 bytes; 70 interior bytes omitted ...]
+ code != 0:
+>         return False, err.strip()
+>
+>     try:
+>         ok, details = level.validate(out_path)
+>         return ok, details
+>     except Exception as e:
+>         return False, f"validation exception: {e}"
+>
+>
+> def levels() -> List[Level]:
+rse_args()
+
+    if args.auto_so>     return [
+>         Level(
+>             number=1,
+>             name="Scale Down",
+>             description="Scale a 640x480 video down to exactly 320x240.",
+>             media_type="video",
+>             input_spec=input_video_640x480_5s,
+>             out_ext="mp4",
+>             validate=validate_video_dims(320, 240),
+>             solution="scale=320:240",
+>         ),
+>         Level(
+>             number=2,
+>             name="Grayscale",
+>             description="Convert the video to grayscale pixel format.",
+>             media_type="video",
+>             input_spec=input_video_640x480_5s_color,
+>             out_ext="mp4",
+>             validate=validate_video_grayscale(),
+>             solution="format=gray",
+>         ),
+>         Level(
+>             number=3,
+>             name="Audio Trim",
+>             description="Trim a 10-second audio clip to exactly 3 seconds.",
+>             media_type="audio",
+>             input_spec=input_audio_10s,
+>             out_ext="wav",
+>             validate=validate_audio_duration_exact(3.0, tol=0.02),
+>             solution="atrim=0:3,asetpts=PTS-STARTPTS",
+>         ),
+>         Level(
+>             number=4,
+>             name="Center Crop",
+>             description="Crop the center 200x200 region from a 640x480 video.",
+>             media_type="video",
+>             input_spec=input_video_640x480_5s,
+>             out_ext="mp4",
+>             validate=validate_crop_dims(200, 200),
+>             solution="crop=200:200:(in_w-200)/2:(in_h-200)/2",
+>         ),
+>         Level(
+>             number=5,
+>             name="Scale + HFlip",
+>             description="Multi-step: scale 640x480 video to 320x240 AND apply a horizontal flip.",
+>             media_type="video",
+>             input_spec=input_video_640x480_5s,
+>             out_ext="mp4",
+>             validate=validate_scaled_and_flipped(320, 240),
+>             solution="scale=320:240,hflip",
+>         ),
+>     ]
+>
+>
+> def interactive() -> int:
+>     ensure_dirs()
+>     total = len(levels()) * 10
+>     score = 0
+>
+>     print("FFPuzzle - FFmpeg filtergraph trainer")
+>     print("Type only the filtergraph expression (no ffmpeg command).\n")
+>
+>     manifest_entries = []
+>
+>     for lvl in levels():
+>         print(f"Level {lvl.number}: {lvl.name}")
+>         print(lvl.description)
+>         print("Example input: generated via lavfi (no files needed).")
+>         fg = input("Your filtergraph> ").strip()
+>         out_path = build_output_path(lvl.number, lvl.out_ext)
+>         ok, details = apply_filtergraph(lvl, fg, out_path)
+>         print("PASS" if ok else "FAIL")
+>         if details:
+>             print(details)
+>         if ok:
+>             score += 10
+>         manifest_entries.append({
+>             "level": lvl.number,
+>             "filename": os.path.basename(out_path),
+>             "ok": bool(ok),
+>         })
+>         print("")
+>
+>     with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
+>         json.dump({"outputs": manifest_entries}, f, indent=2)
+>
+>     print(f"Score: {score}/{total}")
+>     return 0 if score == total else 1
+>
+>
+> def auto_solve() -> int:
+>     ensure_dirs()
+>
+>     manifest_entries = []
+>     total_levels = len(levels())
+>     total = total_levels * 10
+>     score = 0
+>
+>     for lvl in levels():
+>         print(lvl.name)
+>         out_path = build_output_path(lvl.number, lvl.out_ext)
+>         ok, details = apply_filtergraph(lvl, lvl.solution, out_path)
+>         print("PASS" if ok else "FAIL")
+>         if not ok and details:
+>             # keep stderr/details for debugging in CI logs
+>             print(details)
+>         if ok:
+>             score += 10
+>         manifest_entries.append({
+>             "level": lvl.number,
+>             "filename": os.path.basename(out_path),
+>             "ok": bool(ok),
+>         })
+>
+>     with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
+>         json.dump({"outputs": manifest_entries}, f, indent=2)
+>
+>     print(f"Score: {score}/{total}")
+>     return 0 if score == total else 1
+>
+>
+> def main() -> int:
+>     ap = argparse.ArgumentParser(description="FFPuzzle - learn FFmpeg filtergraphs")
+>     ap.add_argument("--auto-solve", action="store_true", help="run all levels with known correct solutions")
+>     args = ap.parse_args()
+>
+>     if args.auto_solve:
+>         return auto_solve()
+>     return interactive()
+>
+>
+> if __name__ == "__main__":
+>     raise SystemExit(main())
+> PY
+root@571751f755b8:/app# chmod +x /app/ffpuzzle.py
+root@571751f755b8:/app# python3 /app/ffpuzzle.py --auto-solve
+Scale Down
+PASS
+Grayscale
+FAIL
+pix_fmt=yuv420p
+Audio Trim
+PASS
+Center Crop
+ls -la /app/output
+PASS
+Scale + HFlip
+cat /app/manifest.json
+

@@ -1,0 +1,41 @@
+Current Terminal Screen:
+SyntaxError: unterminated string literal (detected at line 319)
+rc=1
+root@bdb2c244d77b:/app# ls -la /app/output
+total 8
+drwxr-xr-x 2 root root 4096 May 26 03:08 .
+drwxr-xr-x 1 root root 4096 May 26 03:10 ..
+-rw-r--r-- 1 root root    0 May 26 03:08 level1_output.mp4
+-rw-r--r-- 1 root root    0 May 26 03:08 level2_output.avi
+-rw-r--r-- 1 root root    0 May 26 03:08 level3_output.wav
+-rw-r--r-- 1 root root    0 May 26 03:08 level4_output.mp4
+-rw-r--r-- 1 root root    0 May 26 03:08 level5_output.mp4
+root@bdb2c244d77b:/app# cat /app/manifest.json
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "passed": false
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.avi",
+    "passed": false
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "passed": false
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "passed": false
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "passed": false
+  }
+]
+root@bdb2c244d77b:/app#

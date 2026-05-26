@@ -1,0 +1,337 @@
+New Terminal Output:
+root@5725dfbaeccb:/app# cat > /app/ffpuzzle.py <<'PY'
+> #!/usr/bin/env python3
+> import argparse
+> import base64
+> import json
+> import os
+> import subprocess
+)
+    if dur is not None:
+        try:
+            return float(dur)
+        except ValueError:
+            pass
+    streams = probe.get("streams") or []
+    for st in streams:
+        d = st.get("duration")
+        if d is not None:
+            try:
+                return float(d)
+            except ValueError:
+                continue
+    return None
+
+
+def first_stream(probe: Dict, codec_type: str) -> Optional[Dict]:
+    for st in probe.get("streams", []) or []:
+        if st.get("codec_type") == codec_type:
+            return st
+    return None
+
+
+def obf_decode(s: str) -> str:
+    # reverse then base64 decode
+    raw = s[::-1]
+    return base64.b64decode(raw.encode("ascii")).decode("utf-8")
+
+
+def ffmpeg_generate_input(level: int, filename: str) -> str:
+    """Generate deterministic synthetic inputs for each level."""
+    ensure_dirs()
+    out_path = os.path.join(ASSETS_DIR, filename)
+    if os.path.exists(out_path) and os.path.getsize(out_path) > 0:
+        return out_path
+
+    if level in (1, 4, 5):
+        # 640x480 test video, 5 seconds, 30 fps
+        # Use yuv420p for broad compatibility.
+        run([
+            "ffmpeg", "-y", "-v", "error",
+            "-f", "lavfi", "-i", "testsrc2=size=640x480:rate=30",
+            "-t", "5",
+            "-pix_fmt", "yuv420p",
+            out_path
+        ])
+    elif level == 2:
+        # Use AVI with rawvideo to preserve exact pix_fmt after grayscale.
+        # Input: 640x480, yuv420p rawvideo inside avi.
+        run([
+            "ffmpeg", "-y", "-v", "error",
+            "-f", "lavfi", "-i", "testsrc2=size=640x480:rate=30",
+            "-t", "3",
+            "-c:v", "rawvideo",
+            "-pix_fmt", "yuv420p",
+            out_path
+        ])
+    elif level == 3:
+        # 10-second sine wave
+        run([
+            "ffmpeg", "-y", "-v", "error",
+            "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000",
+            "-t", "10",
+            "-c:a", "pcm_s16le",
+            out_path
+        ])
+    else:
+        raise ValueError("Unknown level")
+
+    return out_path
+
+
+def build_output(level: int, input_path: str, output_filename: str, filtergraph: str) -> Tuple[bool, str]:
+    ensure_dirs()
+    out_path = os.path.join(OUTPUT_DIR, output_filename)
+
+    # Construct ffmpeg invocation depending on media type/container requirements.
+    if level == 3:
+        # audio only
+        cmd = [
+            "ffmpeg", "-y", "-v", "error",
+            "-i", input_path,
+            "-filter:a", filtergraph,
+            out_path
+        ]
+    elif level == 2:
+        # Must keep pix_fmt exactly gray; use rawvideo in avi.
+        cmd = [
+            "ffmpeg", "-y", "-v", "error",
+            "-i", input_path,
+            "-vf", filtergraph,
+            "-an",
+            "-c:v", "rawvideo",
+            "-pix_fmt", "gray",
+            out_path
+        ]
+    else:
+        cmd = [
+            "ffmpeg", "-y", "-v", "error",
+            "-i", input_path,
+            "-vf", filtergraph,
+            "-an",
+            out_path
+        ]
+
+    try:
+        run(cmd, capture=True)
+> import sys
+> from dataclasses import dataclass
+> from typing import Callable, Dict, List, Optional, Tuple
+>
+> ASSETS_DIR = "/app/assets"
+> OUTPUT_DIR = "/app/output"
+> MANIFEST_PATH = "/app/manifest.json"
+>
+>
+> def run(cmd: List[str], *, capture: bool = False, check: bool = True) -> subprocess.CompletedProcess:
+>     return subprocess.run(cmd, text=True, capture_output=capture, check=check)
+>
+>
+> def ensure_dirs() -> None:
+>     os.makedirs(ASSETS_DIR, exist_ok=True)
+>     os.makedirs(OUTPUT_DIR, exist_ok=True)
+>
+>
+> def ffprobe_json(path: str) -> Dict:
+>     cp = run([
+>         "ffprobe", "-v", "error",
+>         "-show_streams", "-show_format",
+>         "-of", "json",
+>         path
+>     ], capture=True)
+>     return json.loads(cp.stdout)
+>
+>
+> def parse_duration_seconds(probe: Dict) -> Optional[float]:
+>     # Prefer format.duration, fallback to first stream duration
+>     fmt = probe.get("format") or {}
+>     dur = fmt.get("duration")
+>     if dur is not None:
+>         try:
+>             return float(dur)
+>         except ValueError:
+>             pass
+>     streams = probe.get("streams") or []
+dio")
+    >     for st in streams:
+>         d = st.get("duration")
+>         if d is not None:
+>             try:
+>                 return float(d)
+e, >             except ValueError:
+>                 continue
+>     return None
+>
+>
+> def first_stream(probe: Dict, codec_type: str) -> Optional[Dict]:
+>     for st in probe.get("streams", []) or []:
+>         if st.get("codec_type") == codec_type:
+>             return st
+first_stream(p>     return None
+
+    i>
+f>
+> def obf_decode(s: str) -> str:
+>     # reverse then base64 decode
+>     raw = s[::-1]
+>     return base64.b64decode(raw.encode("ascii")).decode("utf-8")
+>
+>
+>
+[... output limited to 10000 bytes; 70 interior bytes omitted ...]
+oduced.
+ # A>     if not (w == 320 and h == 240):
+>         return False, f"expected 320x240, got {w}x{h}"
+>
+>     # Determine flip by producing reference frame with known correct filter and comparing.
+>     # Use md5 muxer for deterministic comparison.
+>     try:
+>         in_path = os.path.join(ASSETS_DIR, "level5_input.mp4")
+>         ref_md5 = run([
+>             "ffmpeg", "-v", "error", "-i", in_path,
+>             "-vf", "scale=320:240,hflip",
+>             "-frames:v", "1",
+>             "-f", "md5", "-"
+>         ], capture=True).stdout.strip()
+>         out_md5 = run([
+>             "ffmpeg", "-v", "error", "-i", path,
+>             "-frames:v", "1",
+>             "-f", "md5", "-"
+>         ], capture=True).stdout.strip()
+>     except subprocess.CalledProcessError as e:
+>         return False, (e.stderr or "md5 compare failed").strip()
+>
+>     if ref_md5 == out_md5:
+>         return True, "ok"
+>     return False, "frame does not match expected scaled+hflip output"
+>
+>
+> def levels() -> List[Level]:
+>     # Solutions are base64(encoded) then reversed. Not plaintext.
+>     # Plaintext solutions (for reference):
+>     # 1) scale=320:240
+>     # 2) format=gray
+>     # 3) atrim=0:3
+>     # 4) crop=200:200:(in_w-200)/2:(in_h-200)/2
+>     # 5) scale=320:240,hflip
+>     enc = lambda s: base64.b64encode(s.encode("utf-8")).decode("ascii")[::-1]
+>
+>     return [
+>         Level(
+>             1,
+>             "Scale down",
+>             "Scale a 640x480 video down to 320x240. Enter a video filtergraph.",
+>             "level1_input.mp4",
+>             "level1_output.mp4",
+>             validate_level1,
+>             enc("scale=320:240"),
+>         ),
+>         Level(
+>             2,
+>             "Grayscale",
+>             "Convert a video to grayscale. Output pixel format must be exactly 'gray'. Enter a video filtergraph.",
+>             "level2_input.avi",
+>             "level2_output.avi",
+>             validate_level2,
+>             enc("format=gray"),
+>         ),
+>         Level(
+>             3,
+>             "Audio trim",
+>             "Trim a 10-second audio clip to exactly 3 seconds. Enter an audio filtergraph.",
+>             "level3_input.wav",
+>             "level3_output.wav",
+>             validate_level3,
+>             enc("atrim=0:3"),
+>         ),
+>         Level(
+>             4,
+>             "Center crop",
+>             "Crop the center 200x200 region from a 640x480 video. Enter a video filtergraph.",
+>             "level4_input.mp4",
+>             "level4_output.mp4",
+>             validate_level4,
+>             enc("crop=200:200:(in_w-200)/2:(in_h-200)/2"),
+>         ),
+>         Level(
+>             5,
+>             "Scale + flip",
+>             "Multi-step: take a 640x480 video, scale it to 320x240, AND apply a horizontal flip. Enter a video filtergraph.",
+>             "level5_input.mp4",
+>             "level5_output.mp4",
+>             validate_level5,
+>             enc("scale=320:240,hflip"),
+>         ),
+>     ]
+>
+>
+> def play_level(lvl: Level, *, auto_solve: bool) -> Tuple[bool, str]:
+>     input_path = ffmpeg_generate_input(lvl.num, lvl.input_filename)
+>
+>     if auto_solve:
+>         fg = obf_decode(lvl.solution_obf)
+>     else:
+>         print(lvl.description)
+>         fg = input("Filtergraph> ").strip()
+>
+>     ok_build, out_or_err = build_output(lvl.num, input_path, lvl.output_filename, fg)
+>     if not ok_build:
+>         return False, out_or_err
+>
+>     ok_val, msg = lvl.validator(out_or_err)
+>     return ok_val, msg
+>
+>
+> def main() -> int:
+>     ap = argparse.ArgumentParser(description="FFmpeg Filtergraph Puzzle Game")
+>     ap.add_argument("--auto-solve", action="store_true", help="run with built-in solutions")
+>     args = ap.parse_args()
+>
+>     ensure_dirs()
+>
+>     manifest = []
+>     points = 0
+>     total = 5 * 10
+>
+>     for lvl in levels():
+>         print(f"Level {lvl.num}: {lvl.name}")
+>         passed, msg = play_level(lvl, auto_solve=args.auto_solve)
+>         if passed:
+>             points += 10
+>             print("  PASS")
+>         else:
+>             print("  FAIL")
+>             if not args.auto_solve:
+>                 print(f"  Reason: {msg}")
+>
+>         manifest.append({
+>             "level": lvl.num,
+>             "filename": lvl.output_filename,
+>             "passed": bool(passed),
+>         })
+>
+>     # Always write manifest (CI expects it from auto-solve; harmless for interactive too)
+>     with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
+>         json.dump(manifest, f, indent=2)
+>         f.write("\n")
+>
+>     print(f"Score: {points}/{total}")
+>     return 0 if args.auto_solve and points == total else 0
+>
+>
+> if __name__ == "__main__":
+>     raise SystemExit(main())
+> PY
+root@5725dfbaeccb:/app# chmod +x /app/ffpuzzle.py
+root@5725dfbaeccb:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Scale down
+  PASS
+Level 2: Grayscale
+  PASS
+Level 3: Audio trim
+  PASS
+Level 4: Center crop
+cat /app/manifest.json
+  PASS
+Level 5: Scale + flip
+

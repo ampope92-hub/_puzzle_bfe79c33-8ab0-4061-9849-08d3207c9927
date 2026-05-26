@@ -1,0 +1,82 @@
+New Terminal Output:
+
+root@e5fbd4ec3cda:/app# perl -0777 -i -pe 's/sol_blobs\s*=\s*\{.*?\n\s*\}\n/sol_blobs = {\n        1: "==AM0IjOwIzM9IXeuBnZ",\n        2: "=wmblRXPn5melJ2c",\n
+       3: "zoDM9ondldmb",\n        4: "=IzLpADMy0SdfFmdoojMvkCMwITLq9VY2hiOwAjM6ADMy0zYiVGc",\n        5: "==wY2l3c1xCM0IjOwIzM9IXeuBnZ"\n    }\n/sms' /app/ffpu
+zzle.py
+root@e5fbd4ec3cda:/app# python3 - <<'PY'
+> import re, ast, base64, pathlib
+>
+> def rot13(s):
+>     o=[]
+>     for ch in s:
+>         c=ord(ch)
+>         if 65<=c<=90:o.append(chr(((c-65+13)%26)+65))
+>         elif 97<=c<=122:o.append(chr(((c-97+13)%26)+97))
+>         else:o.append(ch)
+>     return ''.join(o)
+>
+> t=pathlib.Path('/app/ffpuzzle.py').read_text()
+> m=re.search(r"sol_blobs\s*=\s*(\{.*?\})",t,re.S)
+> d=ast.literal_eval(m.group(1))
+> for k,v in sorted(d.items()):
+>     raw=base64.b64decode(v[::-1].encode('ascii')).decode('utf-8')
+>     sol=rot13(raw)
+>     print(k, sol)
+> PY
+1 scale=320:240
+2 format=gray
+3 atrim=0:3
+4 crop=200:200:(in_w-200)/2:(in_h-200)/2
+5 scale=320:240,hflip
+root@e5fbd4ec3cda:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Downscale
+  PASS
+Level 2: Grayscale
+  PASS
+Level 3: Audio trim
+  PASS
+Level 4: Center crop
+  PASS
+Level 5: Scale + hflip
+  FAIL
+  Reason: Flip validation error: Filter metadata:default has an unconnected output
+Score: 40/50
+root@e5fbd4ec3cda:/app# ls -la /app/output
+total 18416
+drwxr-xr-x 2 root root     4096 May 26 03:01 .
+drwxr-xr-x 1 root root     4096 May 26 03:01 ..
+-rw-r--r-- 1 root root     2741 May 26 03:01 __ref_level5_scaleonly.mp4
+-rw-r--r-- 1 root root    43289 May 26 03:01 level1_output.mp4
+-rw-r--r-- 1 root root 18439202 May 26 03:01 level2_output.avi
+-rw-r--r-- 1 root root   288078 May 26 03:01 level3_output.wav
+-rw-r--r-- 1 root root    23565 May 26 03:01 level4_output.mp4
+-rw-r--r-- 1 root root    44546 May 26 03:01 level5_output.mp4
+root@e5fbd4ec3cda:/app# cat /app/manifest.json
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.avi",
+    "passed": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "passed": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "passed": false
+  }
+]
+root@e5fbd4ec3cda:/app#

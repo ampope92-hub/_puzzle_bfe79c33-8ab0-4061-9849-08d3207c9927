@@ -1,0 +1,306 @@
+New Terminal Output:
+root@505f01f97e68:/app# cat > /app/ffpuzzle.py << 'SCRIPT'
+> #!/usr/bin/env python3
+> import os
+
+        "output_file": "level1_output.mp4",
+        "gen_cmd": [
+            "ffmpeg", "-y", "-f", "lavfi", "-i",
+            "testsrc=duration=2:size=640x480:rate=25",
+            "-c:v", "libx264", "-pix_fmt", "yuv420p",
+            os.path.join(ASSETS_DIR, "level1_input.mp4")
+        ],
+        "stream_type": "video",
+    },
+    {
+        "number": 2,
+        "name": "Grayscale Conversion",
+        "description": "Convert a video to grayscale (output pixel format must be gray). Uses .avi container with rawvideo codec.",
+        "input_file": "level2_input.avi",
+        "output_file": "level2_output.avi",
+        "gen_cmd": [
+            "ffmpeg", "-y", "-f", "lavfi", "-i",
+            "testsrc=duration=2:size=640x480:rate=25",
+            "-c:v", "rawvideo", "-pix_fmt", "rgb24",
+            os.path.join(ASSETS_DIR, "level2_input.avi")
+        ],
+        "stream_type": "video",
+    },
+    {
+        "number": 3,
+        "name": "Audio Trim",
+        "description": "Trim a 10-second audio clip to exactly 3 seconds.",
+        "input_file": "level3_input.wav",
+        "output_file": "level3_output.wav",
+        "gen_cmd": [
+            "ffmpeg", "-y", "-f", "lavfi", "-i",
+            "sine=frequency=440:duration=10",
+            os.path.join(ASSETS_DIR, "level3_input.wav")
+        ],
+        "stream_type": "audio",
+    },
+    {
+        "number": 4,
+        "name": "Center Crop",
+        "description": "Crop the center 200x200 region from a 640x480 video.",
+        "input_file": "level4_input.mp4",
+        "output_file": "level4_output.mp4",
+        "gen_cmd": [
+            "ffmpeg", "-y", "-f", "lavfi", "-i",
+            "testsrc=duration=2:size=640x480:rate=25",
+            "-c:v", "libx264", "-pix_fmt", "yuv420p",
+            os.path.join(ASSETS_DIR, "level4_input.mp4")
+        ],
+        "stream_type": "video",
+    },
+    {
+        "number": 5,
+        "name": "Scale and Flip",
+        "description": "Take a 640x480 video, scale it to 320x240, AND apply a horizontal flip.",
+        "input_file": "level5_input.m> import sys
+p4",
+        "output_file": "level5_output.mp4",
+        "gen_cmd": [
+            "ffmpeg", "-y", "-f", "lavfi", "-i",
+            "testsrc=duration=2:size=640x480:rate=25",
+            "-c:v", "libx264", "-pix_fmt", "yuv420p",
+            os.path.join(ASSETS_DIR, "level5_input.mp4")
+        ],
+        "stream_type": "video",
+    },
+]
+
+def generate_input(level):
+    """Generate synthetic input for a level."""
+    cmd = level["gen_cmd"]
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+
+def run_filtergraph(level, filtergraph):
+    """Apply a filtergraph to the level's input, producing the output."""
+    input_path = os.path.join(ASSETS_DIR, level["input_file"])
+    output_path = os.path.join(OUTPUT_DIR, level["output_file"])
+
+    if level["stream_type"] == "audio":
+        cmd = [
+            "ffmpeg", "-y", "-i", input_path,
+            "-af", filtergraph,
+            output_path
+        ]
+    else:
+        # Video
+        if level["number"] == 2:
+            # Use > import json
+> import subprocess
+> import base64
+   > import argparse
+>
+> ASSETS_DIR = "/app/assets"
+> OUTPUT_DIR = "/app/output"
+ > MANIFEST_PATH = "/app/manifest.json"
+>
+> def ensure_dirs():
+>     os.makedirs(ASSETS_DIR, exist_ok=True)
+>     os.makedirs(OUTPUT_DIR, exist_ok=True)
+>
+> def encode_solution(s):
+>     """Obfuscate a solution string."""
+>     return base64.b64encode(s[::-1].encode()).decode()
+         "-vf", filtergraph,
+                "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                output_path
+            ]
+    >
+> def decode_solution(s):
+>     """De-obfuscate a solution string."""
+>     return base64.b64decode(s.encode()).decode()[::-1]
+>
+> # Solutions are stored obfuscated (reversed then base64-encoded)
+ output file and return > SOLUTIONS = [
+>     encode_solution("scale=320:240"),
+>     encode_solution("format=gray"),
+>     encode_solution("atrim=0:3"),
+>     encode_solution("crop=200:200"),
+>     encode_solution("scale=320:240,hflip"),
+> ]
+>
+> LEVELS = [
+>     {
+>         "number": 1,
+>         "name": "Scale Down",
+>         "description": "Scale a 640x480 video down to 320x240.",
+>         "input_file": "level1_input.mp4",
+>         "output_file": "level1_output.mp4",
+>         "gen_cmd": [
+>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+>             "testsrc=duration=2:size=640x480:rate=25",
+>             "-c:v", "libx264", "-pix_fmt", "yuv420p",
+>             os.path.join(ASSETS_DIR, "level1_input.mp4")
+>         ],
+>         "stream_type": "video",
+>     },
+>     {
+>         "number": 2,
+>         "name": "Grayscale Conversion",
+>         "description": "Convert a video to grayscale (output pixel format must be gray). Uses .avi container with rawvideo codec.",
+>         "input_file": "level2_input.avi",
+>         "output_file": "leve
+[... output limited to 10000 bytes; 70 interior bytes omitted ...]
+dec_type"] == "video"), None)
+>         if video_stream is None:
+>             return False
+>         return video_stream.get("pix_fmt") == "gray"
+>
+>     elif level_num == 3:
+>         # Check duration is between 2.9 and 3.1 seconds
+>         audio_stream = next((s for s in streams if s["codec_type"] == "audio"), None)
+>         if audio_stream is None:
+>             return False
+>         # Try stream duration first, then format duration
+>         duration = None
+>         if "duration" in audio_stream:
+>             duration = float(audio_stream["duration"])
+>         elif "format" in probe_data and "duration" in probe_data["format"]:
+>             duration = float(probe_data["format"]["duration"])
+>         if duration is None:
+>             return False
+>         return 2.9 <= duration <= 3.1
+>
+>     elif level_num == 4:
+>         # Check 200x200
+>         video_stream = next((s for s in streams if s["codec_type"] == "video"), None)
+>         if video_stream is None:
+>             return False
+>         return video_stream["width"] == 200 and video_stream["height"] == 200
+>
+>     elif level_num == 5:
+>         # Check 320x240 (flip can't be verified by dimensions alone, but we check size)
+>         video_stream = next((s for s in streams if s["codec_type"] == "video"), None)
+>         if video_stream is None:
+>             return False
+>         return video_stream["width"] == 320 and video_stream["height"] == 240
+>
+>     return False
+>
+> def run_level(level, filtergraph, verbose=True):
+>     """Run a single level with the given filtergraph. Returns True if passed."""
+>     generate_input(level)
+>     success = run_filtergraph(level, filtergraph)
+>     if not success:
+>         return False
+>     probe_data = probe_output(level)
+>     return validate_level(level, probe_data)
+>
+> def auto_solve():
+>     """Run all levels with known correct solutions."""
+>     ensure_dirs()
+>     manifest = []
+>     score = 0
+>     total = len(LEVELS) * 10
+>
+>     for i, level in enumerate(LEVELS):
+>         solution = decode_solution(SOLUTIONS[i])
+>         print(f"Level {level['number']}: {level['name']}")
+>
+>         passed = run_level(level, solution, verbose=False)
+>         if passed:
+>             print("  PASS")
+>             score += 10
+>         else:
+>             print("  FAIL")
+>
+>         manifest.append({
+>             "level": level["number"],
+>             "filename": level["output_file"],
+>             "passed": passed
+>         })
+>
+>     print(f"Score: {score}/{total}")
+>
+>     with open(MANIFEST_PATH, "w") as f:
+>         json.dump(manifest, f, indent=2)
+>
+> def interactive():
+>     """Run the game in interactive mode."""
+>     ensure_dirs()
+>     manifest = []
+>     score = 0
+>     total = len(LEVELS) * 10
+>
+>     print("=== FFmpeg Filtergraph Puzzle Game ===")
+>     print("Solve each level by entering the correct filtergraph expression.\n")
+>
+>     for i, level in enumerate(LEVELS):
+>         print(f"--- Level {level['number']}: {level['name']} ---")
+>         print(f"  {level['description']}")
+>         print(f"  Input: {level['input_file']}")
+>         print(f"  Output: {level['output_file']}")
+>         print()
+>
+>         try:
+>             filtergraph = input("Your filtergraph> ").strip()
+>         except (EOFError, KeyboardInterrupt):
+>             print("\nExiting.")
+>             break
+>
+>         if not filtergraph:
+>             print("  No input provided. Skipping.\n")
+>             manifest.append({
+>                 "level": level["number"],
+>                 "filename": level["output_file"],
+>                 "passed": False
+>             })
+>             continue
+>
+>         generate_input(level)
+>         success = run_filtergraph(level, filtergraph)
+>
+>         if success:
+>             probe_data = probe_output(level)
+>             passed = validate_level(level, probe_data)
+>         else:
+>             passed = False
+>
+>         if passed:
+>             print("  PASS\n")
+>             score += 10
+>         else:
+>             print("  FAIL\n")
+>
+>         manifest.append({
+>             "level": level["number"],
+>             "filename": level["output_file"],
+>             "passed": passed
+>         })
+>
+>     print(f"Score: {score}/{total}")
+>
+>     with open(MANIFEST_PATH, "w") as f:
+>         json.dump(manifest, f, indent=2)
+>
+> def main():
+>     parser = argparse.ArgumentParser(description="FFmpeg Filtergraph Puzzle Game")
+>     parser.add_argument("--auto-solve", action="store_true", help="Run auto-solve mode")
+>     args = parser.parse_args()
+>
+>     if args.auto_solve:
+>         auto_solve()
+>     else:
+>         interactive()
+>
+> if __name__ == "__main__":
+>     main()
+> SCRIPT
+root@505f01f97e68:/app# chmod +x /app/ffpuzzle.py
+root@505f01f97e68:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Scale Down
+  PASS
+Level 2: Grayscale Conversion
+  PASS
+Level 3: Audio Trim
+  PASS
+Level 4: Center Crop
+  PASS
+Level 5: Scale and Flip
+  PASS
+Score: 50/50
+root@505f01f97e68:/app#

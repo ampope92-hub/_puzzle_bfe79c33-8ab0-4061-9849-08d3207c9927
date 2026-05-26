@@ -1,0 +1,55 @@
+New Terminal Output:
+
+root@5725dfbaeccb:/app# perl -0777 -i -pe 's/def validate_level5\(path: str\) -> Tuple\[bool, str\]:.*?def levels\(\) -> List\[Level\]:/def validate_level5(path
+: str) -> Tuple[bool, str]:\n    p = ffprobe_json(path)\n    st = first_stream(p, "video")\n    if not st:\n        return False, "no video stream"\n    w, h =
+st.get("width"), st.get("height")\n    if not (w == 320 and h == 240):\n        return False, f"expected 320x240, got {w}x{h}"\n\n    in_path = os.path.join(ASS
+ETS_DIR, "level5_input.mp4")\n\n    def ssim_score(ref_vf: str) -> float:\n        # Compare first second for speed.\n        # ssim prints to stderr lines like
+: SSIM Y:... All:0.9999 (..\n        cp = run([\n            "ffmpeg", "-v", "error",\n            "-i", in_path,\n            "-i", path,\n            "-t", "1
+",\n            "-filter_complex", f"[0:v]{ref_vf}[ref];[ref][1:v]ssim",\n            "-f", "null", "-"\n        ], capture=True)\n        txt = (cp.stderr or "
+")\n        import re\n        m = re.search(r"All:([0-9.]+)", txt)\n        if not m:\n            raise ValueError("could not parse SSIM output")\n        ret
+urn float(m.group(1))\n\n    try:\n        flip = ssim_score("scale=320:240,hflip")\n        noflip = ssim_score("scale=320:240")\n    except Exception as e:\n
+       return False, f"ssim check failed: {e}"\n\n    # Require very high similarity to flipped reference and also distinguish from non-flipped.\n    if flip >
+0.99 and (flip - noflip) > 0.001:\n        return True, f"ok (ssim flip={flip:.4f}, noflip={noflip:.4f})"\n    return False, f"expected hflip (ssim flip={flip:.
+4f}, noflip={noflip:.4f})"\n\n\ndef levels() -> List[Level]:/sms' /app/ffpuzzle.py
+root@5725dfbaeccb:/app# python3 -m py_compile /app/ffpuzzle.py
+root@5725dfbaeccb:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Scale down
+  PASS
+Level 2: Grayscale
+  PASS
+Level 3: Audio trim
+  PASS
+Level 4: Center crop
+  PASS
+Level 5: Scale + flip
+  FAIL
+Score: 40/50
+root@5725dfbaeccb:/app# cat /app/manifest.json
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.avi",
+    "passed": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "passed": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "passed": false
+  }
+]
+root@5725dfbaeccb:/app#

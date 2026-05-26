@@ -1,0 +1,98 @@
+New Terminal Output:
+
+root@bdb2c244d77b:/app#
+159:        Level(4, "Center crop", "Crop the center 200x200 region from a 640x480 video.", l4_in, os.path.join(OUTPUT_DIR,"level4_output.mp4"),
+160-              build_input=lambda p=l4_in: gen_video_mp4_640x480(p), validate=lambda out: validate_wh(out,200,200),
+161-              solution_token="KDIwMC1oaSgoMjAwLXdpKTo9eTo0MDAyLW9oKDo9eCwyLyk6PTAwMj1oOjAwMj13PXBvcmM="),
+162-        Level(5, "Scale + hflip", "Scale to 320x240 AND apply a horizontal flip.", l5_in, os.path.join(OUTPUT_DIR,"level5_output.mp4"),
+163-              build_input=lambda p=l5_in: gen_video_mp4_640x480(p), validate=lambda out, inp=l5_in: validate_scale_and_hflip(out, inp),
+root@bdb2c244d77b:/app#
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+current tok: KDIwMC1oaSgoMjAwLXdpKTo9eTo0MDAyLW9oKDo9eCwyLyk6PTAwMj1oOjAwMj13PXBvcmM=
+decodes to: crop=w=200:h=200=:)/2,x=:(ho-2004:y=:)iw-002((ih-002(
+root@bdb2c244d77b:/app#
+>
+>
+>
+>
+correct tok: Mi8pMDAyLWhpKD15OjIvKTAwMi13aSg9eDowMDI9aDowMDI9dz1wb3Jj
+root@bdb2c244d77b:/app#
+root@bdb2c244d77b:/app#
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+>
+new tok: Mi8pMDAyLWhpKD15OjIvKTAwMi13aSg9eDowMDI9aDowMDI9dz1wb3Jj
+decodes to: crop=w=200:h=200:x=(iw-200)/2:y=(ih-200)/2
+root@bdb2c244d77b:/app#
+root@bdb2c244d77b:/app#
+root@bdb2c244d77b:/app#
+Level 1: Scale down
+  FAIL
+Level 2: Grayscale
+  FAIL
+Level 3: Audio trim
+  FAIL
+Level 4: Center crop
+  PASS
+Level 5: Scale + hflip
+  FAIL
+Score: 10/50
+rc=1
+root@bdb2c244d77b:/app#
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "passed": false
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.avi",
+    "passed": false
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "passed": false
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "passed": false
+  }
+]
+root@bdb2c244d77b:/app#

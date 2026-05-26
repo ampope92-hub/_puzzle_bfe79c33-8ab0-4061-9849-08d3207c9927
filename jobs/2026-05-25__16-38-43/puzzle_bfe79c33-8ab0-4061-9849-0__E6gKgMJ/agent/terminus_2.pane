@@ -1,0 +1,1904 @@
+[?2004hroot@cfac50873e20:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@cfac50873e20:/app# clear
+[?2004l[H[J[3J[?2004hroot@cfac50873e20:/app# cat > /app/ffpuzzle.py << 'EOF'
+[?2004l   f"ffmpeg -y -f lavfi -i testsrc=duration={duration}:size={width}x{height}:rate=25 "
+            f"-c:v libx264 -pix_fmt yuv420p -t {duration} {output_path}"
+        )
+    elif input_type == "audio":
+        output_path += ".wav"
+        cmd = (
+            f"ffmpeg -y -f lavfi -i sine=frequency=440:duration={duration}:sample_rate=44100 "
+            f"-c:a pcm_s16le {output_path}"
+        )
+    else:
+        raise ValueError(f"Unknown input type: {input_type}")
+    
+    result = run_cmd(cmd)
+    if result.returncode != 0:
+        print(f"Error generating input for level {level_num}: {result.stderr}")
+        return None
+    return output_path
+
+
+def apply_filtergraph(input_path, filtergraph, output_path, input_type="video"):
+    """Apply a filtergraph to the input and produce output."""
+    if input_type == "video":
+        cmd = (
+            f"ffmpeg -y -i {input_path} -vf \"{filtergraph}\" "
+            f"-c:v libx264 -pix_fmt yuv420p {output_path}"
+        )
+    elif input_type == "audio":
+        cmd =[?2004h> #!/usr/bin/env python3
+[?2004l[?2004h> """FFmpeg Filtergraph Puzzle Game
+[?2004l[?2004h> 
+[?2004l[?2004h> A terminal-based puzzle game that teaches FFmpeg filtergraphs
+[?2004l[?2004h> by having players solve progressively harder media transformation challenges.
+[?2004l[?2004h> """
+[?2004l[?2004h> 
+[?2004l_data is None:
+        return False
+    
+    streams = probe_data.get("streams", [])
+    if not streams:
+        return False
+    
+    # Find the relevant stream
+    codec_type = checks.get("codec_type", "video")
+    stream = None
+    for s in streams:
+        if s.get("codec_type") == codec_type:
+            stream = s
+            break
+    
+    if stream is None:
+        return False
+    
+    # Check width
+    if "width" in checks:
+        if stream.get("width") != checks["width"]:
+            return False
+    
+    # Check height
+    if "height" in checks:
+        if stream.get("height") != checks["height"]:
+            return False
+    
+    # Check pixel format
+    if "pix_fmt" in checks:
+        if stream.get("pix_fmt") != checks["pix_fmt"]:
+            return False
+    
+    # Check duration
+    duration = None
+    if "duration" in stream:
+        duration = float(stream["duration"])
+    elif "duration" in probe_data.get("format", {}):
+        duration = float(probe_data["format"]["duration"])
+    
+    if "duration_min" in checks:
+        if duration is None or duration < checks["duration_min"]:
+            return False
+    
+    if "duration_max" in checks:
+        if duration is None or duration > checks["duration_max"]:
+            [?2004h> import argparse
+[?2004l
+   [?2004h> import json
+[?2004l[?2004h> import os
+[?2004l[?2004h> import subprocess
+[?2004l[?2004h> import sys
+[?2004l[?2004h> 
+[?2004l [?2004h> # Directories
+[?2004l[?2004h> ASSETS_DIR = "/app/assets"
+[?2004l[?2004h> OUTPUT_DIR = "/app/output"
+[?2004l[?2004h> MANIFEST_PATH = "/app/manifest.json"
+[?2004l    "You h[?2004h> 
+[?2004l[?2004h> # Ensure directories exist
+[?2004l[?2004h> os.makedirs(ASSETS_DIR, exist_ok=True)
+[?2004l[?2004h> os.makedirs(OUTPUT_DIR, exist_ok=True)
+[?2004l[?2004h> 
+[?2004lwn to 320x240.\n"
+            "Hint: Use the 'scale' filter."
+        ),
+  [?2004h> 
+[?2004l[?2004h> def run_cmd(cmd, capture=True):
+[?2004l[?2004h>     """Run a shell command and return the result."""
+[?2004l[?2004h>     result = subprocess.run(
+[?2004l[?2004h>         cmd, shell=True, capture_output=capture, text=True
+[?2004l[?2004h>     )
+[?2004l[?2004h>     return result
+[?2004l  [?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def generate_input(level_num, input_type="video", duration=5, width=640, height=480):
+[?2004l[?2004h>     """Generate synthetic input using FFmpeg lavfi sources."""
+[?2004l[?2004h>     output_path = os.path.join(ASSETS_DIR, f"level{level_num}_input")
+[?2004l[?2004h>     
+[?2004l[?2004h>     if input_type == "video":
+[?2004l[?2004h>         output_path += ".mp4"
+[?2004l[?2004h>         cmd = (
+[?2004l[?2004h>             f"ffmpeg -y -f lavfi -i testsrc=duration={duration}:size={width}x{height}:rate=25 "
+[?2004l[?2004h>             f"-c:v libx264 -pix_fmt yuv420p -t {duration} {output_path}"
+[?2004l[?2004h>         )
+[?2004l[?2004h>     elif input_type == "audio":
+[?2004l[?2004h>         output_path += ".wav"
+[?2004l[?2004h>         cmd = (
+[?2004l[?2004h>             f"ffmpeg -y -f lavfi -i sine=frequency=440:duration={duration}:sample_rate=44100 "
+[?2004l[?2004h>             f"-c:a pcm_s16le {output_path}"
+[?2004l[?2004h>         )
+[?2004l[?2004h>     else:
+[?2004lhecks": {
+            "codec_type": "video",
+            "pix_fm[?2004h>         raise ValueError(f"Unknown input type: {input_type}")
+[?2004l[?2004h>     
+[?2004l[?2004h>     result = run_cmd(cmd)
+[?2004l[?2004h>     if result.returncode != 0:
+[?2004l[?2004h>         print(f"Error generating input for level {level_num}: {result.stderr}")
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     return output_path
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def apply_filtergraph(input_path, filtergraph, output_path, input_type="video"):
+[?2004l[?2004h>     """Apply a filtergraph to the input and produce output."""
+[?2004l[?2004h>     if input_type == "video":
+[?2004l[?2004h>         cmd = (
+[?2004l[?2004h>             f"ffmpeg -y -i {input_path} -vf \"{filtergraph}\" "
+[?2004l[?2004h>             f"-c:v libx264 -pix_fmt yuv420p {output_path}"
+[?2004l[?2004h>         )
+[?2004l           "[?2004h>     elif input_type == "audio":
+[?2004l[?2004h>         cmd = (
+[?2004l       "points":[?2004h>             f"ffmpeg -y -i {input_path} -af \"{filtergraph}\" "
+[?2004l[?2004h>             f"-c:a pcm_s16le {output_path}"
+[?2004l[?2004h>         )
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         raise ValueError(f"Unknown input type: {input_type}")
+[?2004l[?2004h>     
+[?2004l[?2004h>     result = run_cmd(cmd)
+[?2004l[?2004h>     return result.returncode == 0
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def probe_file(filepath):
+[?2004l[?2004h>     """Use ffprobe to get file properties as JSON."""
+[?2004l[?2004h>     cmd = (
+[?2004lth": 640, "h[?2004h>         f"ffprobe -v quiet -print_format json -show_format -show_streams {filepath}"
+[?2004l[?2004h>     )
+[?2004l[?2004h>     result = run_cmd(cmd)
+[?2004l[?2004h>     if result.returncode != 0:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         return json.loads(result.stdout)
+[?2004l[?2004h>     except json.JSONDecodeError:
+[?2004l[?2004h>         return None
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def validate_output(probe_data, checks):
+[?2004l[?2004h>     """Validate ffprobe output against expected checks.
+[?2004l[?2004h>     
+[?2004lle it[?2004h>     checks is a dict with keys like:
+[?2004l[?2004h>       - width: expected width
+[?2004l[?2004h>       - height: expected height
+[?2004l[?2004h>       - pix_fmt: expected pixel format
+[?2004l[?2004h>       - duration_min: minimum duration in seconds
+[?2004l[?2004h>       - duration_max: maximum duration in seconds
+[?2004l": 640, "height": 480},
+        "solution": "scale[?2004h>       - codec_type: 'video' or 'audio'
+[?2004l[?2004h>     """
+[?2004l".mp4",
+[?2004h>     if probe_data is None:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     
+[?2004l[?2004h>     streams = probe_data.get("streams", [])
+[?2004l[?2004h>     if not streams:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Find the relevant stream
+[?2004l[?2004h>     codec_type = checks.get("codec_type", "video")
+[?2004l[?2004h>     stream = None
+[?2004l[?2004h>     for s in streams:
+[?2004l[?2004h>         if s.get("codec_type") == codec_type:
+[?2004l[?2004h>             stream = s
+[?2004lf in[?2004h>             break
+[?2004l[?2004h>     
+[?2004l[?2004h>     if stream is None:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     
+[?2004l420p [?2004h>     # Check width
+[?2004l[?2004h>     if "width" in checks:
+[?2004l_fmt"[?2004h>         if stream.get("width") != checks["width"]:
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Check height
+[?2004l[?2004h>     if "height" in checks:
+[?2004l[?2004h>         if stream.get("height") != checks["height"]:
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Check pixel format
+[?2004l[?2004h>     if "pix_fmt" in checks:
+[?2004l[?2004h>         if stream.get("pix_fmt") != checks["pix_fmt"]:
+[?2004lt_path} [?2004h>             return False
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Check duration
+[?2004l[?2004h>     duration = None
+[?2004l[?2004h>     if "duration" in stream:
+[?2004l[?2004h>         duration = float(stream["duration"])
+[?2004l[?2004h>     elif "duration" in probe_data.get("format", {}):
+[?2004lath} -af \"{fi[?2004h>         duration = float(probe_data["format"]["duration"])
+[?2004l[?2004h>     
+[?2004l[?2004h>     if "duration_min" in checks:
+[?2004l[?2004h>         if duration is None or duration < checks["duration_min"]:
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     
+[?2004l[?2004h>     if "duration_max" in checks:
+[?2004l[?2004h>         if duration is None or duration > checks["duration_max"]:
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     
+[?2004l[?2004h>     return True
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l
+ [?2004h> # Level definitions
+[?2004l[?2004h> LEVELS = [
+[?2004l[?2004h>     {
+[?2004l[?2004h>         "num": 1,
+[?2004l[?2004h>         "name": "Level 1: Scale Down",
+[?2004l[?2004h>         "description": (
+[?2004l[?2004h>             "You have a 640x480 video. Scale it down to 320x240.\n"
+[?2004l[?2004h>             "Hint: Use the 'scale' filter."
+[?2004l[?2004h>         ),
+[?2004l
+    
+    # Determ[?2004h>         "input_type": "video",
+[?2004l[?2004h>         "input_params": {"duration": 2, "width": 640, "height": 480},
+[?2004lname = f"level{level_num}_output{level['output_ext']}"
+    output_path[?2004h>         "solution": "scale=320:240",
+[?2004l[?2004h>         "output_ext": ".mp4",
+[?2004l[?2004h>         "checks": {
+[?2004l[?2004h>             "codec_type": "video",
+[?2004l[?2004h>             "width": 320,
+[?2004l[?2004h>             "height": 240,
+[?2004l[?2004h>         },
+[?2004l[?2004h>         "points": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         "num": 2,
+[?2004l[?2004h>         "name": "Level 2: Convert to Grayscale",
+[?2004l[?2004h>         "description": (
+[?2004l[?2004h>             "You have a color video. Convert it to grayscale (gray pixel format).\n"
+[?2004l[?2004h>             "Hint: Use the 'format' filter to change pixel format."
+[?2004l[?2004h>         ),
+[?2004l[?2004h>         "input_type": "video",
+[?2004l[?2004h>         "input_params": {"duration": 2, "width": 640, "height": 480},
+[?2004l[?2004h>         "solution": "format=gray",
+[?2004l[?2004h>         "output_ext": ".mp4",
+[?2004l[?2004h>         "filter_flag": "-vf",
+[?2004l[?2004h>         "output_pix_fmt": None,  # Don't force yuv420p for this level
+[?2004lpix_fmt=[?2004h>         "checks": {
+[?2004l[?2004h>             "codec_type": "video",
+[?2004l[?2004h>             "pix_fmt": "gray",
+[?2004l[?2004h>         },
+[?2004l[?2004h>         "points": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         "num": 3,
+[?2004l """Run all levels wi[?2004h>         "name": "Level 3: Trim Audio",
+[?2004l[?2004h>         "description": (
+[?2004l[?2004h>             "You have a 10-second audio clip. Trim it to exactly 3 seconds.\n"
+[?2004l[?2004h>             "Hint: Use the 'atrim' filter with start and end parameters."
+[?2004l[?2004h>         ),
+[?2004l[?2004h>         "input_type": "audio",
+[?2004l[?2004h>         "input_params": {"duration": 10},
+[?2004l[?2004h>         "solution": "atrim=start=0:end=3,asetpts=PTS-STARTPTS",
+[?2004l[?2004h>         "output_ext": ".wav",
+[?2004l[?2004h>         "checks": {
+[?2004l[?2004h>             "codec_type": "audio",
+[?2004l[?2004h>             "duration_min": 2.9,
+[?2004l[?2004h>             "duration_max": 3.1,
+[?2004l[?2004h>         },
+[?2004l[?2004h>         "points": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         "num": 4,
+[?2004l[?2004h>         "name": "Level 4: Crop Center",
+[?2004l[?2004h>         "description": (
+[?2004l[?2004h>             "You have a 640x480 video. Crop the center 200x200 region.\n"
+[?2004l[?2004h>             "Hint: Use the 'crop' filter with width:height:x:y parameters."
+[?2004lH, "w") as f:
+        json.dump(manifest, f, indent=2)
+    
+    return earned_points == [?2004h>         ),
+[?2004l[?2004h>         "input_type": "video",
+[?2004lmode():
+   [?2004h>         "input_params": {"duration": 2, "width": 640, "height": 480},
+[?2004l[?2004h>         "solution": "crop=200:200:220:140",
+[?2004l[?2004h>         "output_ext": ".mp4",
+[?2004l[?2004h>         "checks": {
+[?2004l[?2004h>             "codec_type": "video",
+[?2004l[?2004h>             "width": 200,
+[?2004l[?2004h>             "height": 200,
+[?2004l[?2004h>         },
+[?2004ling the correct FF[?2004h>         "points": 10,
+[?2004l[?2004h>     },
+[?2004laph.")
+    print[?2004h>     {
+[?2004l[?2004h>         "num": 5,
+[?2004l[?2004h>         "name": "Level 5: Scale and Flip",
+[?2004l[?2004h>         "description": (
+[?2004l[?2004h>             "You have a 640x480 video. Scale it to 320x240 AND apply a horizontal flip.\n"
+[?2004l[?2004h>             "Hint: Chain multiple filters with commas."
+[?2004l[?2004h>         ),
+[?2004l[?2004h>         "input_type": "video",
+[?2004l[?2004h>         "input_params": {"duration": 2, "width": 640, "height": 480},
+[?2004l[?2004h>         "solution": "scale=320:240,hflip",
+[?2004l[?2004h>         "output_ext": ".mp4",
+[?2004l[?2004h>         "checks": {
+[?2004l[?2004h>             "codec_type": "video",
+[?2004l[?2004h>             "width": 320,
+[?2004lxit'):
+            print("Ex[?2004h>             "height": 240,
+[?2004l[?2004h>         },
+[?2004l
+[?2004h>         "points": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h> ]
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def apply_filtergraph_level(input_path, filtergraph, output_path, level):
+[?2004lrin[?2004h>     """Apply filtergraph with level-specific options."""
+[?2004l[?2004h>     input_type = level["input_type"]
+[?2004l[?2004h>     
+[?2004l     [?2004h>     if input_type == "video":
+[?2004l[?2004h>         # For grayscale level, don't force yuv420p output
+[?2004l[?2004h>         if level.get("output_pix_fmt") is None and "pix_fmt" in level["checks"]:
+[?2004l[?2004h>             # Let the pixel format pass through
+[?2004l[?2004h>             cmd = (
+[?2004l[?2004h>                 f"ffmpeg -y -i {input_path} -vf \"{filtergraph}\" "
+[?2004l[?2004h>                 f"-c:v libx264 {output_path}"
+[?2004l[?2004h>             )
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             cmd = (
+[?2004l[?2004h>                 f"ffmpeg -y -i {input_path} -vf \"{filtergraph}\" "
+[?2004l[?2004h>                 f"-c:v libx264 -pix_fmt yuv420p {output_path}"
+[?2004l[?2004h>             )
+[?2004l[?2004h>     elif input_type == "audio":
+[?2004l[?2004h>         cmd = (
+[?2004l[?2004h>             f"ffmpeg -y -i {input_path} -af \"{filtergraph}\" "
+[?2004l[?2004h>             f"-c:a pcm_s16le {output_path}"
+[?2004l[?2004h>         )
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     
+[?2004l[?2004h>     result = run_cmd(cmd)
+[?2004l[?2004h>     if result.returncode != 0:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     return True
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def run_level(level, filtergraph, verbose=False):
+[?2004l[?2004h>     """Run a single level with the given filtergraph. Returns (passed, output_path)."""
+[?2004l[?2004h>     level_num = level["num"]
+[?2004l[?2004h>     input_type = level["input_type"]
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Generate input
+[?2004l[?2004h>     input_path = generate_input(level_num, input_type, **level["input_params"])
+[?2004l[?2004h>     if input_path is None:
+[?2004l[?2004h>         return False, None
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Determine output path
+[?2004l[?2004h>     output_filename = f"level{level_num}_output{level['output_ext']}"
+[?2004l[?2004h>     output_path = os.path.join(OUTPUT_DIR, output_filename)
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Apply filtergraph
+[?2004l[?2004h>     success = apply_filtergraph_level(input_path, filtergraph, output_path, level)
+[?2004l[?2004h>     if not success:
+[?2004l[?2004h>         if verbose:
+[?2004l[?2004h>             print("  FFmpeg failed to apply the filtergraph.")
+[?2004l[?2004h>         return False, output_filename
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Validate output
+[?2004l[?2004h>     probe_data = probe_file(output_path)
+[?2004l[?2004h>     passed = validate_output(probe_data, level["checks"])
+[?2004l[?2004h>     
+[?2004l[?2004h>     if verbose and not passed:
+[?2004l[?2004h>         print(f"  Validation failed. Expected: {level['checks']}")
+[?2004l[?2004h>         if probe_data and probe_data.get("streams"):
+[?2004l[?2004h>             stream = probe_data["streams"][0]
+[?2004l[?2004h>             print(f"  Got: width={stream.get('width')}, height={stream.get('height')}, "
+[?2004l[?2004h>                   f"pix_fmt={stream.get('pix_fmt')}, duration={stream.get('duration')}")
+[?2004l[?2004h>     
+[?2004l[?2004h>     return passed, output_filename
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def auto_solve_mode():
+[?2004l[?2004h>     """Run all levels with known correct solutions."""
+[?2004l[?2004h>     total_points = 0
+[?2004l[?2004h>     earned_points = 0
+[?2004l[?2004h>     manifest = []
+[?2004l[?2004h>     
+[?2004l[?2004h>     for level in LEVELS:
+[?2004l[?2004h>         print(level["name"])
+[?2004l[?2004h>         total_points += level["points"]
+[?2004l[?2004h>         
+[?2004l[?2004h>         passed, output_filename = run_level(level, level["solution"], verbose=True)
+[?2004l[?2004h>         
+[?2004l[?2004h>         if passed:
+[?2004l[?2004h>             print("PASS")
+[?2004l[?2004h>             earned_points += level["points"]
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             print("FAIL")
+[?2004l[?2004h>         
+[?2004l[?2004h>         manifest.append({
+[?2004l[?2004h>             "level": level["num"],
+[?2004l[?2004h>             "filename": output_filename,
+[?2004l[?2004h>             "valid": passed,
+[?2004l[?2004h>         })
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Print final score
+[?2004l[?2004h>     print(f"Score: {earned_points}/{total_points}")
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Write manifest
+[?2004l[?2004h>     with open(MANIFEST_PATH, "w") as f:
+[?2004l[?2004h>         json.dump(manifest, f, indent=2)
+[?2004l[?2004h>     
+[?2004l[?2004h>     return earned_points == total_points
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def interactive_mode():
+[?2004l[?2004h>     """Run in interactive mode, prompting the user for filtergraphs."""
+[?2004l[?2004h>     total_points = 0
+[?2004l[?2004h>     earned_points = 0
+[?2004l[?2004h>     
+[?2004l[?2004h>     print("="*60)
+[?2004l[?2004h>     print("  FFmpeg Filtergraph Puzzle Game")
+[?2004l[?2004h>     print("="*60)
+[?2004l[?2004h>     print()
+[?2004l[?2004h>     print("Solve each level by typing the correct FFmpeg filtergraph.")
+[?2004l[?2004h>     print("Type 'quit' or 'exit' to stop.")
+[?2004l[?2004h>     print()
+[?2004l[?2004h>     
+[?2004l[?2004h>     for level in LEVELS:
+[?2004l[?2004h>         total_points += level["points"]
+[?2004l[?2004h>         
+[?2004l[?2004h>         print("-"*60)
+[?2004l[?2004h>         print(f"\n{level['name']}")
+[?2004l[?2004h>         print(f"\n{level['description']}")
+[?2004l[?2004h>         print()
+[?2004l[?2004h>         
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             user_input = input("Your filtergraph> ").strip()
+[?2004l[?2004h>         except (EOFError, KeyboardInterrupt):
+[?2004l[?2004h>             print("\nExiting...")
+[?2004l[?2004h>             break
+[?2004l[?2004h>         
+[?2004l[?2004h>         if user_input.lower() in ('quit', 'exit'):
+[?2004l[?2004h>             print("Exiting...")
+[?2004l[?2004h>             break
+[?2004l[?2004h>         
+[?2004l[?2004h>         passed, _ = run_level(level, user_input, verbose=True)
+[?2004l[?2004h>         
+[?2004l[?2004h>         if passed:
+[?2004l[?2004h>             print("\n  ✓ PASS! Well done!")
+[?2004l[?2004h>             earned_points += level["points"]
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             print(f"\n  ✗ FAIL. The correct answer was: {level['solution']}")
+[?2004l[?2004h>         print()
+[?2004l[?2004h>     
+[?2004l[?2004h>     print("-"*60)
+[?2004l[?2004h>     print(f"\nFinal Score: {earned_points}/{total_points}")
+[?2004l[?2004h>     print()
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def main():
+[?2004l[?2004h>     parser = argparse.ArgumentParser(description="FFmpeg Filtergraph Puzzle Game")
+[?2004l[?2004h>     parser.add_argument(
+[?2004l[?2004h>         "--auto-solve", action="store_true",
+[?2004l[?2004h>         help="Run in auto-solve mode with known correct solutions"
+[?2004l[?2004h>     )
+[?2004l[?2004h>     args = parser.parse_args()
+[?2004l[?2004h>     
+[?2004l[?2004h>     if args.auto_solve:
+[?2004l[?2004h>         success = auto_solve_mode()
+[?2004l[?2004h>         sys.exit(0 if success else 1)
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         interactive_mode()
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == "__main__":
+[?2004l[?2004h>     main()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@cfac50873e20:/app# chmod +x /app/ffpuzzle.py
+[?2004l[?2004hroot@cfac50873e20:/app# python3 /app/ffpuzzle.py --auto-solve
+[?2004lLevel 1: Scale Down
+PASS
+Level 2: Convert to Grayscale
+  Validation failed. Expected: {'codec_type': 'video', 'pix_fmt': 'gray'}
+  Got: width=640, height=480, pix_fmt=yuvj420p, duration=2.000000
+FAIL
+Level 3: Trim Audio
+PASS
+Level 4: Crop Center
+PASS
+Level 5: Scale and Flip
+PASS
+Score: 40/50
+[?2004hroot@cfac50873e20:/app# python3 -c "
+[?2004l[?2004h> import textwrap
+[?2004l[?2004h> script = textwrap.dedent('''
+[?2004l[?2004h> #!/usr/bin/env python3
+[?2004lne
+
+
+def validate_output(probe_data, checks):
+    \"\"\"Validate ffprobe output against expected checks.\"\"\"\n    if probe_data is None:
+        return False
+    streams = probe_data.get(\"streams\", [])
+    if not streams:
+        return False
+    codec_type = checks.get(\"codec_type\", \"video\")
+    stream = None
+    for s in streams:
+        if s.get(\"codec_type\") == codec_type:
+            stream = s
+            break
+    if stream is None:
+        return False
+    if \"width\" in checks:
+        if stream.get(\"width\") != checks[\"width\"]:
+            return False
+    if \"height\" in checks:
+        if stream.get(\"height\") != checks[\"height\"]:
+            return False
+    if \"pix_fmt\" in checks:
+bash: !/usr/bin/env: event not found
+        if stream.get(\"pix_fmt\") != checks[\"pix_fmt\"]:
+            return False
+    duration = None
+    if \"duration\" in stream:
+        duration = float(stream[\"duration\"])
+    elif \"duration\" in probe_data.get(\"format\", {}):
+        duration = float(probe_data[\"format\"][\"duration\"][?2004h> \"\"\"FFmpeg Filtergraph Puzzle Game
+[?2004l[?2004h> 
+[?2004l[?2004h> A terminal-based puzzle game that teaches FFmpeg filtergraphs
+[?2004l[?2004h> by having players solve progressively harder media transformation challenges.
+[?2004l[?2004h> \"\"\"\n
+[?2004l[?2004h> import argparse
+[?2004l[?2004h> import json
+[?2004l[?2004h> import os
+[?2004l[?2004h> import subprocess
+[?2004l[?2004h> import sys
+[?2004l[?2004h> 
+[?2004l:[?2004h> # Directories
+[?2004l[?2004h> ASSETS_DIR = \"/app/assets\"
+[?2004l[?2004h> OUTPUT_DIR = \"/app/output\"
+[?2004l[?2004h> MANIFEST_PATH = \"/app/manifest.json\"
+[?2004l[?2004h> 
+[?2004l[?2004h> # Ensure directories exist
+[?2004l[?2004h> os.makedirs(ASSETS_DIR, exist_ok=True)
+[?2004l[?2004h> os.makedirs(OUTPUT_DIR, exist_ok=True)
+[?2004lexactly 3 [?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def run_cmd(cmd, capture=True):
+[?2004lim fil[?2004h>     \"\"\"Run a shell command and return the result.\"\"\"\n    result = subprocess.run(cmd, shell=True, capture_output=capture, text=True)
+[?2004l[?2004h>     return result
+[?2004l[?2004h> 
+[?2004ln[?2004h> 
+[?2004ld[?2004h> def generate_input(level_num, input_type=\"video\", duration=5, width=640, height=480):
+[?2004l[?2004h>     \"\"\"Generate synthetic input using FFmpeg lavfi sources.\"\"\"\n    output_path = os.path.join(ASSETS_DIR, f\"level{level_num}_input\")
+[?2004l[?2004h>     if input_type == \"video\":
+[?2004l[?2004h>         output_path += \".mp4\"
+[?2004l       \"num\": 4,
+        \"nam[?2004h>         cmd = (f\"ffmpeg -y -f lavfi -i testsrc=duration={duration}:size={width}x{height}:rate=25 \"
+[?2004l[?2004h>                f\"-c:v libx264 -pix_fmt yuv420p -t {duration} {output_path}\")
+[?2004l[?2004h>     elif input_type == \"audio\":
+[?2004ldeo\"[?2004h>         output_path += \".wav\"
+[?2004l\": {\"d[?2004h>         cmd = (f\"ffmpeg -y -f lavfi -i sine=frequency=440:duration={duration}:sample_rate=44100 \"
+[?2004l [?2004h>                f\"-c:a pcm_s16le {output_path}\")
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         raise ValueError(f\"Unknown input type: {input_type}\")
+[?2004l[?2004h>     result = run_cmd(cmd)
+[?2004l[?2004h>     if result.returncode != 0:
+[?2004l[?2004h>         print(f\"Error generating input for level {level_num}: {result.stderr}\")
+[?2004l[?2004h>         return None
+[?2004lnd Fl[?2004h>     return output_path
+[?2004lip\",
+        \"descrip[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def probe_file(filepath):
+[?2004lon\": \"You have a 640x480[?2004h>     \"\"\"Use ffprobe to get file properties as JSON.\"\"\"\n    cmd = f\"ffprobe -v quiet -print_format json -show_format -show_streams {filepath}\"
+[?2004l[?2004h>     result = run_cmd(cmd)
+[?2004l[?2004h>     if result.returncode != 0:
+[?2004lnput_params\": {\"duration\": 2, \"width\": 640, \"height[?2004h>         return None
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         return json.loads(result.stdout)
+[?2004l[?2004h>     except json.JSONDecodeError:
+[?2004l[?2004h>         return None
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l [?2004h> def validate_output(probe_data, checks):
+[?2004l[?2004h>     \"\"\"Validate ffprobe output against expected checks.\"\"\"\n    if probe_data is None:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     streams = probe_data.get(\"streams\", [])
+[?2004l[?2004h>     if not streams:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     codec_type = checks.get(\"codec_type\", \"video\")
+[?2004l[?2004h>     stream = None
+[?2004l[?2004h>     for s in streams:
+[?2004l[?2004h>         if s.get(\"codec_type\") == codec_type:
+[?2004l[?2004h>             stream = s
+[?2004l[?2004h>             break
+[?2004l[?2004h>     if stream is None:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     if \"width\" in checks:
+[?2004l[?2004h>         if stream.get(\"width\") != checks[\"width\"]:
+[?2004l[?2004h>             return False
+[?2004lth} -vf \\\"{filtergraph}[?2004h>     if \"height\" in checks:
+[?2004l[?2004h>         if stream.get(\"height\") != checks[\"height\"]:
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     if \"pix_fmt\" in checks:
+[?2004l[?2004h>         if stream.get(\"pix_fmt\") != checks[\"pix_fmt\"]:
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     duration = None
+[?2004l[?2004h>     if \"duration\" in stream:
+[?2004l [?2004h>         duration = float(stream[\"duration\"])
+[?2004l_level(le[?2004h>     elif \"duration\" in probe_data.get(\"format\", {}):
+[?2004l[?2004h>         duration = float(probe_data[\"format\"][\"duration\"])
+[?2004l[?2004h>     if \"duration_min\" in checks:
+[?2004l[?2004h>         if duration is None or duration < checks[\"duration_min\"]:
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     if \"duration_max\" in checks:
+[?2004l[?2004h>         if duration is None or duration > checks[\"duration_max\"]:
+[?2004l[?2004h>             return False
+[?2004l_[?2004h>     return True
+[?2004lnum}_output{leve[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> LEVELS = [
+[?2004lut_ext[?2004h>     {
+[?2004l']}\"
+[?2004h>         \"num\": 1,
+[?2004l[?2004h>         \"name\": \"Level 1: Scale Down\",
+[?2004l[?2004h>         \"description\": \"You have a 640x480 video. Scale it down to 320x240.\\nHint: Use the scale filter.\",
+[?2004l[?2004h>         \"input_type\": \"video\",
+[?2004l           print(\"  FFmpe[?2004h>         \"input_params\": {\"duration\": 2, \"width\": 640, \"height\": 480},
+[?2004l[?2004h>         \"solution\": \"scale=320:240\",
+[?2004l[?2004h>         \"output_ext\": \".mp4\",
+[?2004l[?2004h>         \"codec\": \"libx264\",
+[?2004l[?2004h>         \"output_pix_fmt\": \"yuv420p\",
+[?2004l[?2004h>         \"checks\": {\"codec_type\": \"video\", \"width\": 320, \"height\": 240},
+[?2004l[?2004h>         \"points\": 10,
+[?2004l[?2004h>     },
+[?2004l [?2004h>     {
+[?2004l[?2004h>         \"num\": 2,
+[?2004l[?2004h>         \"name\": \"Level 2: Convert to Grayscale\",
+[?2004l[?2004h>         \"description\": \"You have a color video. Convert it to grayscale (gray pixel format).\\nHint: Use the format filter to change pixel format.\",
+[?2004l[?2004h>         \"input_type\": \"video\",
+[?2004l[?2004h>         \"input_params\": {\"duration\": 2, \"width\": 640, \"height\": 480},
+[?2004l[?2004h>         \"solution\": \"format=gray\",
+[?2004l[?2004h>         \"output_ext\": \".mkv\",
+[?2004l[?2004h>         \"codec\": \"ffv1\",
+[?2004l[?2004h>         \"output_pix_fmt\": None,
+[?2004l[?2004h>         \"checks\": {\"codec_type\": \"video\", \"pix_fmt\": \"gray\"},
+[?2004l[?2004h>         \"points\": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         \"num\": 3,
+[?2004l[?2004h>         \"name\": \"Level 3: Trim Audio\",
+[?2004l[?2004h>         \"description\": \"You have a 10-second audio clip. Trim it to exactly 3 seconds.\\nHint: Use the atrim filter with start and end parameters.\",
+[?2004l[?2004h>         \"input_type\": \"audio\",
+[?2004l[?2004h>         \"input_params\": {\"duration\": 10},
+[?2004l[?2004h>         \"solution\": \"atrim=start=0:end=3,asetpts=PTS-STARTPTS\",
+[?2004lf,[?2004h>         \"output_ext\": \".wav\",
+[?2004l indent=2)
+    return earned_point[?2004h>         \"codec\": \"pcm_s16le\",
+[?2004l[?2004h>         \"output_pix_fmt\": None,
+[?2004l[?2004h>         \"checks\": {\"codec_type\": \"audio\", \"duration_min\": 2.9, \"duration_max\": 3.1},
+[?2004l[?2004h>         \"points\": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         \"num\": 4,
+[?2004l[?2004h>         \"name\": \"Level 4: Crop Center\",
+[?2004l* 60)
+    pr[?2004h>         \"description\": \"You have a 640x480 video. Crop the center 200x200 region.\\nHint: Use the crop filter with width:height:x:y parameters.\",
+[?2004l[?2004h>         \"input_type\": \"video\",
+[?2004l[?2004h>         \"input_params\": {\"duration\": 2, \"width\": 640, \"height\": 480},
+[?2004l[?2004h>         \"solution\": \"crop=200:200:220:140\",
+[?2004l[?2004h>         \"output_ext\": \".mp4\",
+[?2004l[?2004h>         \"codec\": \"libx264\",
+[?2004l[?2004h>         \"output_pix_fmt\": \"yuv420p\",
+[?2004l[?2004h>         \"checks\": {\"codec_type\": \"video\", \"width\": 200, \"height\": 200},
+[?2004l[?2004h>         \"points\": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         \"num\": 5,
+[?2004lin ('quit', 'exit'[?2004h>         \"name\": \"Level 5: Scale and Flip\",
+[?2004l[?2004h>         \"description\": \"You have a 640x480 video. Scale it to 320x240 AND apply a horizontal flip.\\nHint: Chain multiple filters with commas.\",
+[?2004l[?2004h>         \"input_type\": \"video\",
+[?2004l[?2004h>         \"input_params\": {\"duration\": 2, \"width\": 640, \"height\": 480},
+[?2004l[?2004h>         \"solution\": \"scale=320:240,hflip\",
+[?2004l[?2004h>         \"output_ext\": \".mp4\",
+[?2004l[?2004h>         \"codec\": \"libx264\",
+[?2004l[?2004h>         \"output_pix_fmt\": \"yuv420p\",
+[?2004l[?2004h>         \"checks\": {\"codec_type\": \"video\", \"width\": 320, \"height\": 240},
+[?2004l[?2004h>         \"points\": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h> ]
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def apply_filtergraph_level(input_path, filtergraph, output_path, level):
+[?2004l[?2004h>     \"\"\"Apply filtergraph with level-specific encoding options.\"\"\"\n    input_type = level[\"input_type\"]
+[?2004l[?2004h>     codec = level[\"codec\"]
+[?2004l[?2004h>     pix_fmt = level.get(\"output_pix_fmt\")
+[?2004l[?2004h>     if input_type == \"video\":
+[?2004l[?2004h>         pix_fmt_arg = f\"-pix_fmt {pix_fmt}\" if pix_fmt else \"\"
+[?2004l[?2004h>         cmd = f\"ffmpeg -y -i {input_path} -vf \\\"{filtergraph}\\\" -c:v {codec} {pix_fmt_arg} {output_path}\"
+[?2004l[?2004h>     elif input_type == \"audio\":
+[?2004l[?2004h>         cmd = f\"ffmpeg -y -i {input_path} -af \\\"{filtergraph}\\\" -c:a {codec} {output_path}\"
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     result = run_cmd(cmd)
+[?2004l[?2004h>     if result.returncode != 0:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     return True
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def run_level(level, filtergraph, verbose=False):
+[?2004l[?2004h>     \"\"\"Run a single level with the given filtergraph. Returns (passed, output_filename).\"\"\"\n    level_num = level[\"num\"]
+[?2004l[?2004h>     input_type = level[\"input_type\"]
+[?2004l[?2004h>     input_path = generate_input(level_num, input_type, **level[\"input_params\"])
+[?2004l[?2004h>     if input_path is None:
+[?2004l[?2004h>         return False, None
+[?2004l[?2004h>     output_filename = f\"level{level_num}_output{level['output_ext']}\"
+[?2004l[?2004h>     output_path = os.path.join(OUTPUT_DIR, output_filename)
+[?2004l[?2004h>     success = apply_filtergraph_level(input_path, filtergraph, output_path, level)
+[?2004l[?2004h>     if not success:
+[?2004l[?2004h>         if verbose:
+[?2004l[?2004h>             print(\"  FFmpeg failed to apply the filtergraph.\")
+[?2004l[?2004h>         return False, output_filename
+[?2004l[?2004h>     probe_data = probe_file(output_path)
+[?2004l[?2004h>     passed = validate_output(probe_data, level[\"checks\"])
+[?2004l[?2004h>     if verbose and not passed:
+[?2004l[?2004h>         print(f\"  Validation failed. Expected: {level['checks']}\")
+[?2004l[?2004h>         if probe_data and probe_data.get(\"streams\"):
+[?2004l[?2004h>             stream = probe_data[\"streams\"][0]
+[?2004l[?2004h>             print(f\"  Got: width={stream.get('width')}, height={stream.get('height')}, \"
+[?2004l[?2004h>                   f\"pix_fmt={stream.get('pix_fmt')}, duration={stream.get('duration')}\")
+[?2004l[?2004h>     return passed, output_filename
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def auto_solve_mode():
+[?2004l[?2004h>     \"\"\"Run all levels with known correct solutions.\"\"\"\n    total_points = 0
+[?2004l[?2004h>     earned_points = 0
+[?2004l[?2004h>     manifest = []
+[?2004l[?2004h>     for level in LEVELS:
+[?2004l[?2004h>         print(level[\"name\"])
+[?2004l[?2004h>         total_points += level[\"points\"]
+[?2004l[?2004h>         passed, output_filename = run_level(level, level[\"solution\"], verbose=True)
+[?2004l[?2004h>         if passed:
+[?2004l[?2004h>             print(\"PASS\")
+[?2004l[?2004h>             earned_points += level[\"points\"]
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             print(\"FAIL\")
+[?2004l[?2004h>         manifest.append({\"level\": level[\"num\"], \"filename\": output_filename, \"valid\": passed})
+[?2004l[?2004h>     print(f\"Score: {earned_points}/{total_points}\")
+[?2004l[?2004h>     with open(MANIFEST_PATH, \"w\") as f:
+[?2004l[?2004h>         json.dump(manifest, f, indent=2)
+[?2004l[?2004h>     return earned_points == total_points
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def interactive_mode():
+[?2004l[?2004h>     \"\"\"Run in interactive mode, prompting the user for filtergraphs.\"\"\"\n    total_points = 0
+[?2004l[?2004h>     earned_points = 0
+[?2004l[?2004h>     print(\"=\" * 60)
+[?2004l[?2004h>     print(\"  FFmpeg Filtergraph Puzzle Game\")
+[?2004l[?2004h>     print(\"=\" * 60)
+[?2004l[?2004h>     print()
+[?2004l[?2004h>     print(\"Solve each level by typing the correct FFmpeg filtergraph.\")
+[?2004l[?2004h>     print(\"Type 'quit' or 'exit' to stop.\")
+[?2004l[?2004h>     print()
+[?2004l[?2004h>     for level in LEVELS:
+[?2004l[?2004h>         total_points += level[\"points\"]
+[?2004l[?2004h>         print(\"-\" * 60)
+[?2004l[?2004h>         print(f\"\\n{level['name']}\")
+[?2004l[?2004h>         print(f\"\\n{level['description']}\")
+[?2004l[?2004h>         print()
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             user_input = input(\"Your filtergraph> \").strip()
+[?2004l[?2004h>         except (EOFError, KeyboardInterrupt):
+[?2004l[?2004h>             print(\"\\nExiting...\")
+[?2004l[?2004h>             break
+[?2004l[?2004h>         if user_input.lower() in ('quit', 'exit'):
+[?2004l[?2004h>             print(\"Exiting...\")
+[?2004l[?2004h>             break
+[?2004l[?2004h>         passed, _ = run_level(level, user_input, verbose=True)
+[?2004l[?2004h>         if passed:
+[?2004l[?2004h>             print(\"\\n  PASS! Well done!\")
+[?2004lbash: !\: event not found
+[?2004h>             earned_points += level[\"points\"]
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             print(f\"\\n  FAIL. The correct answer was: {level['solution']}\")
+[?2004l[?2004h>         print()
+[?2004l[?2004h>     print(\"-\" * 60)
+[?2004l[?2004h>     print(f\"\\nFinal Score: {earned_points}/{total_points}\")
+[?2004l[?2004h>     print()
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def main():
+[?2004l[?2004h>     parser = argparse.ArgumentParser(description=\"FFmpeg Filtergraph Puzzle Game\")
+[?2004l[?2004h>     parser.add_argument(\"--auto-solve\", action=\"store_true\",
+[?2004l[?2004h>                         help=\"Run in auto-solve mode with known correct solutions\")
+[?2004l[?2004h>     args = parser.parse_args()
+[?2004l[?2004h>     if args.auto_solve:
+[?2004l[?2004h>         success = auto_solve_mode()
+[?2004l[?2004h>         sys.exit(0 if success else 1)
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         interactive_mode()
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == \"__main__\":
+[?2004l[?2004h>     main()
+[?2004l[?2004h> ''').lstrip()
+[?2004l[?2004h> with open('/app/ffpuzzle.py', 'w') as f:
+[?2004l[?2004h>     f.write(script)
+[?2004l[?2004h> print('Script written successfully')
+[?2004l[?2004h> "
+[?2004lScript written successfully
+[?2004hroot@cfac50873e20:/app# python3 /app/ffpuzzle.py --auto-solve
+[?2004l  File [35m"/app/ffpuzzle.py"[0m, line [35m103[0m
+    "description": [1;31m"[0mYou have a 640x480 video. Scale it down to 320x240.
+                   [1;31m^[0m
+[1;35mSyntaxError[0m: [35munterminated string literal (detected at line 103)[0m
+[?2004hroot@cfac50873e20:/app# python3 << 'PYEOF'
+[?2004l[?2004h> import base64, os
+[?2004l[?2004h> 
+[?2004l[?2004h> script = '''#!/usr/bin/env python3
+[?2004l[?2004h> """FFmpeg Filtergraph Puzzle Game
+[?2004l[?2004h> 
+[?2004l[?2004h> A terminal-based puzzle game that teaches FFmpeg filtergraphs
+[?2004l[?2004h> by having players solve progressively harder media transformation challenges.
+[?2004l[?2004h> """
+[?2004l"Level 3: Trim Audio",
+       [?2004h> 
+[?2004l [?2004h> import argparse
+[?2004l[?2004h> import json
+[?2004l[?2004h> import os
+[?2004l[?2004h> import subprocess
+[?2004l[?2004h> import sys
+[?2004lt to exactly[?2004h> 
+[?2004l[?2004h> # Directories
+[?2004l[?2004h> ASSETS_DIR = "/app/assets"
+[?2004l[?2004h> OUTPUT_DIR = "/app/output"
+[?2004l[?2004h> MANIFEST_PATH = "/app/manifest.json"
+[?2004l[?2004h> 
+[?2004l  [?2004h> # Ensure directories exist
+[?2004l[?2004h> os.makedirs(ASSETS_DIR, exist_ok=True)
+[?2004l[?2004h> os.makedirs(OUTPUT_DIR, exist_ok=True)
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def run_cmd(cmd, capture=True):
+[?2004l[?2004h>     """Run a shell command and return the result."""
+[?2004l[?2004h>     result = subprocess.run(cmd, shell=True, capture_output=capture, text=True)
+[?2004l[?2004h>     return result
+[?2004lp[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def generate_input(level_num, input_type="video", duration=5, width=640, height=480):
+[?2004l[?2004h>     """Generate synthetic input using FFmpeg lavfi sources."""
+[?2004l[?2004h>     output_path = os.path.join(ASSETS_DIR, f"level{level_num}_input")
+[?2004lt:x:y paramet[?2004h>     if input_type == "video":
+[?2004l[?2004h>         output_path += ".mp4"
+[?2004l[?2004h>         cmd = (f"ffmpeg -y -f lavfi -i testsrc=duration={duration}:size={width}x{height}:rate=25 "
+[?2004l[?2004h>                f"-c:v libx264 -pix_fmt yuv420p -t {duration} {output_path}")
+[?2004l[?2004h>     elif input_type == "audio":
+[?2004l[?2004h>         output_path += ".wav"
+[?2004l[?2004h>         cmd = (f"ffmpeg -y -f lavfi -i sine=frequency=440:duration={duration}:sample_rate=44100 "
+[?2004l[?2004h>                f"-c:a pcm_s16le {output_path}")
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         raise ValueError(f"Unknown input type: {input_type}")
+[?2004l[?2004h>     result = run_cmd(cmd)
+[?2004l[?2004h>     if result.returncode != 0:
+[?2004l[?2004h>         print(f"Error generating input for level {level_num}: {result.stderr}")
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     return output_path
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def probe_file(filepath):
+[?2004l[?2004h>     """Use ffprobe to get file properties as JSON."""
+[?2004l[?2004h>     cmd = f"ffprobe -v quiet -print_format json -show_format -show_streams {filepath}"
+[?2004l[?2004h>     result = run_cmd(cmd)
+[?2004l[?2004h>     if result.returncode != 0:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         return json.loads(result.stdout)
+[?2004l[?2004h>     except json.JSONDecodeError:
+[?2004l[?2004h>         return None
+[?2004loding options."""
+  [?2004h> 
+[?2004l [?2004h> 
+[?2004l[?2004h> def validate_output(probe_data, checks):
+[?2004l[?2004h>     """Validate ffprobe output against expected checks."""
+[?2004l[?2004h>     if probe_data is None:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     streams = probe_data.get("streams", [])
+[?2004l[?2004h>     if not streams:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     codec_type = checks.get("codec_type", "video")
+[?2004l[?2004h>     stream = None
+[?2004l[?2004h>     for s in streams:
+[?2004l[?2004h>         if s.get("codec_type") == codec_type:
+[?2004l[?2004h>             stream = s
+[?2004lpath} -af "{filtergraph[?2004h>             break
+[?2004l[?2004h>     if stream is None:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     if "width" in checks:
+[?2004l[?2004h>         if stream.get("width") != checks["width"]:
+[?2004l[?2004h>             return False
+[?2004le
+    return True
+
+
+def r[?2004h>     if "height" in checks:
+[?2004l[?2004h>         if stream.get("height") != checks["height"]:
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     if "pix_fmt" in checks:
+[?2004l_filename).[?2004h>         if stream.get("pix_fmt") != checks["pix_fmt"]:
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     duration = None
+[?2004l[?2004h>     if "duration" in stream:
+[?2004l[?2004h>         duration = float(stream["duration"])
+[?2004l[?2004h>     elif "duration" in probe_data.get("format", {}):
+[?2004l[?2004h>         duration = float(probe_data["format"]["duration"])
+[?2004l[?2004h>     if "duration_min" in checks:
+[?2004l[?2004h>         if duration is None or duration < checks["duration_min"]:
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     if "duration_max" in checks:
+[?2004l[?2004h>         if duration is None or duration > checks["duration_max"]:
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     return True
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> LEVELS = [
+[?2004l[?2004h>     {
+[?2004l[?2004h>         "num": 1,
+[?2004l[?2004h>         "name": "Level 1: Scale Down",
+[?2004l[?2004h>         "description": "You have a 640x480 video. Scale it down to 320x240.\nHint: Use the scale filter.",
+[?2004l[?2004h>         "input_type": "video",
+[?2004l[?2004h>         "input_params": {"duration": 2, "width": 640, "height": 480},
+[?2004l[?2004h>         "solution": "scale=320:240",
+[?2004l[?2004h>         "output_ext": ".mp4",
+[?2004l[?2004h>         "codec": "libx264",
+[?2004l[?2004h>         "output_pix_fmt": "yuv420p",
+[?2004l[?2004h>         "checks": {"codec_type": "video", "width": 320, "height": 240},
+[?2004l[?2004h>         "points": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         "num": 2,
+[?2004l[?2004h>         "name": "Level 2: Convert to Grayscale",
+[?2004l[?2004h>         "description": "You have a color video. Convert it to grayscale (gray pixel format).\nHint: Use the format filter to change pixel format.",
+[?2004l[?2004h>         "input_type": "video",
+[?2004l[?2004h>         "input_params": {"duration": 2, "width": 640, "height": 480},
+[?2004l[?2004h>         "solution": "format=gray",
+[?2004l[?2004h>         "output_ext": ".mkv",
+[?2004l    [?2004h>         "codec": "ffv1",
+[?2004l[?2004h>         "output_pix_fmt": None,
+[?2004l     [?2004h>         "checks": {"codec_type": "video", "pix_fmt": "gray"},
+[?2004l[?2004h>         "points": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         "num": 3,
+[?2004l[?2004h>         "name": "Level 3: Trim Audio",
+[?2004l[?2004h>         "description": "You have a 10-second audio clip. Trim it to exactly 3 seconds.\nHint: Use the atrim filter with start and end parameters.",
+[?2004l[?2004h>         "input_type": "audio",
+[?2004lterac[?2004h>         "input_params": {"duration": 10},
+[?2004l[?2004h>         "solution": "atrim=start=0:end=3,asetpts=PTS-STARTPTS",
+[?2004l[?2004h>         "output_ext": ".wav",
+[?2004l[?2004h>         "codec": "pcm_s16le",
+[?2004l[?2004h>         "output_pix_fmt": None,
+[?2004l[?2004h>         "checks": {"codec_type": "audio", "duration_min": 2.9, "duration_max": 3.1},
+[?2004l[?2004h>         "points": 10,
+[?2004l to s[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         "num": 4,
+[?2004l[?2004h>         "name": "Level 4: Crop Center",
+[?2004l[?2004h>         "description": "You have a 640x480 video. Crop the center 200x200 region.\nHint: Use the crop filter with width:height:x:y parameters.",
+[?2004l    [?2004h>         "input_type": "video",
+[?2004l[?2004h>         "input_params": {"duration": 2, "width": 640, "height": 480},
+[?2004l[?2004h>         "solution": "crop=200:200:220:140",
+[?2004l[?2004h>         "output_ext": ".mp4",
+[?2004l        i[?2004h>         "codec": "libx264",
+[?2004l[?2004h>         "output_pix_fmt": "yuv420p",
+[?2004l[?2004h>         "checks": {"codec_type": "video", "width": 200, "height": 200},
+[?2004l[?2004h>         "points": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l if pa[?2004h>         "num": 5,
+[?2004l[?2004h>         "name": "Level 5: Scale and Flip",
+[?2004l[?2004h>         "description": "You have a 640x480 video. Scale it to 320x240 AND apply a horizontal flip.\nHint: Chain multiple filters with commas.",
+[?2004l[?2004h>         "input_type": "video",
+[?2004l[?2004h>         "input_params": {"duration": 2, "width": 640, "height": 480},
+[?2004l[?2004h>         "solution": "scale=320:240,hflip",
+[?2004l[?2004h>         "output_ext": ".mp4",
+[?2004l"[?2004h>         "codec": "libx264",
+[?2004l[?2004h>         "output_pix_fmt": "yuv420p",
+[?2004l[?2004h>         "checks": {"codec_type": "video", "width": 320, "height": 240},
+[?2004lwn correct so[?2004h>         "points": 10,
+[?2004l[?2004h>     },
+[?2004l[?2004h> ]
+[?2004lar[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def apply_filtergraph_level(input_path, filtergraph, output_path, level):
+[?2004l[?2004h>     """Apply filtergraph with level-specific encoding options."""
+[?2004l[?2004h>     input_type = level["input_type"]
+[?2004l[?2004h>     codec = level["codec"]
+[?2004l[?2004h>     pix_fmt = level.get("output_pix_fmt")
+[?2004l[?2004h>     if input_type == "video":
+[?2004l[?2004h>         pix_fmt_arg = f"-pix_fmt {pix_fmt}" if pix_fmt else ""
+[?2004l[?2004h>         cmd = f\'ffmpeg -y -i {input_path} -vf "{filtergraph}" -c:v {codec} {pix_fmt_arg} {output_path}\'
+[?2004l[?2004h>     elif input_type == "audio":
+[?2004l[?2004h>         cmd = f\'ffmpeg -y -i {input_path} -af "{filtergraph}" -c:a {codec} {output_path}\'
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     result = run_cmd(cmd)
+[?2004l[?2004h>     if result.returncode != 0:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     return True
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def run_level(level, filtergraph, verbose=False):
+[?2004l[?2004h>     """Run a single level with the given filtergraph. Returns (passed, output_filename)."""
+[?2004l[?2004h>     level_num = level["num"]
+[?2004l[?2004h>     input_type = level["input_type"]
+[?2004l[?2004h>     input_path = generate_input(level_num, input_type, **level["input_params"])
+[?2004l[?2004h>     if input_path is None:
+[?2004l[?2004h>         return False, None
+[?2004l[?2004h>     output_filename = f"level{level_num}_output{level[\'output_ext\']}"
+[?2004l[?2004h>     output_path = os.path.join(OUTPUT_DIR, output_filename)
+[?2004l[?2004h>     success = apply_filtergraph_level(input_path, filtergraph, output_path, level)
+[?2004l[?2004h>     if not success:
+[?2004l[?2004h>         if verbose:
+[?2004l[?2004h>             print("  FFmpeg failed to apply the filtergraph.")
+[?2004l[?2004h>         return False, output_filename
+[?2004l[?2004h>     probe_data = probe_file(output_path)
+[?2004l[?2004h>     passed = validate_output(probe_data, level["checks"])
+[?2004l[?2004h>     if verbose and not passed:
+[?2004l[?2004h>         print(f"  Validation failed. Expected: {level[\'checks\']}")
+[?2004l[?2004h>         if probe_data and probe_data.get("streams"):
+[?2004l[?2004h>             stream = probe_data["streams"][0]
+[?2004l[?2004h>             print(f"  Got: width={stream.get(\'width\')}, height={stream.get(\'height\')}, "
+[?2004l[?2004h>                   f"pix_fmt={stream.get(\'pix_fmt\')}, duration={stream.get(\'duration\')}")
+[?2004l[?2004h>     return passed, output_filename
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def auto_solve_mode():
+[?2004l[?2004h>     """Run all levels with known correct solutions."""
+[?2004l[?2004h>     total_points = 0
+[?2004l[?2004h>     earned_points = 0
+[?2004l[?2004h>     manifest = []
+[?2004l[?2004h>     for level in LEVELS:
+[?2004l[?2004h>         print(level["name"])
+[?2004l[?2004h>         total_points += level["points"]
+[?2004l[?2004h>         passed, output_filename = run_level(level, level["solution"], verbose=True)
+[?2004l[?2004h>         if passed:
+[?2004l[?2004h>             print("PASS")
+[?2004l[?2004h>             earned_points += level["points"]
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             print("FAIL")
+[?2004l[?2004h>         manifest.append({"level": level["num"], "filename": output_filename, "valid": passed})
+[?2004l[?2004h>     print(f"Score: {earned_points}/{total_points}")
+[?2004l[?2004h>     with open(MANIFEST_PATH, "w") as f:
+[?2004l[?2004h>         json.dump(manifest, f, indent=2)
+[?2004l[?2004h>     return earned_points == total_points
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def interactive_mode():
+[?2004l[?2004h>     """Run in interactive mode, prompting the user for filtergraphs."""
+[?2004l[?2004h>     total_points = 0
+[?2004l[?2004h>     earned_points = 0
+[?2004l[?2004h>     print("=" * 60)
+[?2004l[?2004h>     print("  FFmpeg Filtergraph Puzzle Game")
+[?2004l[?2004h>     print("=" * 60)
+[?2004l[?2004h>     print()
+[?2004l[?2004h>     print("Solve each level by typing the correct FFmpeg filtergraph.")
+[?2004l[?2004h>     print("Type \'quit\' or \'exit\' to stop.")
+[?2004l[?2004h>     print()
+[?2004l[?2004h>     for level in LEVELS:
+[?2004l[?2004h>         total_points += level["points"]
+[?2004l[?2004h>         print("-" * 60)
+[?2004l[?2004h>         print(f"\\n{level[\'name\']}")
+[?2004l[?2004h>         print(f"\\n{level[\'description\']}")
+[?2004l[?2004h>         print()
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             user_input = input("Your filtergraph> ").strip()
+[?2004l[?2004h>         except (EOFError, KeyboardInterrupt):
+[?2004l[?2004h>             print("\\nExiting...")
+[?2004l[?2004h>             break
+[?2004l[?2004h>         if user_input.lower() in (\'quit\', \'exit\'):
+[?2004l[?2004h>             print("Exiting...")
+[?2004l[?2004h>             break
+[?2004l[?2004h>         passed, _ = run_level(level, user_input, verbose=True)
+[?2004l[?2004h>         if passed:
+[?2004l[?2004h>             print("\\n  PASS")
+[?2004l[?2004h>             earned_points += level["points"]
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             print(f"\\n  FAIL. The correct answer was: {level[\'solution\']}")
+[?2004l[?2004h>         print()
+[?2004l[?2004h>     print("-" * 60)
+[?2004l[?2004h>     print(f"\\nFinal Score: {earned_points}/{total_points}")
+[?2004l[?2004h>     print()
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def main():
+[?2004l[?2004h>     parser = argparse.ArgumentParser(description="FFmpeg Filtergraph Puzzle Game")
+[?2004l[?2004h>     parser.add_argument("--auto-solve", action="store_true",
+[?2004l[?2004h>                         help="Run in auto-solve mode with known correct solutions")
+[?2004l[?2004h>     args = parser.parse_args()
+[?2004l[?2004h>     if args.auto_solve:
+[?2004l[?2004h>         success = auto_solve_mode()
+[?2004l[?2004h>         sys.exit(0 if success else 1)
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         interactive_mode()
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == "__main__":
+[?2004l[?2004h>     main()
+[?2004l[?2004h> '''
+[?2004l[?2004h> 
+[?2004l[?2004h> with open('/app/ffpuzzle.py', 'w') as f:
+[?2004l[?2004h>     f.write(script)
+[?2004l[?2004h> print('Done')
+[?2004l[?2004h> PYEOF
+[?2004lDone
+[?2004hroot@cfac50873e20:/app# python3 -c "import py_compile; py_compile.compile('/app/ffpuzzle.py', doraise=True)"
+[?2004lTraceback (most recent call last):
+  File [35m"/usr/local/lib/python3.13/py_compile.py"[0m, line [35m144[0m, in [35mcompile[0m
+    code = loader.source_to_code(source_bytes, dfile or file,
+                                 _optimize=optimize)
+  File [35m"<frozen importlib._bootstrap_external>"[0m, line [35m1087[0m, in [35msource_to_code[0m
+  File [35m"<frozen importlib._bootstrap>"[0m, line [35m488[0m, in [35m_call_with_frames_removed[0m
+  File [35m"/app/ffpuzzle.py"[0m, line [35m104[0m
+    "description": [1;31m"[0mYou have a 640x480 video. Scale it down to 320x240.
+                   [1;31m^[0m
+[1;35mSyntaxError[0m: [35munterminated string literal (detected at line 104)[0m
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File [35m"<string>"[0m, line [35m1[0m, in [35m<module>[0m
+    import py_compile; [31mpy_compile.compile[0m[1;31m('/app/ffpuzzle.py', doraise=True)[0m
+                       [31m~~~~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/usr/local/lib/python3.13/py_compile.py"[0m, line [35m150[0m, in [35mcompile[0m
+    raise py_exc
+[1;35mpy_compile.PyCompileError[0m: [35m  File "/app/ffpuzzle.py", line 104
+    "description": "You have a 640x480 video. Scale it down to 320x240.
+                   ^
+SyntaxError: unterminated string literal (detected at line 104)
+[0m
+[?2004hroot@cfac50873e20:/app# python3 -c "
+[?2004l[?2004h> import base64
+[?2004l[?2004h> script = base64.b64decode('IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoiIiJGRm1wZWcgRmlsdGVyZ3JhcGggUHV6emxlIEdhbWUKCkEgdGVybWluYWwtYmFzZWQgcHV6emxlIGdhbWUgdGhhdCB0ZWFjaGVzIEZGbXBlZyBmaWx0ZXJncmFwaHMKYnkgaGF2aW5nIHBsYXllcnMgc29sdmUgcHJvZ3Jlc3NpdmVseSBoYXJkZXIgbWVkaWEgdHJhbnNmb3JtYXRpb24gY2hhbGxlbmdlcy4KIiIiCgppbXBvcnQgYXJncGFyc2UKaW1wb3J0IGpzb24KaW1wb3J0IG9zCmltcG9ydCBzdWJwcm9jZXNzCmltcG9ydCBzeXMKCiMgRGlyZWN0b3JpZXMKQVNTRVRTX0RJUiA9ICIvYXBwL2Fzc2V0cyIKT1VUUFVUX0RJUiA9ICIvYXBwL291dHB1dCIKTUFOSUZFU1RfUEFUSCA9ICIvYXBwL21hbmlmZXN0Lmpzb24iCgojIEVuc3VyZSBkaXJlY3RvcmllcyBleGlzdApvcy5tYWtlZGlycyhBU1NFVFNfRElSLCBleGlzdF9vaz1UcnVlKQpvcy5tYWtlZGlycyhPVVRQVVRfRElSLCBleGlzdF9vaz1UcnVlKQo=').decode()
+[?2004l[?2004h> print(len(script))
+[?2004l[?2004h> "
+[?2004l482
+[?2004hroot@cfac50873e20:/app# python3 << 'PYEOF'
+[?2004l')
+lines.append('')
+lines.append('')
+lines.append('def generate_input(level_num, input_type="video", duration=5, width=640, height=480):')
+lines.append('    output_path = os.path.join(ASSETS_DIR, f"level{level_num}_input")')
+lines.append('    if input_type == "video":')
+lines.append('        output_path += ".mp4"')
+lines.append('        cmd = (f"ffmpeg -y -f lavfi -i testsrc=duration={duration}:size={width}x{height}:rate=25 "')
+lines.append('               f"-c:v libx264 -pix_fmt yuv420p -t {duration} {output_path}")')
+lines.append('    elif input_type == "audio":')
+lines.append('        output_path += ".wav"')
+lines.append('        cmd = (f"ffmpeg -y -f lavfi -i sine=frequency=440:duration={duration}:sample_rate=44100 "')
+lines.append('               f"-c:a pcm_s16le {output_path}")')
+lines.append('    else:')
+lines.append('        raise ValueError(f"Unknown input type: {input_type}")')
+lines.append('    result = run_cmd(cmd)')
+lines.append('    if result.returncode != 0:')
+lines.append('        print(f"Erro[?2004h> # Generator script - writes ffpuzzle.py
+[?2004l[?2004h> lines = []
+[?2004l[?2004h> lines.append('#!/usr/bin/env python3')
+[?2004l[?2004h> lines.append('"""FFmpeg Filtergraph Puzzle Game')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('A terminal-based puzzle game that teaches FFmpeg filtergraphs')
+[?2004l[?2004h> lines.append('by having players solve progressively harder media transformation challenges.')
+[?2004l[?2004h> lines.append('"""')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('import argparse')
+[?2004l[?2004h> lines.append('import json')
+[?2004l[?2004h> lines.append('import os')
+[?2004l[?2004h> lines.append('import subprocess')
+[?2004l[?2004h> lines.append('import sys')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('ASSETS_DIR = "/app/assets"')
+[?2004l[?2004h> lines.append('OUTPUT_DIR = "/app/output"')
+[?2004l[?2004h> lines.append('MANIFEST_PATH = "/app/manifest.json"')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('os.makedirs(ASSETS_DIR, exist_ok=True)')
+[?2004l[?2004h> lines.append('os.makedirs(OUTPUT_DIR, exist_ok=True)')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('def run_cmd(cmd, capture=True):')
+[?2004l[?2004h> lines.append('    result = subprocess.run(cmd, shell=True, capture_output=capture, text=True)')
+[?2004l[?2004h> lines.append('    return result')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('def generate_input(level_num, input_type="video", duration=5, width=640, height=480):')
+[?2004l[?2004h> lines.append('    output_path = os.path.join(ASSETS_DIR, f"level{level_num}_input")')
+[?2004l[?2004h> lines.append('    if input_type == "video":')
+[?2004l[?2004h> lines.append('        output_path += ".mp4"')
+[?2004l[?2004h> lines.append('        cmd = (f"ffmpeg -y -f lavfi -i testsrc=duration={duration}:size={width}x{height}:rate=25 "')
+[?2004l[?2004h> lines.append('               f"-c:v libx264 -pix_fmt yuv420p -t {duration} {output_path}")')
+[?2004l[?2004h> lines.append('    elif input_type == "audio":')
+[?2004l[?2004h> lines.append('        output_path += ".wav"')
+[?2004l[?2004h> lines.append('        cmd = (f"ffmpeg -y -f lavfi -i sine=frequency=440:duration={duration}:sample_rate=44100 "')
+[?2004l[?2004h> lines.append('               f"-c:a pcm_s16le {output_path}")')
+[?2004l[?2004h> lines.append('    else:')
+[?2004l[?2004h> lines.append('        raise ValueError(f"Unknown input type: {input_type}")')
+[?2004l[?2004h> lines.append('    result = run_cmd(cmd)')
+[?2004l[?2004h> lines.append('    if result.returncode != 0:')
+[?2004l[?2004h> lines.append('        print(f"Error generating input for level {level_num}: {result.stderr}")')
+[?2004l[?2004h> lines.append('        return None')
+[?2004l[?2004h> lines.append('    return output_path')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('def probe_file(filepath):')
+[?2004l[?2004h> lines.append('    cmd = f"ffprobe -v quiet -print_format json -show_format -show_streams {filepath}"')
+[?2004l[?2004h> lines.append('    result = run_cmd(cmd)')
+[?2004l[?2004h> lines.append('    if result.returncode != 0:')
+[?2004l[?2004h> lines.append('        return None')
+[?2004l[?2004h> lines.append('    try:')
+[?2004l[?2004h> lines.append('        return json.loads(result.stdout)')
+[?2004l[?2004h> lines.append('    except json.JSONDecodeError:')
+[?2004l[?2004h> lines.append('        return None')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('def validate_output(probe_data, checks):')
+[?2004l[?2004h> lines.append('    if probe_data is None:')
+[?2004l[?2004h> lines.append('        return False')
+[?2004l[?2004h> lines.append('    streams = probe_data.get("streams", [])')
+[?2004l[?2004h> lines.append('    if not streams:')
+[?2004l[?2004h> lines.append('        return False')
+[?2004l[?2004h> lines.append('    codec_type = checks.get("codec_type", "video")')
+[?2004l[?2004h> lines.append('    stream = None')
+[?2004l[?2004h> lines.append('    for s in streams:')
+[?2004l[?2004h> lines.append('        if s.get("codec_type") == codec_type:')
+[?2004l[?2004h> lines.append('            stream = s')
+[?2004l[?2004h> lines.append('            break')
+[?2004l[?2004h> lines.append('    if stream is None:')
+[?2004l[?2004h> lines.append('        return False')
+[?2004l[?2004h> lines.append('    if "width" in checks:')
+[?2004l[?2004h> lines.append('        if stream.get("width") != checks["width"]:')
+[?2004l[?2004h> lines.append('            return False')
+[?2004l[?2004h> lines.append('    if "height" in checks:')
+[?2004l[?2004h> lines.append('        if stream.get("height") != checks["height"]:')
+[?2004l[?2004h> lines.append('            return False')
+[?2004l[?2004h> lines.append('    if "pix_fmt" in checks:')
+[?2004l[?2004h> lines.append('        if stream.get("pix_fmt") != checks["pix_fmt"]:')
+[?2004l[?2004h> lines.append('            return False')
+[?2004l[?2004h> lines.append('    duration = None')
+[?2004l[?2004h> lines.append('    if "duration" in stream:')
+[?2004l[?2004h> lines.append('        duration = float(stream["duration"])')
+[?2004l[?2004h> lines.append('    elif "duration" in probe_data.get("format", {}):')
+[?2004l[?2004h> lines.append('        duration = float(probe_data["format"]["duration"])')
+[?2004l[?2004h> lines.append('    if "duration_min" in checks:')
+[?2004l[?2004h> lines.append('        if duration is None or duration < checks["duration_min"]:')
+[?2004l[?2004h> lines.append('            return False')
+[?2004l[?2004h> lines.append('    if "duration_max" in checks:')
+[?2004l[?2004h> lines.append('        if duration is None or duration > checks["duration_max"]:')
+[?2004l[?2004h> lines.append('            return False')
+[?2004l[?2004h> lines.append('    return True')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> with open('/app/ffpuzzle.py', 'w') as f:
+[?2004l[?2004h>     f.write('\n'.join(lines))
+[?2004l[?2004h>     f.write('\n')
+[?2004l[?2004h> print('Part 1 done')
+[?2004l[?2004h> PYEOF
+[?2004lPart 1 done
+[?2004hroot@cfac50873e20:/app# python3 << 'PYEOF'
+[?2004l: "atrim=start=0:end=3,asetpts=PTS-STARTPTS",')
+lines.append('        "output_ext": ".wav",')
+lines.append('        "codec": "pcm_s16le",')
+lines.append('        "output_pix_fmt": None,')
+lines.append('        "checks": {"codec_type": "audio", "duration_min": 2.9, "duration_max": 3.1},')
+lines.append('        "points": 10,')
+lines.append('    },')
+lines.append('    {')
+lines.append('        "num": 4,')
+lines.append('        "name": "Level 4: Crop Center",')
+lines.append('        "description": "You have a 640x480 video. Crop the center 200x200 region.' + NL + 'Hint: Use the crop filter with width:height:x:y parameters.",')
+lines.append('        "input_type": "video",')
+lines.append('        "input_params": {"duration": 2, "width": 640, "height": 480},')
+lines.append('        "solution": "crop=200:200:220:140",')
+lines.append('        "output_ext": ".mp4",')
+lines.append('        "codec": "libx264",')
+lines.append('        "output_pix_fmt": "yuv420p",')
+lines.append('        "checks": {"codec_type": "video", "width": 200, "height": 200},')
+lines.append('        "points": 10,')
+lines.append('    },')
+lines.append('    {')
+lines.append('        "num": 5,')
+lines.append('        "name": "Level 5: Scale and Flip",')
+lines.append('        "description": "You have a 640x480 video. Scale it to 320x240 AND apply a horizontal flip.' + NL + 'Hint: Chain multiple filters with commas.",')
+lines.append('        "input_type": "video",')
+lines.append('        "input_params": {"duration": 2, "width": 640, "height": 480},')
+lines.append('        "solution": "scale=320:240,hflip",')
+lines.append('        "output_ext": ".mp4",')
+lines.append('        "codec": "libx264",')
+lines.append('        "output_pix_fmt": "yuv420p",')
+lines.append('        "checks": {"codec_type": "video", "width": 320, "height": 240},')
+lines.append('        "points": 10,')
+lines.append('    },')
+lines.append(']')
+lines.append('')
+lines.append('')
+
+with open('/app/ffpuzzle.py', 'a') as f:
+    f.write('\n'.join(lines))
+    f.write('\n')
+print('Part 2 done')
+PY[?2004h> # Part 2 - append LEVELS and functions
+[?2004l[?2004h> lines = []
+[?2004l[?2004h> NL = chr(92) + 'n'  # literal backslash-n for Python source
+[?2004l[?2004h> 
+[?2004l[?2004h> lines.append('LEVELS = [')
+[?2004l[?2004h> lines.append('    {')
+[?2004l[?2004h> lines.append('        "num": 1,')
+[?2004l[?2004h> lines.append('        "name": "Level 1: Scale Down",')
+[?2004l[?2004h> lines.append('        "description": "You have a 640x480 video. Scale it down to 320x240.' + NL + 'Hint: Use the scale filter.",')
+[?2004l[?2004h> lines.append('        "input_type": "video",')
+[?2004l[?2004h> lines.append('        "input_params": {"duration": 2, "width": 640, "height": 480},')
+[?2004l[?2004h> lines.append('        "solution": "scale=320:240",')
+[?2004l[?2004h> lines.append('        "output_ext": ".mp4",')
+[?2004l[?2004h> lines.append('        "codec": "libx264",')
+[?2004l[?2004h> lines.append('        "output_pix_fmt": "yuv420p",')
+[?2004l[?2004h> lines.append('        "checks": {"codec_type": "video", "width": 320, "height": 240},')
+[?2004l[?2004h> lines.append('        "points": 10,')
+[?2004l[?2004h> lines.append('    },')
+[?2004l[?2004h> lines.append('    {')
+[?2004l[?2004h> lines.append('        "num": 2,')
+[?2004l[?2004h> lines.append('        "name": "Level 2: Convert to Grayscale",')
+[?2004l[?2004h> lines.append('        "description": "You have a color video. Convert it to grayscale (gray pixel format).' + NL + 'Hint: Use the format filter to change pixel format.",')
+[?2004l[?2004h> lines.append('        "input_type": "video",')
+[?2004l[?2004h> lines.append('        "input_params": {"duration": 2, "width": 640, "height": 480},')
+[?2004l[?2004h> lines.append('        "solution": "format=gray",')
+[?2004l[?2004h> lines.append('        "output_ext": ".mkv",')
+[?2004l[?2004h> lines.append('        "codec": "ffv1",')
+[?2004l[?2004h> lines.append('        "output_pix_fmt": None,')
+[?2004l[?2004h> lines.append('        "checks": {"codec_type": "video", "pix_fmt": "gray"},')
+[?2004l[?2004h> lines.append('        "points": 10,')
+[?2004l[?2004h> lines.append('    },')
+[?2004l[?2004h> lines.append('    {')
+[?2004l[?2004h> lines.append('        "num": 3,')
+[?2004l[?2004h> lines.append('        "name": "Level 3: Trim Audio",')
+[?2004l[?2004h> lines.append('        "description": "You have a 10-second audio clip. Trim it to exactly 3 seconds.' + NL + 'Hint: Use the atrim filter with start and end parameters.",')
+[?2004l[?2004h> lines.append('        "input_type": "audio",')
+[?2004l[?2004h> lines.append('        "input_params": {"duration": 10},')
+[?2004l[?2004h> lines.append('        "solution": "atrim=start=0:end=3,asetpts=PTS-STARTPTS",')
+[?2004l[?2004h> lines.append('        "output_ext": ".wav",')
+[?2004l[?2004h> lines.append('        "codec": "pcm_s16le",')
+[?2004l[?2004h> lines.append('        "output_pix_fmt": None,')
+[?2004l[?2004h> lines.append('        "checks": {"codec_type": "audio", "duration_min": 2.9, "duration_max": 3.1},')
+[?2004l[?2004h> lines.append('        "points": 10,')
+[?2004l[?2004h> lines.append('    },')
+[?2004l[?2004h> lines.append('    {')
+[?2004l[?2004h> lines.append('        "num": 4,')
+[?2004l[?2004h> lines.append('        "name": "Level 4: Crop Center",')
+[?2004l[?2004h> lines.append('        "description": "You have a 640x480 video. Crop the center 200x200 region.' + NL + 'Hint: Use the crop filter with width:height:x:y parameters.",')
+[?2004l[?2004h> lines.append('        "input_type": "video",')
+[?2004l[?2004h> lines.append('        "input_params": {"duration": 2, "width": 640, "height": 480},')
+[?2004l[?2004h> lines.append('        "solution": "crop=200:200:220:140",')
+[?2004l[?2004h> lines.append('        "output_ext": ".mp4",')
+[?2004l[?2004h> lines.append('        "codec": "libx264",')
+[?2004l[?2004h> lines.append('        "output_pix_fmt": "yuv420p",')
+[?2004l[?2004h> lines.append('        "checks": {"codec_type": "video", "width": 200, "height": 200},')
+[?2004l[?2004h> lines.append('        "points": 10,')
+[?2004l[?2004h> lines.append('    },')
+[?2004l[?2004h> lines.append('    {')
+[?2004l[?2004h> lines.append('        "num": 5,')
+[?2004l[?2004h> lines.append('        "name": "Level 5: Scale and Flip",')
+[?2004l[?2004h> lines.append('        "description": "You have a 640x480 video. Scale it to 320x240 AND apply a horizontal flip.' + NL + 'Hint: Chain multiple filters with commas.",')
+[?2004l[?2004h> lines.append('        "input_type": "video",')
+[?2004l[?2004h> lines.append('        "input_params": {"duration": 2, "width": 640, "height": 480},')
+[?2004l[?2004h> lines.append('        "solution": "scale=320:240,hflip",')
+[?2004l[?2004h> lines.append('        "output_ext": ".mp4",')
+[?2004l[?2004h> lines.append('        "codec": "libx264",')
+[?2004l[?2004h> lines.append('        "output_pix_fmt": "yuv420p",')
+[?2004l[?2004h> lines.append('        "checks": {"codec_type": "video", "width": 320, "height": 240},')
+[?2004l[?2004h> lines.append('        "points": 10,')
+[?2004l[?2004h> lines.append('    },')
+[?2004l[?2004h> lines.append(']')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> 
+[?2004l[?2004h> with open('/app/ffpuzzle.py', 'a') as f:
+[?2004l[?2004h>     f.write('\n'.join(lines))
+[?2004l[?2004h>     f.write('\n')
+[?2004l[?2004h> print('Part 2 done')
+[?2004l[?2004h> PYEOF
+[?2004lPart 2 done
+[?2004hroot@cfac50873e20:/app# python3 << 'PYEOF'
+[?2004lidation failed. Expected: {level[" + DQ + 'checks' + DQ + "]}')") 
+lines.append('        if probe_data and probe_data.get("streams"):')
+lines.append('            stream = probe_data["streams"][0]')
+lines.append("            print(f'  Got: width={stream.get(" + DQ + 'width' + DQ + ')}, height={stream.get(' + DQ + 'height' + DQ + ')}, ' + "")
+lines.append("                  f'pix_fmt={stream.get(" + DQ + 'pix_fmt' + DQ + ')}, duration={stream.get(' + DQ + 'duration' + DQ + ")}')") 
+lines.append('    return passed, output_filename')
+lines.append('')
+lines.append('')
+lines.append('def auto_solve_mode():')
+lines.append('    total_points = 0')
+lines.append('    earned_points = 0')
+lines.append('    manifest = []')
+lines.append('    for level in LEVELS:')
+lines.append('        print(level["name"])')
+lines.append('        total_points += level["points"]')
+lines.append('        passed, output_filename = run_level(level, level["solution"], verbose=True)')
+lines.append('        if passed:')
+lines.append('            print("PASS")')
+lines.append('            earned_points += level["points"]')
+lines.append('        else:')
+lines.append('            print("FAIL")')
+lines.append('        manifest.append({"level": level["num"], "filename": output_filename, "valid": passed})')
+lines.append('    print(f"Score: {earned_points}/{total_points}")')
+lines.append('    with open(MANIFEST_PATH, "w") as f:')
+lines.append('        json.dump(manifest, f, indent=2)')
+lines.append('    return earned_points == total_points')
+lines.append('')
+lines.append('')
+lines.append('def interactive_mode():')
+lines.append('    total_points = 0')
+lines.append('    earned_points = 0')
+lines.append('    print("=" * 60)')
+lines.append('    print("  FFmpeg Filtergraph Puzzle Game")')
+lines.append('    print("=" * 60)')
+lines.append('    print()')
+lines.append('    print("Solve each level by typing the correct FFmpeg filtergraph.")')
+lines.append('    print("Type quit or exit to stop.")')
+lines.append('    print()')
+lines.append('    for level in LEVELS:')
+lines.append('        t[?2004h> lines = []
+[?2004lotal_points[?2004h> DQ = '"'  # double quote character
+[?2004l[?2004h> 
+[?2004l[?2004h> lines.append('def apply_filtergraph_level(input_path, filtergraph, output_path, level):')
+[?2004l(level['name'])")
+lines.append("     [?2004h> lines.append('    input_type = level["input_type"]')
+[?2004l[?2004h> lines.append('    codec = level["codec"]')
+[?2004l[?2004h> lines.append('    pix_fmt = level.get("output_pix_fmt")')
+[?2004l[?2004h> lines.append('    if input_type == "video":')
+[?2004l[?2004h> lines.append('        pix_fmt_arg = f"-pix_fmt {pix_fmt}" if pix_fmt else ""')
+[?2004l[?2004h> lines.append("        cmd = f'ffmpeg -y -i {input_path} -vf " + DQ + '{filtergraph}' + DQ + ' -c:v {codec} {pix_fmt_arg} {output_path}' + "'")
+[?2004lg[?2004h> lines.append('    elif input_type == "audio":')
+[?2004l[?2004h> lines.append("        cmd = f'ffmpeg -y -i {input_path} -af " + DQ + '{filtergraph}' + DQ + ' -c:a {codec} {output_path}' + "'")
+[?2004l[?2004h> lines.append('    else:')
+[?2004l[?2004h> lines.append('        return False')
+[?2004l[?2004h> lines.append('    result = run_cmd(cmd)')
+[?2004l[?2004h> lines.append('    if result.returncode != 0:')
+[?2004l[?2004h> lines.append('        return False')
+[?2004l[?2004h> lines.append('    return True')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('def run_level(level, filtergraph, verbose=False):')
+[?2004l[?2004h> lines.append('    level_num = level["num"]')
+[?2004les[?2004h> lines.append('    input_type = level["input_type"]')
+[?2004l[?2004h> lines.append('    input_path = generate_input(level_num, input_type, **level["input_params"])')
+[?2004l[?2004h> lines.append('    if input_path is None:')
+[?2004l[?2004h> lines.append('        return False, None')
+[?2004l[?2004h> lines.append("    output_filename = f" + DQ + "level{level_num}_output{level['output_ext']}" + DQ)
+[?2004l[?2004h> lines.append('    output_path = os.path.join(OUTPUT_DIR, output_filename)')
+[?2004l[?2004h> lines.append('    success = apply_filtergraph_level(input_path, filtergraph, output_path, level)')
+[?2004l[?2004h> lines.append('    if not success:')
+[?2004l[?2004h> lines.append('        if verbose:')
+[?2004l[?2004h> lines.append('            print("  FFmpeg failed to apply the filtergraph.")')
+[?2004l[?2004h> lines.append('        return False, output_filename')
+[?2004l[?2004h> lines.append('    probe_data = probe_file(output_path)')
+[?2004l[?2004h> lines.append('    passed = validate_output(probe_data, level["checks"])')
+[?2004l[?2004h> lines.append('    if verbose and not passed:')
+[?2004l[?2004h> lines.append("        print(f'  Validation failed. Expected: {level[" + DQ + 'checks' + DQ + "]}')") 
+[?2004l[?2004h> lines.append('        if probe_data and probe_data.get("streams"):')
+[?2004l[?2004h> lines.append('            stream = probe_data["streams"][0]')
+[?2004l[?2004h> lines.append("            print(f'  Got: width={stream.get(" + DQ + 'width' + DQ + ')}, height={stream.get(' + DQ + 'height' + DQ + ')}, ' + "")
+[?2004l[?2004h> lines.append("                  f'pix_fmt={stream.get(" + DQ + 'pix_fmt' + DQ + ')}, duration={stream.get(' + DQ + 'duration' + DQ + ")}')") 
+[?2004l[?2004h> lines.append('    return passed, output_filename')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('def auto_solve_mode():')
+[?2004l[?2004h> lines.append('    total_points = 0')
+[?2004l[?2004h> lines.append('    earned_points = 0')
+[?2004l[?2004h> lines.append('    manifest = []')
+[?2004l[?2004h> lines.append('    for level in LEVELS:')
+[?2004l[?2004h> lines.append('        print(level["name"])')
+[?2004l[?2004h> lines.append('        total_points += level["points"]')
+[?2004l[?2004h> lines.append('        passed, output_filename = run_level(level, level["solution"], verbose=True)')
+[?2004l[?2004h> lines.append('        if passed:')
+[?2004l[?2004h> lines.append('            print("PASS")')
+[?2004l[?2004h> lines.append('            earned_points += level["points"]')
+[?2004l[?2004h> lines.append('        else:')
+[?2004l[?2004h> lines.append('            print("FAIL")')
+[?2004l[?2004h> lines.append('        manifest.append({"level": level["num"], "filename": output_filename, "valid": passed})')
+[?2004l[?2004h> lines.append('    print(f"Score: {earned_points}/{total_points}")')
+[?2004l[?2004h> lines.append('    with open(MANIFEST_PATH, "w") as f:')
+[?2004l[?2004h> lines.append('        json.dump(manifest, f, indent=2)')
+[?2004l[?2004h> lines.append('    return earned_points == total_points')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('def interactive_mode():')
+[?2004l[?2004h> lines.append('    total_points = 0')
+[?2004l[?2004h> lines.append('    earned_points = 0')
+[?2004l[?2004h> lines.append('    print("=" * 60)')
+[?2004l[?2004h> lines.append('    print("  FFmpeg Filtergraph Puzzle Game")')
+[?2004l[?2004h> lines.append('    print("=" * 60)')
+[?2004l[?2004h> lines.append('    print()')
+[?2004l[?2004h> lines.append('    print("Solve each level by typing the correct FFmpeg filtergraph.")')
+[?2004l[?2004h> lines.append('    print("Type quit or exit to stop.")')
+[?2004l[?2004h> lines.append('    print()')
+[?2004l[?2004h> lines.append('    for level in LEVELS:')
+[?2004l[?2004h> lines.append('        total_points += level["points"]')
+[?2004l[?2004h> lines.append('        print("-" * 60)')
+[?2004l[?2004h> lines.append("        print(level['name'])")
+[?2004l[?2004h> lines.append("        print(level['description'])")
+[?2004l[?2004h> lines.append('        print()')
+[?2004l[?2004h> lines.append('        try:')
+[?2004l[?2004h> lines.append('            user_input = input("Your filtergraph> ").strip()')
+[?2004l[?2004h> lines.append('        except (EOFError, KeyboardInterrupt):')
+[?2004l[?2004h> lines.append('            print("Exiting...")')
+[?2004l[?2004h> lines.append('            break')
+[?2004l[?2004h> lines.append("        if user_input.lower() in ('quit', 'exit'):")
+[?2004l[?2004h> lines.append('            print("Exiting...")')
+[?2004l[?2004h> lines.append('            break')
+[?2004l[?2004h> lines.append('        passed, _ = run_level(level, user_input, verbose=True)')
+[?2004l[?2004h> lines.append('        if passed:')
+[?2004l[?2004h> lines.append('            print("PASS")')
+[?2004l[?2004h> lines.append('            earned_points += level["points"]')
+[?2004l[?2004h> lines.append('        else:')
+[?2004l[?2004h> lines.append("            print(f'FAIL. The correct answer was: {level[" + DQ + 'solution' + DQ + "]}')") 
+[?2004l[?2004h> lines.append('        print()')
+[?2004l[?2004h> lines.append('    print("-" * 60)')
+[?2004l[?2004h> lines.append('    print(f"Final Score: {earned_points}/{total_points}")')
+[?2004l[?2004h> lines.append('    print()')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('def main():')
+[?2004l[?2004h> lines.append('    parser = argparse.ArgumentParser(description="FFmpeg Filtergraph Puzzle Game")')
+[?2004l[?2004h> lines.append('    parser.add_argument("--auto-solve", action="store_true",') 
+[?2004l[?2004h> lines.append('                        help="Run in auto-solve mode with known correct solutions")')
+[?2004l[?2004h> lines.append('    args = parser.parse_args()')
+[?2004l[?2004h> lines.append('    if args.auto_solve:')
+[?2004l[?2004h> lines.append('        success = auto_solve_mode()')
+[?2004l[?2004h> lines.append('        sys.exit(0 if success else 1)')
+[?2004l[?2004h> lines.append('    else:')
+[?2004l[?2004h> lines.append('        interactive_mode()')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> lines.append('if __name__ == "__main__":')
+[?2004l[?2004h> lines.append('    main()')
+[?2004l[?2004h> lines.append('')
+[?2004l[?2004h> 
+[?2004l[?2004h> with open('/app/ffpuzzle.py', 'a') as f:
+[?2004l[?2004h>     f.write('\n'.join(lines))
+[?2004l[?2004h>     f.write('\n')
+[?2004l[?2004h> print('Part 3 done')
+[?2004l[?2004h> PYEOF
+[?2004lPart 3 done
+[?2004hroot@cfac50873e20:/app# python3 -c "import py_compile; py_compile.compile('/app/ffpuzzle.py', doraise=True); print('OK')"
+[?2004lTraceback (most recent call last):
+  File [35m"/usr/local/lib/python3.13/py_compile.py"[0m, line [35m144[0m, in [35mcompile[0m
+    code = loader.source_to_code(source_bytes, dfile or file,
+                                 _optimize=optimize)
+  File [35m"<frozen importlib._bootstrap_external>"[0m, line [35m1087[0m, in [35msource_to_code[0m
+  File [35m"<frozen importlib._bootstrap>"[0m, line [35m488[0m, in [35m_call_with_frames_removed[0m
+  File [35m"/app/ffpuzzle.py"[0m, line [35m199[0m
+    print([1;31mf[0m'  Got: width={stream.get("width")}, height={stream.get("height")}, 
+          [1;31m^[0m
+[1;35mSyntaxError[0m: [35munterminated f-string literal (detected at line 199)[0m
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File [35m"<string>"[0m, line [35m1[0m, in [35m<module>[0m
+    import py_compile; [31mpy_compile.compile[0m[1;31m('/app/ffpuzzle.py', doraise=True)[0m; print('OK')
+                       [31m~~~~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/usr/local/lib/python3.13/py_compile.py"[0m, line [35m150[0m, in [35mcompile[0m
+    raise py_exc
+[1;35mpy_compile.PyCompileError[0m: [35m  File "/app/ffpuzzle.py", line 199
+    print(f'  Got: width={stream.get("width")}, height={stream.get("height")}, 
+          ^
+SyntaxError: unterminated f-string literal (detected at line 199)
+[0m
+[?2004hroot@cfac50873e20:/app# rm -f /app/ffpuzzle.py
+[?2004l[?2004hroot@cfac50873e20:/app# cat > /tmp/gen.py << 'GENEOF'
+[?2004l[?2004h> import os
+[?2004l[?2004h> 
+[?2004l[?2004h> code = []
+[?2004l[?2004h> code.append('#!/usr/bin/env python3')
+[?2004l[?2004h> code.append('import argparse, json, os, subprocess, sys')
+[?2004l[?2004h> code.append('')
+[?2004l[?2004h> code.append('ASSETS_DIR = "/app/assets"')
+[?2004l[?2004h> code.append('OUTPUT_DIR = "/app/output"')
+[?2004l[?2004h> code.append('MANIFEST_PATH = "/app/manifest.json"')
+[?2004lwidth"]: return False')
+code.append('    if "height" in chk and st.get("height") != chk["height"]: return False')
+code.append('    if "pix_fmt" in chk and st.get("pix_fmt") != chk["pix_fmt"]: return False')
+code.append('    dur = None')
+code.append('    if "duration" in st: dur = float(st["duration"])')
+code.append('    elif "duration" in pd.get("format", {}): dur = float(pd["format"]["duration"])')
+code.append('    if "duration_min" in chk:')
+code.append('        if dur is None or dur < chk["duration_min"]: return False')
+code.append('    if "duration_max" in chk:')
+code.append('        if dur is None or dur > chk["duration_max"]: return False')
+code.append('    return True')
+code.append('')
+
+# LEVELS as a multiline block
+code.append('LEVELS = [')
+levels_data = [
+    (1, "Level 1: Scale Down", "You have a 640x480 video. Scale it down to 320x240.", "video", '{"duration": 2, "width": 640, "height": 480}', "scale=320:240", ".mp4", "libx264", '"yuv420p"', '{"codec_type": "video", "width": 320, "height": 240}'),
+    (2, "Level 2: Convert to Grayscale", "You have a color video. Convert it to grayscale (gray pixel format).", "video", '{"duration": 2, "width": 640, "height": 480}', "format=gray", ".mkv", "ffv1", 'None', '{"codec_type": "video", "pix_fmt": "gray"}'),
+    (3, "Level 3: Trim Audio", "You have a 10-second audio clip. Trim it to exactly 3 seconds.", "audio", '{"duration": 10}', "atrim=start=0:end=3,asetpts=PTS-STARTPTS", ".wav", "pcm_s16le", 'None', '{"codec_type": "audio", "duration_min": 2.9, "duration_max": 3.1}'),
+    (4, "Level 4: Crop Center", "You have a 640x480 video. Crop the center 200x200 region.", "video", '{"duration": 2, "width": 640, "height": 480}', "crop=200:200:220:140", ".mp4", "libx264", '"yuv420p"', '{"codec_type": "video", "width": 200, "height": 200}'),
+    (5, "Level 5: Scale and Flip", "You have a 640x480 video. Scale it to 320x240 AND apply a horizontal flip.", "video", '{"duration": 2, "width": 640, "height": 480}', "scale=320:240,hflip", ".mp4", "libx264", '"yuv420p"', '{"codec_ty[?2004h> code.append('os.makedirs(ASSETS_DIR, exist_ok=True)')
+[?2004lpe": "video", "width": 320, "height": 240}'),
+]
+for num, name, desc, itype, params, sol, ext, codec, pfmt, checks in levels_data:
+    code.append('    {')
+    code.append('        "num": %d,' % num)
+    code.append('        "name": "%s",' % name)
+    code.append('        "description": "%s",' % desc)
+    code.append('        "input_type": "%s",' % it[?2004h> code.append('os.makedirs(OUTPUT_DIR, exist_ok=True)')
+[?2004l[?2004h> code.append('')
+[?2004l[?2004h> code.append('def run_cmd(cmd):')
+[?2004l[?2004h> code.append('    return subprocess.run(cmd, shell=True, capture_output=True, text=True)')
+[?2004l      "co[?2004h> code.append('')
+[?2004l[?2004h> code.append('def gen_input(num, itype, dur=5, w=640, h=480):')
+[?2004l)
+ [?2004h> code.append('    p = os.path.join(ASSETS_DIR, "level%d_input" % num)')
+[?2004l[?2004h> code.append('    if itype == "video":')
+[?2004l[?2004h> code.append('        p += ".mp4"')
+[?2004l[?2004h> code.append('        c = "ffmpeg -y -f lavfi -i testsrc=duration=%d:size=%dx%d:rate=25 -c:v libx264 -pix_fmt yuv420p -t %d %s" % (dur, w, h, dur, p)')
+[?2004l[?2004h> code.append('    else:')
+[?2004l = level.get[?2004h> code.append('        p += ".wav"')
+[?2004l[?2004h> code.append('        c = "ffmpeg -y -f lavfi -i sine=frequency=440:duration=%d:sample_rate=44100 -c:a pcm_s16le %s" % (dur, p)')
+[?2004l[?2004h> code.append('    r = run_cmd(c)')
+[?2004l[?2004h> code.append('    return p if r.returncode == 0 else None')
+[?2004l[?2004h> code.append('')
+[?2004l[?2004h> code.append('def probe(fp):')
+[?2004l[?2004h> code.append('    r = run_cmd("ffprobe -v quiet -print_format json -show_format -show_streams " + fp)')
+[?2004l[?2004h> code.append('    if r.returncode != 0: return None')
+[?2004l[?2004h> code.append('    try: return json.loads(r.stdout)')
+[?2004ld([?2004h> code.append('    except: return None')
+[?2004l[?2004h> code.append('')
+[?2004l[?2004h> code.append('def validate(pd, chk):')
+[?2004l[?2004h> code.append('    if pd is None: return False')
+[?2004l[?2004h> code.append('    streams = pd.get("streams", [])')
+[?2004l[?2004h> code.append('    if not streams: return False')
+[?2004l[?2004h> code.append('    ct = chk.get("codec_type", "video")')
+[?2004l[?2004h> code.append('    st = None')
+[?2004l[?2004h> code.append('    for s in streams:')
+[?2004l[?2004h> code.append('        if s.get("codec_type") == ct:')
+[?2004l[?2004h> code.append('            st = s')
+[?2004l[?2004h> code.append('            break')
+[?2004l[?2004h> code.append('    if st is None: return False')
+[?2004l[?2004h> code.append('    if "width" in chk and st.get("width") != chk["width"]: return False')
+[?2004l[?2004h> code.append('    if "height" in chk and st.get("height") != chk["height"]: return False')
+[?2004l[?2004h> code.append('    if "pix_fmt" in chk and st.get("pix_fmt") != chk["pix_fmt"]: return False')
+[?2004l[?2004h> code.append('    dur = None')
+[?2004l[?2004h> code.append('    if "duration" in st: dur = float(st["duration"])')
+[?2004l[?2004h> code.append('    elif "duration" in pd.get("format", {}): dur = float(pd["format"]["duration"])')
+[?2004l[?2004h> code.append('    if "duration_min" in chk:')
+[?2004l[?2004h> code.append('        if dur is None or dur < chk["duration_min"]: return False')
+[?2004l[?2004h> code.append('    if "duration_max" in chk:')
+[?2004l[?2004h> code.append('        if dur is None or dur > chk["duration_max"]: return False')
+[?2004l[?2004h> code.append('    return True')
+[?2004l[?2004h> code.append('')
+[?2004l[?2004h> 
+[?2004l[?2004h> # LEVELS as a multiline block
+[?2004l[?2004h> code.append('LEVELS = [')
+[?2004lIL")'[?2004h> levels_data = [
+[?2004l[?2004h>     (1, "Level 1: Scale Down", "You have a 640x480 video. Scale it down to 320x240.", "video", '{"duration": 2, "width": 640, "height": 480}', "scale=320:240", ".mp4", "libx264", '"yuv420p"', '{"codec_type": "video", "width": 320, "height": 240}'),
+[?2004l[?2004h>     (2, "Level 2: Convert to Grayscale", "You have a color video. Convert it to grayscale (gray pixel format).", "video", '{"duration": 2, "width": 640, "height": 480}', "format=gray", ".mkv", "ffv1", 'None', '{"codec_type": "video", "pix_fmt": "gray"}'),
+[?2004l[?2004h>     (3, "Level 3: Trim Audio", "You have a 10-second audio clip. Trim it to exactly 3 seconds.", "audio", '{"duration": 10}', "atrim=start=0:end=3,asetpts=PTS-STARTPTS", ".wav", "pcm_s16le", 'None', '{"codec_type": "audio", "duration_min": 2.9, "duration_max": 3.1}'),
+[?2004l[?2004h>     (4, "Level 4: Crop Center", "You have a 640x480 video. Crop the center 200x200 region.", "video", '{"duration": 2, "width": 640, "height": 480}', "crop=200:200:220:140", ".mp4", "libx264", '"yuv420p"', '{"codec_type": "video", "width": 200, "height": 200}'),
+[?2004l[?2004h>     (5, "Level 5: Scale and Flip", "You have a 640x480 video. Scale it to 320x240 AND apply a horizontal flip.", "video", '{"duration": 2, "width": 640, "height": 480}', "scale=320:240,hflip", ".mp4", "libx264", '"yuv420p"', '{"codec_type": "video", "width": 320, "height": 240}'),
+[?2004l[?2004h> ]
+[?2004l[?2004h> for num, name, desc, itype, params, sol, ext, codec, pfmt, checks in levels_data:
+[?2004l[?2004h>     code.append('    {')
+[?2004l[?2004h>     code.append('        "num": %d,' % num)
+[?2004l[?2004h>     code.append('        "name": "%s",' % name)
+[?2004l[?2004h>     code.append('        "description": "%s",' % desc)
+[?2004l[?2004h>     code.append('        "input_type": "%s",' % itype)
+[?2004l[?2004h>     code.append('        "input_params": %s,' % params)
+[?2004l[?2004h>     code.append('        "solution": "%s",' % sol)
+[?2004l[?2004h>     code.append('        "output_ext": "%s",' % ext)
+[?2004l[?2004h>     code.append('        "codec": "%s",' % codec)
+[?2004lode.append('[?2004h>     code.append('        "output_pix_fmt": %s,' % pfmt)
+[?2004l[?2004h>     code.append('        "checks": %s,' % checks)
+[?2004l[?2004h>     code.append('        "points": 10,')
+[?2004l[?2004h>     code.append('    },')
+[?2004l[?2004h> code.append(']')
+[?2004l[?2004h> code.append('')
+[?2004l[?2004h> 
+[?2004l[?2004h> code.append('def apply_fg(inp, fg, out, level):')
+[?2004l[?2004h> code.append('    itype = level["input_type"]')
+[?2004l[?2004h> code.append('    codec = level["codec"]')
+[?2004l[?2004h> code.append('    pfmt = level.get("output_pix_fmt")')
+[?2004l[?2004h> code.append('    if itype == "video":')
+[?2004l[?2004h> code.append('        pa = "-pix_fmt " + pfmt if pfmt else ""')
+[?2004l[?2004h> code.append('        cmd = "ffmpeg -y -i %s -vf %s -c:v %s %s %s" % (inp, fg, codec, pa, out)')
+[?2004l[?2004h> code.append('    else:')
+[?2004l[?2004h> code.append('        cmd = "ffmpeg -y -i %s -af %s -c:a %s %s" % (inp, fg, codec, out)')
+[?2004l[?2004h> code.append('    return run_cmd(cmd).returncode == 0')
+[?2004l[?2004h> code.append('')
+[?2004l[?2004h> code.append('def run_level(level, fg, verbose=False):')
+[?2004l[?2004h> code.append('    num = level["num"]')
+[?2004l[?2004h> code.append('    itype = level["input_type"]')
+[?2004l[?2004h> code.append('    params = level["input_params"]')
+[?2004l[?2004h> code.append('    inp = gen_input(num, itype, **params)')
+[?2004l[?2004h> code.append('    if inp is None: return False, None')
+[?2004l[?2004h> code.append('    ofn = "level%d_output%s" % (num, level["output_ext"])')
+[?2004l[?2004h> code.append('    opath = os.path.join(OUTPUT_DIR, ofn)')
+[?2004l[?2004h> code.append('    ok = apply_fg(inp, fg, opath, level)')
+[?2004l[?2004h> code.append('    if not ok:')
+[?2004l[?2004h> code.append('        if verbose: print("  FFmpeg failed to apply the filtergraph.")')
+[?2004l[?2004h> code.append('        return False, ofn')
+[?2004l[?2004h> code.append('    pd = probe(opath)')
+[?2004l[?2004h> code.append('    passed = validate(pd, level["checks"])')
+[?2004l[?2004h> code.append('    if verbose and not passed:')
+[?2004l[?2004h> code.append('        print("  Validation failed. Expected: %s" % str(level["checks"]))')
+[?2004l[?2004h> code.append('    return passed, ofn')
+[?2004l[?2004h> code.append('')
+[?2004l[?2004h> code.append('def auto_solve():')
+[?2004l[?2004h> code.append('    tp = 0')
+[?2004l[?2004h> code.append('    ep = 0')
+[?2004l[?2004h> code.append('    manifest = []')
+[?2004l[?2004h> code.append('    for level in LEVELS:')
+[?2004l[?2004h> code.append('        print(level["name"])')
+[?2004l[?2004h> code.append('        tp += level["points"]')
+[?2004l[?2004h> code.append('        passed, ofn = run_level(level, level["solution"], verbose=True)')
+[?2004l[?2004h> code.append('        if passed:')
+[?2004l[?2004h> code.append('            print("PASS")')
+[?2004l[?2004h> code.append('            ep += level["points"]')
+[?2004l[?2004h> code.append('        else:')
+[?2004l[?2004h> code.append('            print("FAIL")')
+[?2004l[?2004h> code.append('        manifest.append({"level": level["num"], "filename": ofn, "valid": passed})')
+[?2004l[?2004h> code.append('    print("Score: %d/%d" % (ep, tp))')
+[?2004l[?2004h> code.append('    with open(MANIFEST_PATH, "w") as f:')
+[?2004l[?2004h> code.append('        json.dump(manifest, f, indent=2)')
+[?2004l[?2004h> code.append('    return ep == tp')
+[?2004l[?2004h> code.append('')
+[?2004l[?2004h> code.append('def interactive():')
+[?2004l[?2004h> code.append('    tp = 0')
+[?2004l[?2004h> code.append('    ep = 0')
+[?2004l[?2004h> code.append('    print("=" * 60)')
+[?2004l[?2004h> code.append('    print("  FFmpeg Filtergraph Puzzle Game")')
+[?2004l[?2004h> code.append('    print("=" * 60)')
+[?2004l[?2004h> code.append('    print("Solve each level by typing the correct FFmpeg filtergraph.")')
+[?2004l[?2004h> code.append('    for level in LEVELS:')
+[?2004l[?2004h> code.append('        tp += level["points"]')
+[?2004l[?2004h> code.append('        print("-" * 60)')
+[?2004l[?2004h> code.append('        print(level["name"])')
+[?2004l[?2004h> code.append('        print(level["description"])')
+[?2004l[?2004h> code.append('        try:')
+[?2004l[?2004h> code.append('            ui = input("Your filtergraph> ").strip()')
+[?2004l[?2004h> code.append('        except (EOFError, KeyboardInterrupt):')
+[?2004l[?2004h> code.append('            break')
+[?2004l[?2004h> code.append('        if ui.lower() in ("quit", "exit"): break')
+[?2004l[?2004h> code.append('        passed, _ = run_level(level, ui, verbose=True)')
+[?2004l[?2004h> code.append('        if passed:')
+[?2004l[?2004h> code.append('            print("PASS")')
+[?2004l[?2004h> code.append('            ep += level["points"]')
+[?2004l[?2004h> code.append('        else:')
+[?2004l[?2004h> code.append('            print("FAIL. Answer: %s" % level["solution"])')
+[?2004l[?2004h> code.append('    print("Score: %d/%d" % (ep, tp))')
+[?2004l[?2004h> code.append('')
+[?2004l[?2004h> code.append('def main():')
+[?2004l[?2004h> code.append('    p = argparse.ArgumentParser()')
+[?2004l[?2004h> code.append('    p.add_argument("--auto-solve", action="store_true")')
+[?2004l[?2004h> code.append('    a = p.parse_args()')
+[?2004l[?2004h> code.append('    if a.auto_solve:')
+[?2004l[?2004h> code.append('        ok = auto_solve()')
+[?2004l[?2004h> code.append('        sys.exit(0 if ok else 1)')
+[?2004l[?2004h> code.append('    else:')
+[?2004l[?2004h> code.append('        interactive()')
+[?2004l[?2004h> code.append('')
+[?2004l[?2004h> code.append('if __name__ == "__main__":')
+[?2004l[?2004h> code.append('    main()')
+[?2004l[?2004h> 
+[?2004l[?2004h> with open('/app/ffpuzzle.py', 'w') as f:
+[?2004l[?2004h>     f.write('\n'.join(code) + '\n')
+[?2004l[?2004h> print('Generator done')
+[?2004l[?2004h> GENEOF
+[?2004l[?2004hroot@cfac50873e20:/app# python3 /tmp/gen.py
+[?2004lGenerator done
+[?2004hroot@cfac50873e20:/app# python3 -c "import py_compile; py_compile.compile('/app/ffpuzzle.py', doraise=True); print('OK')"
+[?2004lOK
+[?2004hroot@cfac50873e20:/app# python3 /app/ffpuzzle.py --auto-solve
+[?2004lLevel 1: Scale Down
+Traceback (most recent call last):
+  File [35m"/app/ffpuzzle.py"[0m, line [35m205[0m, in [35m<module>[0m
+    [31mmain[0m[1;31m()[0m
+    [31m~~~~[0m[1;31m^^[0m
+  File [35m"/app/ffpuzzle.py"[0m, line [35m199[0m, in [35mmain[0m
+    ok = auto_solve()
+  File [35m"/app/ffpuzzle.py"[0m, line [35m157[0m, in [35mauto_solve[0m
+    passed, ofn = [31mrun_level[0m[1;31m(level, level["solution"], verbose=True)[0m
+                  [31m~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/app/ffpuzzle.py"[0m, line [35m136[0m, in [35mrun_level[0m
+    inp = gen_input(num, itype, **params)
+[1;35mTypeError[0m: [35mgen_input() got an unexpected keyword argument 'duration'[0m
+[?2004hroot@cfac50873e20:/app# sed -i 's/def gen_input(num, itype, dur=5, w=640, h=480):/def gen_input(num, itype, duration=5, width=640, height=480):/' /app/ffpuzzle.py
+[?2004l[?2004hroot@cfac50873e20:/app# sed -i 's/"ffmpeg -y -f lavfi -i testsrc=duration=%d:size=%dx%d:rate=25 -c:v libx264 -pix_fmt yuv420p -t %d %s" % (dur, w, h, dur, p)/"ffmpeg -y -f lavfi -i testsrc=duration=%d:size=%dx%d:rate=25 -c:v libx264 -pix_fmt yuv420p -t %d %s" % (duration, width, height, duration, p)/' /app/ffpuzzle.py
+[?2004l[?2004hroot@cfac50873e20:/app# sed -i 's/"ffmpeg -y -f lavfi -i sine=frequency=440:duration=%d:sample_rate=44100 -c:a pcm_s16le %s" % (dur, p)/"ffmpeg -y -f lavfi -i sine=frequency=440:duration=%d:sample_rate=44100 -c:a pcm_s16le %s" % (duration, p)/' /app/ffpuzzle.py
+[?2004l[?2004hroot@cfac50873e20:/app# python3 -c "import py_compile; py_compile.compile('/app/ffpuzzle.py', doraise=True); print('OK')"
+[?2004lOK
+[?2004hroot@cfac50873e20:/app# python3 /app/ffpuzzle.py --auto-solve
+[?2004lLevel 1: Scale Down
+PASS
+Level 2: Convert to Grayscale
+PASS
+Level 3: Trim Audio
+PASS
+Level 4: Crop Center
+PASS
+Level 5: Scale and Flip
+PASS
+Score: 50/50
+[?2004hroot@cfac50873e20:/app# cat /app/manifest.json
+[?2004l[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "valid": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.mkv",
+    "valid": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "valid": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "valid": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "valid": true
+  }
+][?2004hroot@cfac50873e20:/app# ls -la /app/output/
+[?2004ltotal 656
+drwxr-xr-x 2 root root   4096 May 25 21:46 .
+drwxr-xr-x 1 root root   4096 May 25 21:46 ..
+-rw-r--r-- 1 root root  12663 May 25 21:46 level1_output.mp4
+-rw-r--r-- 1 root root 343164 May 25 21:46 level2_output.mkv
+-rw-r--r-- 1 root root  13355 May 25 21:39 level2_output.mp4
+-rw-r--r-- 1 root root 264678 May 25 21:46 level3_output.wav
+-rw-r--r-- 1 root root   3138 May 25 21:46 level4_output.mp4
+-rw-r--r-- 1 root root  12396 May 25 21:46 level5_output.mp4
+[?2004hroot@cfac50873e20:/app# ls -la /app/assets/
+[?2004ltotal 952
+drwxr-xr-x 2 root root   4096 May 25 21:39 .
+drwxr-xr-x 1 root root   4096 May 25 21:46 ..
+-rw-r--r-- 1 root root  17886 May 25 21:46 level1_input.mp4
+-rw-r--r-- 1 root root  17886 May 25 21:46 level2_input.mp4
+-rw-r--r-- 1 root root 882078 May 25 21:46 level3_input.wav
+-rw-r--r-- 1 root root  17886 May 25 21:46 level4_input.mp4
+-rw-r--r-- 1 root root  17886 May 25 21:46 level5_input.mp4
+[?2004hroot@cfac50873e20:/app# rm -f /app/output/level2_output.mp4
+[?2004l[?2004hroot@cfac50873e20:/app# python3 /app/ffpuzzle.py --auto-solve
+[?2004lLevel 1: Scale Down
+PASS
+Level 2: Convert to Grayscale
+PASS
+Level 3: Trim Audio
+PASS
+Level 4: Crop Center
+PASS
+Level 5: Scale and Flip
+PASS
+Score: 50/50
+[?2004hroot@cfac50873e20:/app# 

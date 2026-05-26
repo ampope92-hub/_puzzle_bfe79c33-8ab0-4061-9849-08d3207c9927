@@ -1,0 +1,39 @@
+{
+  "analysis": "Now levels 1,2,3,5 pass; only level 4 fails and its output is 0 bytes, meaning ffmpeg failed for level 4 due to an invalid filtergraph decoded from its token. The level4 token in the file is still the old incorrect one; it did not get replaced by the correct computed token (Mi8pMDAyLWhpKD15OjIvKTAwMi13aSg9eDowMDI9aDowMDI9dz1wb3Jj). We must patch level4 solution_token to the correct value, then rerun auto-solve; expect Score 50/50 and manifest all true.",
+  "plan": "1) Patch only the level4 solution_token line to the correct computed token. 2) Remove level4 output (and optionally all outputs) then rerun auto-solve. 3) Verify all PASS, Score 50/50, output files non-zero, and manifest.json updated with all passed=true.",
+  "commands": [
+    {
+      "keystrokes": "python3 - <<'PY'\nimport base64\ns='crop=w=200:h=200:x=(iw-200)/2:y=(ih-200)/2'\nprint(base64.b64encode(s[::-1].encode()).decode())\nPY\n",
+      "duration": 0.1
+    },
+    {
+      "keystrokes": "perl -pi -e 's/solution_token=\"KDIwMC1oaS\\(\\(MjAwLXdp\\)To9eTo0MDAyLW9oKDo9eCwyLyk6PTAwMj1oOjAwMj13PXBvcmM=\"/solution_token=\"Mi8pMDAyLWhpKD15OjIvKTAwMi13aSg9eDowMDI9aDowMDI9dz1wb3Jj\"/g' /app/ffpuzzle.py\n",
+      "duration": 0.1
+    },
+    {
+      "keystrokes": "grep -n 'Level(4' -A3 /app/ffpuzzle.py\n",
+      "duration": 0.1
+    },
+    {
+      "keystrokes": "rm -f /app/output/level*_output.* /app/output/_level5_ref_scaleonly.mp4\n",
+      "duration": 0.1
+    },
+    {
+      "keystrokes": "python3 -m py_compile /app/ffpuzzle.py\n",
+      "duration": 1.0
+    },
+    {
+      "keystrokes": "python3 /app/ffpuzzle.py --auto-solve; echo rc=$?\n",
+      "duration": 12.0
+    },
+    {
+      "keystrokes": "ls -la /app/output\n",
+      "duration": 0.1
+    },
+    {
+      "keystrokes": "cat /app/manifest.json\n",
+      "duration": 0.1
+    }
+  ],
+  "task_complete": false
+}

@@ -1,0 +1,36 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.13, pytest-8.4.1, pluggy-1.6.0
+cachedir: /tmp/pytest_cache
+rootdir: /tests
+plugins: json-ctrf-0.3.5
+collected 24 items
+
+../tests/test_outputs.py ........................                        [100%]
+
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED ../tests/test_outputs.py::TestGameScriptExists::test_script_exists
+PASSED ../tests/test_outputs.py::TestGameScriptExists::test_script_is_python
+PASSED ../tests/test_outputs.py::TestAutoSolveMode::test_auto_solve_flag_accepted
+PASSED ../tests/test_outputs.py::TestAutoSolveMode::test_score_line_present
+PASSED ../tests/test_outputs.py::TestAutoSolveMode::test_perfect_score
+PASSED ../tests/test_outputs.py::TestAutoSolveMode::test_all_levels_printed
+PASSED ../tests/test_outputs.py::TestAssetGeneration::test_assets_directory_exists
+PASSED ../tests/test_outputs.py::TestAssetGeneration::test_input_files_generated
+PASSED ../tests/test_outputs.py::TestOutputArtifacts::test_output_directory_exists
+PASSED ../tests/test_outputs.py::TestOutputArtifacts::test_output_files_generated
+PASSED ../tests/test_outputs.py::TestLevel1ScaleDown::test_output_dimensions
+PASSED ../tests/test_outputs.py::TestLevel2Grayscale::test_pixel_format
+PASSED ../tests/test_outputs.py::TestLevel3TrimAudio::test_audio_duration
+PASSED ../tests/test_outputs.py::TestLevel4CenterCrop::test_cropped_dimensions
+PASSED ../tests/test_outputs.py::TestLevel5ScaleAndFlip::test_output_dimensions
+PASSED ../tests/test_outputs.py::TestLevel5ScaleAndFlip::test_hflip_applied
+PASSED ../tests/test_outputs.py::TestManifest::test_manifest_exists
+PASSED ../tests/test_outputs.py::TestManifest::test_manifest_is_valid_json
+PASSED ../tests/test_outputs.py::TestManifest::test_manifest_has_all_levels
+PASSED ../tests/test_outputs.py::TestManifest::test_manifest_entries_have_required_fields
+PASSED ../tests/test_outputs.py::TestManifest::test_manifest_all_passed
+PASSED ../tests/test_outputs.py::TestInteractiveMode::test_auto_solve_documented
+PASSED ../tests/test_outputs.py::TestSolutionObfuscation::test_solutions_not_plaintext
+PASSED ../tests/test_outputs.py::TestDeterminism::test_score_deterministic
+============================= 24 passed in 42.63s ==============================

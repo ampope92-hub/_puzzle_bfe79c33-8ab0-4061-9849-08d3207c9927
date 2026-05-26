@@ -1,0 +1,13 @@
+New Terminal Output:
+
+root@4a19ba4e37d0:/app# sed -n '67,75p' /app/ffpuzzle.py
+        "output_file": os.path.join(OUTPUT_DIR, "level2_output.mp4"),
+        "ffmpeg_template": [
+            "ffmpeg", "-y", "-i", os.path.join(ASSETS_DIR, "level2_input.mp4"),
+            "-vf", "{filtergraph}",
+            "-c:v", "libx264", "-pix_fmt", "gray",
+            os.path.join(OUTPUT_DIR, "level2_output.mp4")
+        ],
+        "solution": "format=gray",
+        "validation": {
+root@4a19ba4e37d0:/app#

@@ -1,0 +1,143 @@
+New Terminal Output:
+
+root@e5fbd4ec3cda:/app# nl -ba /app/ffpuzzle.py | sed -n '190,260p'
+   190      h = int(v.get("height", -1))
+   191      if w == 200 and h == 200:
+   192          return True, ""
+   193      return False, f"Expected 200x200, got {w}x{h}"
+   194
+   195
+   196  def val_scale_and_hflip(path: str) -> Tuple[bool, str]:
+   197      # Validate size and also that it is horizontally flipped relative to a known reference.
+   198      # We'll check flip by comparing left vs right edge luma sums against a reference frame.
+   199      p = ffprobe_json(path)
+   200      v = get_first_stream(p, "video")
+   201      w = int(v.get("width", -1))
+   202      h = int(v.get("height", -1))
+   203      if not (w == 320 and h == 240):
+   204          return False, f"Expected 320x240, got {w}x{h}"
+   205
+   206      # Produce a deterministic signature using ffmpeg: sample frame 0 as gray, compute crop stats.
+   207      # We'll compute mean of left 10px and right 10px and ensure swapped vs non-flipped reference.
+   208      # Reference: generate the expected (scale only) version and compare edge means.
+   209      ref = os.path.join(OUTPUT_DIR, "__ref_level5_scaleonly.mp4")
+   210      # Create ref if missing.
+   211      if not os.path.exists(ref):
+   212          inp = os.path.join(ASSETS_DIR, "level5_input.mp4")
+   213          cp = run(["ffmpeg", "-y", "-v", "error", "-i", inp, "-vf", "scale=320:240,format=gray", "-frames:v", "1", ref])
+   214          if cp.returncode != 0:
+   215              return False, "Failed generating reference for flip validation"
+   216
+   217      def edge_means(video_path: str) -> Tuple[float, float]:
+   218          # Use signalstats to get YAVG for left and right crops
+   219          # Extract one frame, convert to gray, split crops, compute metadata.
+   220          filt = (
+   221              "format=gray,"
+   222              "split=2[l][r];"
+   223              "[l]crop=10:240:0:0,signalstats,metadata=print:file=-,nullsink;"
+   224              "[r]crop=10:240:310:0,signalstats,metadata=print:file=-,nullsink
+   225          )
+   226          cp = run(["ffmpeg", "-v", "error", "-i", video_path, "-filter_complex", filt, "-frames:v", "1", "-f", "null", "-"])
+   227          if cp.returncode != 0:
+   228              raise RuntimeError(cp.stderr.strip() or "edge means ffmpeg failed")
+   229          out = cp.stdout.strip().splitlines()
+   230          # Parse lines like: frame:... lavfi.signalstats.YAVG=...
+   231          left = None
+   232          right = None
+   233          for line in out:
+   234              if "lavfi.signalstats.YAVG=" in line:
+   235                  val = float(line.split("lavfi.signalstats.YAVG=")[-1])
+   236                  if left is None:
+   237                      left = val
+   238                  else:
+   239                      right = val
+   240          if left is None or right is None:
+   241              raise RuntimeError("Could not parse YAVG")
+   242          return left, right
+   243
+   244      try:
+   245          ref_l, ref_r = edge_means(ref)
+   246          out_l, out_r = edge_means(path)
+   247      except Exception as e:
+   248          return False, f"Flip validation error: {e}"
+   249
+   250      # For a horizontal flip, left/right should swap approximately.
+   251      if abs(out_l - ref_r) < 1.0 and abs(out_r - ref_l) < 1.0:
+   252          return True, ""
+   253      return False, f"Expected horizontal flip signature; got edges (L,R)=({out_l:.2f},{out_r:.2f}) vs ref (L,R)=({ref_l:.2f},{ref_r:.2f})"
+   254
+   255
+   256  # ---- Solution obfuscation ----
+   257
+   258  def _rot13(s: str) -> str:
+   259      a = []
+   260      for ch in s:
+root@e5fbd4ec3cda:/app# python3 - <<'PY'
+> from pathlib import Path
+> p=Path('/app/ffpuzzle.py').read_text(encoding='utf-8',errors='replace').splitlines(True)
+> out=[]
+> i=0
+> while i < len(p):
+>     line=p[i]
+>     if line.startswith('        filt = (') and 'def edge_means' in ''.join(p[max(0,i-15):i]):
+>         # replace until closing paren line that ends the tuple expression
+>         out.append('        filt = "format=gray,split=2[l][r];[l]crop=10:240:0:0,signalstats,metadata=print:file=-,nullsink;[r]crop=10:240:310:0,signalstats,m
+etadata=print:file=-,nullsink"\n')
+>         i += 1
+>         # skip old block
+>         depth=1
+>         while i < len(p) and depth>0:
+>             if p[i].strip() == ')':
+>                 depth=0
+>                 i += 1
+>                 break
+>             i += 1
+>         continue
+>     out.append(line)
+>     i += 1
+> Path('/app/ffpuzzle.py').write_text(''.join(out),encoding='utf-8')
+> print('patched')
+> PY
+patched
+root@e5fbd4ec3cda:/app# python3 -m py_compile /app/ffpuzzle.py
+root@e5fbd4ec3cda:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Downscale
+  PASS
+Level 2: Grayscale
+  PASS
+Level 3: Audio trim
+  PASS
+Level 4: Center crop
+  PASS
+Level 5: Scale + hflip
+  PASS
+Score: 50/50
+root@e5fbd4ec3cda:/app# cat /app/manifest.json
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.avi",
+    "passed": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "passed": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "passed": true
+  }
+]
+root@e5fbd4ec3cda:/app#

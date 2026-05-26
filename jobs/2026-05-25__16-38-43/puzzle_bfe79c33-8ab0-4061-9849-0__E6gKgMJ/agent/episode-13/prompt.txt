@@ -1,0 +1,49 @@
+New Terminal Output:
+
+root@cfac50873e20:/app# cat /app/manifest.json
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "valid": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.mkv",
+    "valid": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "valid": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "valid": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "valid": true
+  }
+]root@cfac50873e20:/app# ls -la /app/output/
+total 656
+drwxr-xr-x 2 root root   4096 May 25 21:46 .
+drwxr-xr-x 1 root root   4096 May 25 21:46 ..
+-rw-r--r-- 1 root root  12663 May 25 21:46 level1_output.mp4
+-rw-r--r-- 1 root root 343164 May 25 21:46 level2_output.mkv
+-rw-r--r-- 1 root root  13355 May 25 21:39 level2_output.mp4
+-rw-r--r-- 1 root root 264678 May 25 21:46 level3_output.wav
+-rw-r--r-- 1 root root   3138 May 25 21:46 level4_output.mp4
+-rw-r--r-- 1 root root  12396 May 25 21:46 level5_output.mp4
+root@cfac50873e20:/app# ls -la /app/assets/
+total 952
+drwxr-xr-x 2 root root   4096 May 25 21:39 .
+drwxr-xr-x 1 root root   4096 May 25 21:46 ..
+-rw-r--r-- 1 root root  17886 May 25 21:46 level1_input.mp4
+-rw-r--r-- 1 root root  17886 May 25 21:46 level2_input.mp4
+-rw-r--r-- 1 root root 882078 May 25 21:46 level3_input.wav
+-rw-r--r-- 1 root root  17886 May 25 21:46 level4_input.mp4
+-rw-r--r-- 1 root root  17886 May 25 21:46 level5_input.mp4
+root@cfac50873e20:/app#

@@ -1,0 +1,6 @@
+{
+  "analysis": "All five levels now PASS in --auto-solve mode with deterministic outputs written to /app/output. The required final score line is printed exactly as `Score: 50/50`. A JSON manifest is written to /app/manifest.json listing every generated output file with level number, filename/path, and validation status true for all. Interactive mode remains available. Directories /app/assets and /app/output are created automatically. Validation uses ffprobe JSON and is strict for width/height and pix_fmt gray (level 2 now outputs MKV/FFV1 to preserve pix_fmt==gray).",
+  "plan": "No further changes needed. Mark task complete.",
+  "commands": [],
+  "task_complete": true
+}

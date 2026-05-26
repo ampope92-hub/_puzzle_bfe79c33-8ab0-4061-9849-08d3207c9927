@@ -1,0 +1,62 @@
+New Terminal Output:
+
+root@4a19ba4e37d0:/app# cat /app/manifest.json
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "valid": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.mkv",
+    "valid": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.m4a",
+    "valid": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "valid": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "valid": true
+  }
+]root@4a19ba4e37d0:/app# ls -la /app/output/
+total 408
+drwxr-xr-x 2 root root   4096 May 25 17:45 .
+drwxr-xr-x 1 root root   4096 May 25 17:45 ..
+-rw-r--r-- 1 root root  12663 May 25 17:45 level1_output.mp4
+-rw-r--r-- 1 root root 343164 May 25 17:45 level2_output.mkv
+-rw-r--r-- 1 root root  27678 May 25 17:45 level3_output.m4a
+-rw-r--r-- 1 root root   3138 May 25 17:45 level4_output.mp4
+-rw-r--r-- 1 root root  12396 May 25 17:45 level5_output.mp4
+root@4a19ba4e37d0:/app# ls -la /app/assets/
+total 176
+drwxr-xr-x 2 root root  4096 May 25 17:45 .
+drwxr-xr-x 1 root root  4096 May 25 17:45 ..
+-rw-r--r-- 1 root root 17886 May 25 17:45 level1_input.mp4
+-rw-r--r-- 1 root root 17886 May 25 17:45 level2_input.mp4
+-rw-r--r-- 1 root root 89313 May 25 17:45 level3_input.m4a
+-rw-r--r-- 1 root root 17886 May 25 17:45 level4_input.mp4
+-rw-r--r-- 1 root root 17886 May 25 17:45 level5_input.mp4
+root@4a19ba4e37d0:/app# rm -rf /app/assets /app/output /app/manifest.json && python3 /app/ffpuzzle.py --auto-solve
+Level 1: Scale Down
+  PASS
+Level 2: Grayscale Conversion
+  PASS
+Level 3: Trim Audio
+  PASS
+Level 4: Center Crop
+  PASS
+Level 5: Scale and Flip
+  PASS
+
+Score: 50/50
+Manifest written to /app/manifest.json
+root@4a19ba4e37d0:/app#

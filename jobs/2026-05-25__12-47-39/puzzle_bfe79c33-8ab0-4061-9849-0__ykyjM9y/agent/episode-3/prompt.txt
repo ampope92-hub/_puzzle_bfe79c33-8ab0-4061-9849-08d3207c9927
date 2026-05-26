@@ -1,0 +1,48 @@
+New Terminal Output:
+
+root@3087a4c2cc3c:/app# cat /app/manifest.json
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mkv",
+    "validation": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.mkv",
+    "validation": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "validation": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mkv",
+    "validation": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mkv",
+    "validation": true
+  }
+]root@3087a4c2cc3c:/app# ls -la /app/output/
+total 1228
+drwxr-xr-x 2 root root   4096 May 25 17:50 .
+drwxr-xr-x 1 root root   4096 May 25 17:50 ..
+-rw-r--r-- 1 root root 325551 May 25 17:50 level1_output.mkv
+-rw-r--r-- 1 root root 316894 May 25 17:50 level2_output.mkv
+-rw-r--r-- 1 root root 264678 May 25 17:50 level3_output.wav
+-rw-r--r-- 1 root root  11473 May 25 17:50 level4_output.mkv
+-rw-r--r-- 1 root root 322797 May 25 17:50 level5_output.mkv
+root@3087a4c2cc3c:/app# ls -la /app/assets/
+total 1176
+drwxr-xr-x 2 root root   4096 May 25 17:50 .
+drwxr-xr-x 1 root root   4096 May 25 17:50 ..
+-rw-r--r-- 1 root root  76229 May 25 17:50 level1_input.mp4
+-rw-r--r-- 1 root root  76229 May 25 17:50 level2_input.mp4
+-rw-r--r-- 1 root root 882078 May 25 17:50 level3_input.wav
+-rw-r--r-- 1 root root  76229 May 25 17:50 level4_input.mp4
+-rw-r--r-- 1 root root  76229 May 25 17:50 level5_input.mp4
+root@3087a4c2cc3c:/app#

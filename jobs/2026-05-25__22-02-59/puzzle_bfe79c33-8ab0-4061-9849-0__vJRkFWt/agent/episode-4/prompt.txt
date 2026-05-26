@@ -1,0 +1,58 @@
+New Terminal Output:
+
+root@5725dfbaeccb:/app# python3 - <<'PY'
+> import re
+> p='/app/ffpuzzle.py'
+> text=open(p,'r',encoding='utf-8').read()
+> # Replace the ffmpeg command block inside ssim_score
+> text=re.sub(r'cp = run\(\[\n\s*"ffmpeg", "-v", "error",\n\s*"-i", in_path,\n\s*"-i", path,\n\s*"-t", "1",\n\s*"-filter_complex", f"\[0:v\]\{ref_vf\}\[ref\];\[
+ref\]\[1:v\]ssim",\n\s*"-f", "null", "-"\n\s*\], capture=True\)',
+>             'cp = run([\n            "ffmpeg", "-hide_banner", "-nostats", "-v", "info",\n            "-i", in_path,\n            "-i", path,\n            "-t
+", "1",\n            "-filter_complex", f"[0:v]{ref_vf},format=yuv420p[ref];[1:v]format=yuv420p[out];[ref][out]ssim",\n            "-f", "null", "-"\n        ],
+ capture=True)',
+>             text,
+>             flags=re.S)
+> open(p,'w',encoding='utf-8').write(text)
+> PY
+root@5725dfbaeccb:/app# python3 -m py_compile /app/ffpuzzle.py
+root@5725dfbaeccb:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Scale down
+  PASS
+Level 2: Grayscale
+  PASS
+Level 3: Audio trim
+  PASS
+Level 4: Center crop
+  PASS
+Level 5: Scale + flip
+  PASS
+Score: 50/50
+root@5725dfbaeccb:/app# cat /app/manifest.json
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.avi",
+    "passed": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "passed": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "passed": true
+  }
+]
+root@5725dfbaeccb:/app#

@@ -1,0 +1,17 @@
+New Terminal Output:
+
+root@cfac50873e20:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Scale Down
+Traceback (most recent call last):
+  File "/app/ffpuzzle.py", line 205, in <module>
+    main()
+    ~~~~^^
+  File "/app/ffpuzzle.py", line 199, in main
+    ok = auto_solve()
+  File "/app/ffpuzzle.py", line 157, in auto_solve
+    passed, ofn = run_level(level, level["solution"], verbose=True)
+                  ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/ffpuzzle.py", line 136, in run_level
+    inp = gen_input(num, itype, **params)
+TypeError: gen_input() got an unexpected keyword argument 'duration'
+root@cfac50873e20:/app#

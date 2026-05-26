@@ -1,0 +1,12 @@
+Skipping image OS validation for hb__puzzle_bfe79c33-8ab0-4061-9849-08d3207c9927: docker inspect returned 1
+Both tmux and asciinema are already installed
+Starting recording.
+Sending keys: ['asciinema rec --stdin /logs/agent/recording.cast', 'Enter'] min_timeout_sec: 1.0 max_timeout_sec: 180.0
+Sending keys: ['clear', 'Enter'] min_timeout_sec: 0.0 max_timeout_sec: 180.0
+Failed to retrieve model info for 'openai/@openai/gpt-5.2': This model isn't mapped yet. model=openai/@openai/gpt-5.2, custom_llm_provider=openai. Add it here - https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json.. Using fallback context limit: 1000000
+Unknown Error in LLM interaction: litellm.APIError: APIError: OpenAIException - Portkey Error: Portkey API Key Usage Limit Exceeded. Error Code: 04
+Unknown Error in LLM interaction: litellm.APIError: APIError: OpenAIException - Portkey Error: Portkey API Key Usage Limit Exceeded. Error Code: 04
+Unknown Error in LLM interaction: litellm.APIError: APIError: OpenAIException - Portkey Error: Portkey API Key Usage Limit Exceeded. Error Code: 04
+Trajectory dumped to jobs/2026-05-25__11-52-39/puzzle_bfe79c33-8ab0-4061-9849-0__8jymsUT/agent/trajectory.json
+Trial puzzle_bfe79c33-8ab0-4061-9849-0__8jymsUT failed: litellm.APIError: APIError: OpenAIException - Portkey Error: Portkey API Key Usage Limit Exceeded. Error Code: 04
+Not retrying trial because the maximum number of retries has been reached

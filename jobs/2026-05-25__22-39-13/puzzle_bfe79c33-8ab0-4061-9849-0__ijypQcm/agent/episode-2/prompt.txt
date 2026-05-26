@@ -1,0 +1,38 @@
+Current terminal state:
+New Terminal Output:
+
+root@b563ed70421a:/app# cat /app/manifest.json
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.avi",
+    "passed": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "passed": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "passed": true
+  }
+]root@b563ed70421a:/app# ls /app/assets/
+level1_input.mp4  level2_input.avi  level3_input.wav  level4_input.mp4  level5_input.mp4
+root@b563ed70421a:/app# ls /app/output/
+level1_output.mp4  level2_output.avi  level3_output.wav  level4_output.mp4  level5_output.mp4
+root@b563ed70421a:/app#
+
+
+Are you sure you want to mark the task as complete? This will trigger your solution to be graded and you won't be able to make any further corrections. If so, include "task_complete": true in your JSON response again.

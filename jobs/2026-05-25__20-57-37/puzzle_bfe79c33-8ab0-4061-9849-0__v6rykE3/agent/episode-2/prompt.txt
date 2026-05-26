@@ -1,0 +1,109 @@
+Current terminal state:
+New Terminal Output:
+
+root@f60baa5129b7:/app# ls -la /app/assets /app/output
+/app/assets:
+total 28676
+drwxr-xr-x 2 root root     4096 May 26 01:58 .
+drwxr-xr-x 1 root root     4096 May 26 01:58 ..
+-rw-r--r-- 1 root root   243061 May 26 01:58 level1_input.mp4
+-rw-r--r-- 1 root root 27655202 May 26 01:58 level2_input.avi
+-rw-r--r-- 1 root root   960078 May 26 01:58 level3_input.wav
+-rw-r--r-- 1 root root   243061 May 26 01:58 level4_input.mp4
+-rw-r--r-- 1 root root   243061 May 26 01:58 level5_input.mp4
+
+/app/output:
+total 18412
+drwxr-xr-x 2 root root     4096 May 26 01:58 .
+drwxr-xr-x 1 root root     4096 May 26 01:58 ..
+-rw-r--r-- 1 root root    43289 May 26 01:58 level1_output.mp4
+-rw-r--r-- 1 root root 18439202 May 26 01:58 level2_output.avi
+-rw-r--r-- 1 root root   288078 May 26 01:58 level3_output.wav
+-rw-r--r-- 1 root root    23565 May 26 01:58 level4_output.mp4
+-rw-r--r-- 1 root root    44546 May 26 01:58 level5_output.mp4
+root@f60baa5129b7:/app# python3 -m py_compile /app/ffpuzzle.py
+root@f60baa5129b7:/app# head -n 80 /app/ffpuzzle.py
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import subprocess
+import sys
+from dataclasses import dataclass
+from typing import Callable, Dict, List, Optional, Tuple
+
+ASSETS_DIR = "/app/assets"
+OUTPUT_DIR = "/app/output"
+MANIFEST_PATH = "/app/manifest.json"
+
+
+def run(cmd: List[str]) -> subprocess.CompletedProcess:
+    return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+
+def ensure_dirs() -> None:
+    os.makedirs(ASSETS_DIR, exist_ok=True)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+def ffprobe_json(path: str) -> Dict:
+    cmd = [
+        "ffprobe",
+        "-v",
+        "error",
+        "-print_format",
+        "json",
+        "-show_format",
+        "-show_streams",
+        path,
+    ]
+    p = run(cmd)
+    if p.returncode != 0:
+        raise RuntimeError(f"ffprobe failed for {path}: {p.stderr.strip()}")
+    return json.loads(p.stdout)
+
+
+def get_first_stream(probe: Dict, codec_type: str) -> Optional[Dict]:
+    for st in probe.get("streams", []):
+        if st.get("codec_type") == codec_type:
+            return st
+    return None
+
+
+def safe_float(x: Optional[str], default: float = 0.0) -> float:
+    if x is None:
+        return default
+    try:
+        return float(x)
+    except Exception:
+        return default
+
+
+def generate_inputs() -> None:
+    """Generate deterministic synthetic media for all levels, if missing."""
+
+    # Level 1: 640x480 video 2 seconds
+    l1 = os.path.join(ASSETS_DIR, "level1_input.mp4")
+    if not os.path.exists(l1):
+        p = run([
+            "ffmpeg", "-y",
+            "-f", "lavfi", "-i", "testsrc2=size=640x480:rate=30",
+            "-t", "2",
+            "-pix_fmt", "yuv420p",
+            l1,
+        ])
+        if p.returncode != 0:
+            raise RuntimeError(p.stderr)
+
+    # Level 2: 640x480 video in AVI, rawvideo codec to preserve pix_fmt checking
+    l2 = os.path.join(ASSETS_DIR, "level2_input.avi")
+    if not os.path.exists(l2):
+        p = run([
+            "ffmpeg", "-y",
+            "-f", "lavfi", "-i", "testsrc2=size=640x480:rate=30",
+            "-t", "2",
+            "-c:v", "rawvideo",
+root@f60baa5129b7:/app#
+
+
+Are you sure you want to mark the task as complete? This will trigger your solution to be graded and you won't be able to make any further corrections. If so, include "task_complete": true in your JSON response again.

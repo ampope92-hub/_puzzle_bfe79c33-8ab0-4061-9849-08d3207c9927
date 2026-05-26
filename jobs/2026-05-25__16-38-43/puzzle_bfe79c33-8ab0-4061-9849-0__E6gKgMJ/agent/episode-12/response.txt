@@ -1,0 +1,19 @@
+{
+  "analysis": "All 5 levels pass with a perfect score of 50/50. The auto-solve mode works correctly. Let me verify the output artifacts and manifest were created properly.",
+  "plan": "Check that the manifest.json exists and is correct, and that the output directory has all expected files.",
+  "commands": [
+    {
+      "keystrokes": "cat /app/manifest.json\n",
+      "duration": 0.1
+    },
+    {
+      "keystrokes": "ls -la /app/output/\n",
+      "duration": 0.1
+    },
+    {
+      "keystrokes": "ls -la /app/assets/\n",
+      "duration": 0.1
+    }
+  ],
+  "task_complete": false
+}

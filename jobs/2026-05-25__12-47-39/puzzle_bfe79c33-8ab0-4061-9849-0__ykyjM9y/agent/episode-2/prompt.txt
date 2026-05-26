@@ -1,0 +1,317 @@
+New Terminal Output:
+
+root@3087a4c2cc3c:/app# cat > /app/ffpuzzle.py << 'ENDOFSCRIPT'
+> #!/usr/bin/env python3
+> """FFmpeg Filtergraph Puzzle Game
+>
+> A terminal-based puzzle game that teaches FFmpeg filtergraphs
+> by having players solve progressively harder media transformation challenges.
+>
+> Usage:
+>     python ffpuzzle.py              # Interactive mode
+>     python ffpuzzle.py --auto-solve # Auto-solve mode for CI
+> """
+>
+                return False, f"Pixel format mismatch: got {pix_fmt}, expected {check['pix_fmt']}"
+
+        elif check_type == "duration":
+            duration = None
+            if "duration" in format_info:
+                duration = float(format_info["duration"])
+            else:
+                for s in streams:
+                    if "duration" in s:
+       > import argparse
+                > import json
+> import os
+> import subprocess
+> import sys
+>
+> # Directories
+> ASSETS_DIR = "/app/assets"
+> OUTPUT_DIR = "/app/output"
+F> MANIFEST_PATH = "/app/manifest.json"
+>
+> # Points per level
+> POINTS_PER_LEVEL = 10
+>
+>
+> def ensure_dirs():
+>     """Create assets and output directories if they don't exist."""
+>     os.makedirs(ASSETS_DIR, exist_ok=True)
+) > tolerance:
+                return False>     os.makedirs(OUTPUT_DIR, exist_ok=True)
+f}s,>
+ >
+> def run_ffmpeg(args, timeout=30):
+>     """Run an FFmpeg command and return the result."""
+ura>     cmd = ["ffmpeg", "-y"] + args
+>     result = subprocess.run(
+>         cmd,
+>         stdout=subprocess.PIPE,
+>         stderr=subprocess.PIPE,
+    >         timeout=timeout
+>     )
+>     return result
+>
+>
+ > def run_ffprobe_json(filepath):
+>     """Run ffprobe on a file and return parsed JSON output."""
+  >     cmd = [
+>         "ffprobe",
+>         "-v", "quiet",
+>         "-print_format", "json",
+>         "-show_format",
+>         "-show_streams",
+>         filepath
+>     ]
+mat_in>     result = subprocess.run(
+>         cmd,
+>         stdout=subprocess.PIPE,
+>         stderr=subprocess.PIPE,
+    >         timeout=15
+False, >     )
+d>     if result.returncode != 0:
+"
+>         return None
+>     try:
+>         return json.loads(result.stdout.decode())
+>     except json.JSONDecodeError:
+>         return None
+>
+ >
+>> def generate_input(level):
+          >     """Generate synthetic input for a level using lavfi sources."""
+c>     input_path = os.path.join(ASSETS_DIR, level["input_file"])
+>     args = level["input_gen_args"]
+>     args = [a.replace("__OUTPUT__", input_path) for a in args]
+>     result = run_ffmpeg(args)
+>     if result.returncode != 0:
+>         print(f"  ERROR generating input: {result.stderr.decode()[-500:]}")
+>         return None
+>     return input_path
+: Use the 'scale' filter with width:height>
+>
+> def apply_filtergraph(input_path, filtergraph, output_path, level):
+>     """Apply a user's filtergraph to the input and produce output."""
+>     media_type = level.get("media_type", "video")
+>     output_args = level.get("output_args", [])
+>
+>     if media_type == "audio":
+>         args = [
+>             "-i", input_path,
+>             "-af", filtergraph,
+>             "-vn"
+>         ] + output_args + [output_path]
+gs": ["-c:v", >     else:
+>         args = [
+>             "-i", input_path,
+: "scale=320:240",
+        "va>             "-vf", filtergraph,
+>             "-an",
+lidation": [
+            {"type": "video_dimensions>             "-t", "2"
+>         ] + output_args + [output_path]
+>
+>     result = run_ffmpeg(args)
+>     return result.returncode == 0
+>
+>
+> def validate_output(output_path, level):
+>     """Validate the output file against level requirements using ffprobe."""
+>     probe_data = run_ffprobe_json(output_path)
+>     if probe_data is None:
+>         return False, "Could not probe output file"
+
+        "input_>
+f>     checks = level["validation"]
+>     streams = probe_data.get("streams", [])
+>     format_info = probe_data.get("format", {})
+>
+>     for check in checks:
+r>         check_type = check["type"]
+0x480:rate=25",>
+>         if check_type == "video_dimensions":
+>             video_stream = None
+>             for s in streams:
+U>                 if s.get("codec_type") == "video":
+>                     video_stream = s
+>                     break
+>             if video_stream is None:
+>                 return False, "No video stream found"
+>             width = video_stream.get("width")
+>             height = video_stream.get("height")
+>             if width != check["width"] or height != check["height"]:
+>                 return False, f"Dimensions mismatch: got {width}x{height}, expected {check['width']}x{check['height']}"
+>
+audio",
+      >         elif check_type == "pixel_format":
+>             video_stream = None
+>             for s in streams:
+>                 if s.get("codec_type") == "video":
+>                     video_stream = s
+>                     break
+   >             if video_stream is None:
+>                 return False, "No video stream found"
+TS-STARTPT>             pix_fmt = video
+[... output limited to 10000 bytes; 70 interior bytes omitted ...]
+       })
+>
+>     # Print final score
+>     print(f"\nScore: {earned_points}/{total_points}")
+>
+>     # Write manifest
+>     with open(MANIFEST_PATH, "w") as f:
+>         json.dump(manifest_entries, f, indent=2)
+>
+>     print(f"\nManifest written to {MANIFEST_PATH}")
+>     print(f"Output files in {OUTPUT_DIR}/")
+>
+>     return earned_points == total_points
+>
+>
+> def interactive_mode():
+>     """Run the game in interactive mode."""
+>     ensure_dirs()
+>
+>     total_points = len(LEVELS) * POINTS_PER_LEVEL
+>     earned_points = 0
+>     manifest_entries = []
+>
+>     print("\n" + "=" * 50)
+>     print("  FFmpeg Filtergraph Puzzle Game")
+>     print("  Learn FFmpeg filters by solving challenges!")
+>     print("=" * 50)
+>     print(f"\n  {len(LEVELS)} levels, {POINTS_PER_LEVEL} points each.")
+>     print("  Type 'quit' to exit, 'skip' to skip a level.")
+>     print("  Type 'hint' to see the level hint again.\n")
+>
+>     for level in LEVELS:
+>         print(f"\n{'='*50}")
+>         print(f"  {level['name']}")
+>         print(f"{'='*50}")
+>         print(f"\n{level['description']}")
+>
+>         # Generate input
+>         print("  Generating input media...")
+>         input_path = generate_input(level)
+>         if input_path is None:
+>             print("  Error generating input. Skipping level.")
+>             manifest_entries.append({
+>                 "level": level["number"],
+>                 "filename": level["output_file"],
+>                 "validation": False
+>             })
+>             continue
+>         print(f"  Input ready: {input_path}")
+>
+>         passed = False
+>         attempts = 0
+>         max_attempts = 5
+>
+>         while not passed and attempts < max_attempts:
+>             attempts += 1
+>             remaining = max_attempts - attempts
+>
+>             try:
+>                 user_input = input(f"\n  Enter your filtergraph ({remaining} attempts left): ").strip()
+>             except (EOFError, KeyboardInterrupt):
+>                 print("\n  Exiting game.")
+>                 sys.exit(0)
+>
+>             if user_input.lower() == "quit":
+>                 print("\n  Thanks for playing!")
+>                 print(f"  Final Score: {earned_points}/{total_points}")
+>                 sys.exit(0)
+>             elif user_input.lower() == "skip":
+>                 print("  Skipping level.")
+>                 break
+>             elif user_input.lower() == "hint":
+>                 print(f"\n{level['description']}")
+>                 attempts -= 1
+>                 continue
+>             elif not user_input:
+>                 print("  Please enter a filtergraph expression.")
+>                 attempts -= 1
+>                 continue
+>
+>             # Apply filtergraph
+>             output_path = os.path.join(OUTPUT_DIR, level["output_file"])
+>             success = apply_filtergraph(input_path, user_input, output_path, level)
+>             if not success:
+>                 print("  FFmpeg error - your filtergraph syntax may be incorrect.")
+>                 continue
+>
+>             # Validate
+>             passed, message = validate_output(output_path, level)
+>             if passed:
+>                 print(f"  PASS! +{POINTS_PER_LEVEL} points")
+>                 earned_points += POINTS_PER_LEVEL
+>             else:
+>                 print(f"  Not quite: {message}")
+>                 if attempts >= max_attempts:
+>                     print(f"  The correct answer was: {level['solution']}")
+>
+>         manifest_entries.append({
+>             "level": level["number"],
+>             "filename": level["output_file"],
+>             "validation": passed
+>         })
+>
+>     # Final score
+>     print(f"\n{'='*50}")
+>     print(f"  Game Over!")
+>     print(f"  Score: {earned_points}/{total_points}")
+>     print(f"{'='*50}")
+>
+>     # Write manifest
+>     with open(MANIFEST_PATH, "w") as f:
+>         json.dump(manifest_entries, f, indent=2)
+>
+>     print(f"\n  Manifest written to {MANIFEST_PATH}")
+>     print(f"  Output files in {OUTPUT_DIR}/")
+>
+>
+> def main():
+>     parser = argparse.ArgumentParser(description="FFmpeg Filtergraph Puzzle Game")
+>     parser.add_argument(
+>         "--auto-solve",
+>         action="store_true",
+>         help="Run all levels with known correct solutions (CI mode)"
+>     )
+>     args = parser.parse_args()
+>
+>     if args.auto_solve:
+>         success = auto_solve_mode()
+>         sys.exit(0 if success else 1)
+>     else:
+>         interactive_mode()
+>
+>
+> if __name__ == "__main__":
+>     main()
+> ENDOFSCRIPT
+root@3087a4c2cc3c:/app# rm -rf /app/output /app/assets /app/manifest.json && python3 /app/ffpuzzle.py --auto-solve
+FFmpeg Filtergraph Puzzle - Auto-Solve Mode
+==================================================
+
+Level 1: Scale Down
+PASS
+
+Level 2: Convert to Grayscale
+PASS
+
+Level 3: Trim Audio
+PASS
+
+Level 4: Crop Center Region
+PASS
+
+Level 5: Scale and Flip (Multi-step)
+PASS
+
+Score: 50/50
+
+Manifest written to /app/manifest.json
+Output files in /app/output/
+root@3087a4c2cc3c:/app#

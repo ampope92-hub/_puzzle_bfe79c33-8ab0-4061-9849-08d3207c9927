@@ -1,0 +1,291 @@
+New Terminal Output:
+root@5601f0fc910a:/app# cat > /app/ffpuzzle.py << 'PYTHON_SCRIPT'
+> #!/usr/bin/env python3
+> import subprocess
+> import json
+> import sys
+> import os
+> import base64
+",
+           >
+> ASSETS_DIR = "/app/assets"
+> OUTPUT_DIR = "/app/output"
+> MANIFEST_PATH = "/app/manifest.json"
+>
+> # Solutions are base64-encoded to avoid plaintext spoilers
+> # Each entry: base64(reversed(solution))
+ "build_cmd": lambda> def _encode_solution(s):
+>     return base64.b64encode(s[::-1].encode()).decode()
+>
+> def _decode_solution(encoded):
+>     return base64.b64decode(encoded.encode()).decode()[::-1]
+uv420p", out
+        ],
+        "solution": _decode_solution(>
+> LEVELS = [
+>     {
+>         "level": 1,
+>         "name": "Scale Down",
+>         "description": "Scale a 640x480 video down to 320x240.\nInput: 640x480 video\nGoal: Output must be 320x240",
+>         "input_file": "level1_input.mp4",
+>         "output_file": "level1_output.mp4",
+>         "gen_input": [
+>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+>             "testsrc=duration=2:size=640x480:rate=25",
+>             "-c:v", "libx264", "-pix_fmt", "yuv420p",
+>             os.path.join(ASSETS_DIR, "level1_input.mp4")
+>         ],
+>         "build_cmd": lambda fg, inp, out: [
+>             "ffmpeg", "-y", "-i", inp, "-vf", fg,
+>             "-c:v", "libx264", "-pix_fmt", "yuv420p", out
+U>         ],
+>         "solution": _decode_solution("MDQyeDAyMz1lbGFjcw=="),
+>         "validate": lambda probe: (
+>             probe.get("width") == 320 and probe.get("height") == 240
+>         ),
+>     },
+code != 0:
+>     {
+>         "level": 2,
+>         "name": "Grayscale Conversion",
+>         "description": "Convert a video to grayscale.\nInput: Color video\nGoal: Output pixel format must be 'gray'",
+>         "input_file": "level2_input.avi",
+>         "output_file": "level2_output.avi",
+>         "gen_input": [
+>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+    result = subprocess.run(cmd, stdout=subproces>             "testsrc=duration=2:size=640x480:rate=25",
+>             "-c:v", "rawvideo", "-pix_fmt", "rgb24",
+>             os.path.join(ASSETS_DIR, "level2_input.avi")
+>         ],
+>         "build_cmd": lambda fg, inp, out: [
+>             "ffmpeg", "-y", "-i", inp, "-vf", fg,
+>             "-c:v", "rawvideo", "-pix_fmt", "gray", out
+>         ],
+>         "solution": _decode_solution("eWFyZz10YW1yb2Y="),
+>         "validate": lambda probe: (
+>             probe.get("pix_fmt") == "gray"
+>         ),
+>     },
+>     {
+>         "level": 3,
+>         "name": "Audio Trim",
+>         "description": "Trim a 10-second audio clip to exactly 3 seconds.\nInput: 10-second audio\nGoal: Output duration must be ~3 seconds (2.9-3.1s)",
+>         "input_file": "level3_input.wav",
+  info["duration"] = str>         "output_file": "level3_output.wav",
+>         "gen_input": [
+>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+>             "sine=frequency=440:duration=10",
+>             os.path.join(ASSETS_DIR, "level3_input.wav")
+>         ],
+>         "build_cmd": lambda fg, inp, out: [
+>             "ffmpeg", "-y", "-i", inp, "-af", fg, out
+>         ],
+>         "solution": _decode_solution("MzowPW1pcnRh"),
+>         "validate": lambda probe: (
+>             2.9 <= float(probe.get("duration", 0)) <= 3.1
+>         ),
+>     },
+>     {
+>         "level": 4,
+>         "name": "Center Crop",
+>         "description": "Crop the center 200x200 region from a 640x480 video.\nInput: 640x480 video\nGoal: Output must be 200x200",
+>         "input_file": "level4_input.mp4",
+>         "output_file": "level4_output.mp4",
+>         "gen_input": [
+>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+>             "testsrc=duration=2:size=640x480:rate=25",
+>             "-c:v", "libx264", "-pix_fmt", "yuv420p",
+>             os.path.join(ASSETS_DIR, "level4_input.mp4")
+>         ],
+>         "build_cmd": lambda fg, inp, out: [
+>             "ffmpeg", "-y", "-i", inp, "-vf", fg,
+>             "-c:v", "libx264", "-pix_fmt", "yuv420p", out
+>         ],
+>         "solution": _decode_solution("MDAyOjAwMj1wb3Jj"),
+>         "validate": lambda probe: (
+
+        >             probe.get("width") == 200 and probe.get("height") == 200
+>         ),
+>     },
+>     {
+>         "level": 5,
+>         "name": "Scale and Flip",
+>         "description": "Take a 640x480 video, scale it to 320x240, AND apply a horizontal flip.\nInput: 640x480 video\nGoal: Output must be 320x240 and horizo
+ntally flipped",
+>         "input_file": "level5_input.mp4",
+>         "output_file": "level5_output.mp4",
+>         "gen_input": [
+>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+>             "testsrc=duration=2:size=640x480:rate=25",
+>             "-c:v", "libx264", "-pix_fmt", "yuv420p",
+>             os.path.join(ASSETS_DIR, "level5_input.mp4")
+>         ],
+>         "build_cmd": lambda fg, inp, out: [
+ >             "ffmpeg", "-y", "-i", inp, "-vf", fg,
+>             "-c:v", "libx264", "-pix_fmt", "yuv42
+[... output limited to 10000 bytes; 70 interior bytes omitted ...]
+eturn False
+>     return True
+>
+>
+> def probe_output(level):
+>     out = os.path.join(OUTPUT_DIR, level["output_file"])
+>     cmd = [
+>         "ffprobe", "-v", "quiet", "-print_format", "json",
+>         "-show_streams", out
+>     ]
+>     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+>     if result.returncode != 0:
+>         return None
+>     data = json.loads(result.stdout.decode())
+>     streams = data.get("streams", [])
+>     if not streams:
+>         return None
+>     stream = streams[0]
+>     info = {}
+>     if "width" in stream:
+>         info["width"] = int(stream["width"])
+>     if "height" in stream:
+>         info["height"] = int(stream["height"])
+>     if "pix_fmt" in stream:
+>         info["pix_fmt"] = stream["pix_fmt"]
+>     if "duration" in stream:
+>         info["duration"] = stream["duration"]
+>     elif "tags" in stream and "DURATION" in stream["tags"]:
+>         # Parse HH:MM:SS.xxx format
+>         dur_str = stream["tags"]["DURATION"]
+>         parts = dur_str.split(":")
+>         info["duration"] = str(float(parts[0])*3600 + float(parts[1])*60 + float(parts[2]))
+>     else:
+>         # Try format-level duration
+>         cmd2 = [
+>             "ffprobe", "-v", "quiet", "-print_format", "json",
+>             "-show_format", out
+>         ]
+>         result2 = subprocess.run(cmd2, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+>         if result2.returncode == 0:
+>             fmt_data = json.loads(result2.stdout.decode())
+>             if "format" in fmt_data and "duration" in fmt_data["format"]:
+>                 info["duration"] = fmt_data["format"]["duration"]
+>     return info
+>
+>
+> def validate_level(level, probe_info):
+>     if probe_info is None:
+>         return False
+>     try:
+>         return level["validate"](probe_info)
+>     except (KeyError, TypeError, ValueError):
+>         return False
+>
+>
+> def auto_solve():
+>     ensure_dirs()
+>     manifest = []
+>     score = 0
+>     total = len(LEVELS) * 10
+>
+>     for level in LEVELS:
+>         num = level["level"]
+>         print(f"Level {num}: {level['name']}")
+>
+>         if not generate_input(level):
+>             print("  FAIL")
+>             manifest.append({"level": num, "filename": level["output_file"], "passed": False})
+>             continue
+>
+>         solution = level["solution"]
+>         if not run_filtergraph(level, solution):
+>             print("  FAIL")
+>             manifest.append({"level": num, "filename": level["output_file"], "passed": False})
+>             continue
+>
+>         probe_info = probe_output(level)
+>         passed = validate_level(level, probe_info)
+>
+>         if passed:
+>             print("  PASS")
+>             score += 10
+>         else:
+>             print("  FAIL")
+>
+>         manifest.append({"level": num, "filename": level["output_file"], "passed": passed})
+>
+>     print(f"Score: {score}/{total}")
+>
+>     with open(MANIFEST_PATH, "w") as f:
+>         json.dump(manifest, f, indent=2)
+>
+>
+> def interactive():
+>     ensure_dirs()
+>     score = 0
+>     total = len(LEVELS) * 10
+>
+>     for level in LEVELS:
+>         num = level["level"]
+>         print(f"\n{'='*50}")
+>         print(f"Level {num}: {level['name']}")
+>         print(f"{'='*50}")
+>         print(level["description"])
+>         print()
+>
+>         if not generate_input(level):
+>             print("  Error generating input, skipping level.")
+>             continue
+>
+>         filtergraph = input("Enter your filtergraph: ").strip()
+>
+>         if not run_filtergraph(level, filtergraph):
+>             print("  FAIL - FFmpeg could not apply your filtergraph.")
+>             continue
+>
+>         probe_info = probe_output(level)
+>         passed = validate_level(level, probe_info)
+>
+>         if passed:
+>             print("  PASS")
+>             score += 10
+>         else:
+>             print("  FAIL - Output does not meet requirements.")
+>             if probe_info:
+>                 print(f"  Detected properties: {probe_info}")
+>
+>     print(f"\nScore: {score}/{total}")
+>
+>
+> if __name__ == "__main__":
+>     if "--auto-solve" in sys.argv:
+>         auto_solve()
+>     else:
+>         interactive()
+> PYTHON_SCRIPT
+root@5601f0fc910a:/app# chmod +x /app/ffpuzzle.py
+root@5601f0fc910a:/app# python3 -c "
+> import base64
+>
+> def encode(s):
+>     return base64.b64encode(s[::-1].encode()).decode()
+>
+> def decode(encoded):
+>     return base64.b64decode(encoded.encode()).decode()[::-1]
+>
+> solutions = [
+>     'scale=320:240',
+>     'format=gray',
+>     'atrim=0:3',
+>     'crop=200:200',
+>     'scale=320:240,hflip'
+> ]
+>
+> for s in solutions:
+>     enc = encode(s)
+>     dec = decode(enc)
+>     print(f'{s} -> {enc} -> {dec}')
+> "
+scale=320:240 -> MDQyOjAyMz1lbGFjcw== -> scale=320:240
+format=gray -> eWFyZz10YW1yb2Y= -> format=gray
+atrim=0:3 -> MzowPW1pcnRh -> atrim=0:3
+crop=200:200 -> MDAyOjAwMj1wb3Jj -> crop=200:200
+scale=320:240,hflip -> cGlsZmgsMDQyOjAyMz1lbGFjcw== -> scale=320:240,hflip
+root@5601f0fc910a:/app#

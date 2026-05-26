@@ -1,0 +1,354 @@
+[?2004hroot@e75925ef2ee3:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@e75925ef2ee3:/app# clear
+[?2004l[H[J[3J[?2004hroot@e75925ef2ee3:/app# cat > /app/ffpuzzle.py << 'PYTHON_SCRIPT'
+[?2004l[?2004h> import subprocess
+[?2004l[?2004h> import json
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import os
+[?2004l[?2004h> 
+[?2004l[?2004h> ASSETS_DIR = "/app/assets"
+[?2004l[?2004h> OUTPUT_DIR = "/app/output"
+[?2004l[?2004h> MANIFEST_PATH = "/app/manifest.json"
+[?2004l[?2004h> 
+[?2004l     probe.get("width") == 200 and probe.get("height") == 200
+        ),
+    },
+    {
+        "number": 5,
+        "name": "Scale and Flip",
+        "description": "Take a 640x480 video, scale it to 320x240, AND apply a horizontal flip",
+        "input_file": "level5_input.mp4",
+        "output_file": "level5_output.mp4",
+        "generate_cmd": lambda inp: [
+            "ffmpeg", "-y", "-f", "lavfi", "-i",
+            "testsrc=duration=2:size=640x480:rate=25",
+            "-c:v", "libx264", "-pix_fmt", "yuv420p", inp
+        ],
+        "solve_filter": "scale=320:240,hflip",
+        "output_cmd": lambda inp, filt, out: [
+            "ffmpeg", "-y", "-i", inp, "-vf", filt,
+            "-c:v", "libx264", "-pix_fmt", "yuv420p", out
+        ],
+        "validate": lambda probe: (
+            probe.get("width") == 320 and probe.get("height") == 240
+        ),
+    },
+]
+
+
+def ensure_dirs():
+    os.makedirs(ASSETS_DIR, exist_ok=True)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+def generate_input(level):
+    inp = os.path.join(ASSETS_DIR, level["input_file"])
+    cmd = level["generate_cmd"](inp)
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    return inp
+[?2004h> LEVELS = [
+[?2004l
+
+def run_f[?2004h>     {
+[?2004l[?2004h>         "number": 1,
+[?2004l[?2004h>         "name": "Scale Down",
+[?2004l[?2004h>         "description": "Scale a 640x480 video down to 320x240",
+[?2004l[?2004h>         "input_file": "level1_input.mp4",
+[?2004l[?2004h>         "output_file": "level1_output.mp4",
+[?2004l[?2004h>         "generate_cmd": lambda inp: [
+[?2004l[?2004h>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+[?2004lss.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    return result[?2004h>             "testsrc=duration=2:size=640x480:rate=25",
+[?2004lth):
+    c[?2004h>             "-c:v", "libx264", "-pix_fmt", "yuv420p", inp
+[?2004l[?2004h>         ],
+[?2004l[?2004h>         "solve_filter": "scale=320:240",
+[?2004l[?2004h>         "output_cmd": lambda inp, filt, out: [
+[?2004l[?2004h>             "ffmpeg", "-y", "-i", inp, "-vf", filt,
+[?2004l[?2004h>             "-c:v", "libx264", "-pix_fmt", "yuv420p", out
+[?2004l[?2004h>         ],
+[?2004l[?2004h>         "validate": lambda probe: (
+[?2004lt.stdout)
+    except json.JSONDecode[?2004h>             probe.get("width") == 320 and probe.get("height") == 240
+[?2004l[?2004h>         ),
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         "number": 2,
+[?2004l[?2004h>         "name": "Grayscale",
+[?2004l[?2004h>         "description": "Convert a video to grayscale (output pixel format must be gray). Use .avi container with rawvideo codec.",
+[?2004l[?2004h>         "input_file": "level2_input.avi",
+[?2004l[?2004h>         "output_file": "level2_output.avi",
+[?2004l      if stream.get("codec_type") == "video":
+            props["width"] = stream.get("width[?2004h>         "generate_cmd": lambda inp: [
+[?2004l[?2004h>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+[?2004l[?2004h>             "testsrc=duration=2:size=640x480:rate=25",
+[?2004l[?2004h>             "-c:v", "rawvideo", "-pix_fmt", "rgb24", inp
+[?2004l[?2004h>         ],
+[?2004l         props["duration"] = float[?2004h>         "solve_filter": "format=gray",
+[?2004l[?2004h>         "output_cmd": lambda inp, filt, out: [
+[?2004l[?2004h>             "ffmpeg", "-y", "-i", inp, "-vf", filt,
+[?2004l[?2004h>             "-c:v", "rawvideo", "-pix_fmt", "gray", out
+[?2004l[?2004h>         ],
+[?2004l[?2004h>         "validate": lambda probe: (
+[?2004l[?2004h>             probe.get("pix_fmt") == "gray"
+[?2004l[?2004h>         ),
+[?2004lexcept (Val[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         "number": 3,
+[?2004l[?2004h>         "name": "Trim Audio",
+[?2004l[?2004h>         "description": "Trim a 10-second audio clip to exactly 3 seconds",
+[?2004l[?2004h>         "input_file": "level3_input.wav",
+[?2004l[?2004h>         "output_file": "level3_output.wav",
+[?2004l[?2004h>         "generate_cmd": lambda inp: [
+[?2004l[?2004h>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+[?2004l[?2004h>             "sine=frequency=440:duration=10",
+[?2004l[?2004h>             inp
+[?2004l[?2004h>         ],
+[?2004l[?2004h>         "solve_filter": "atrim=0:3",
+[?2004l [?2004h>         "output_cmd": lambda inp, filt, out: [
+[?2004l[?2004h>             "ffmpeg", "-y", "-i", inp, "-af", filt, out
+[?2004l[?2004h>         ],
+[?2004l[?2004h>         "validate": lambda probe: (
+[?2004l[?2004h>             2.9 <= probe.get("duration", 0) <= 3.1
+[?2004l[?2004h>         ),
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l[?2004h>         "number": 4,
+[?2004l[?2004h>         "name": "Center Crop",
+[?2004l[?2004h>         "description": "Crop the center 200x200 region from a 640x480 video",
+[?2004l[?2004h>         "input_file": "level4_input.mp4",
+[?2004l[?2004h>         "output_file": "level4_output.mp4",
+[?2004l[?2004h>         "generate_cmd": lambda inp: [
+[?2004l[?2004h>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+[?2004l[?2004h>             "testsrc=duration=2:size=640x480:rate=25",
+[?2004l[?2004h>             "-c:v", "libx264", "-pix_fmt", "yuv420p", inp
+[?2004l[?2004h>         ],
+[?2004l[?2004h>         "solve_filter": "crop=200:200:(iw-200)/2:(ih-200)/2",
+[?2004l[?2004h>         "output_cmd": lambda inp, filt, out: [
+[?2004l[?2004h>             "ffmpeg", "-y", "-i", inp, "-vf", filt,
+[?2004l[?2004h>             "-c:v", "libx264", "-pix_fmt", "yuv420p", out
+[?2004l[?2004h>         ],
+[?2004l[?2004h>         "validate": lambda probe: (
+[?2004ln(MANIFEST_PATH, "w") as f:
+        json.dump(man[?2004h>             probe.get("width") == 200 and probe.get("height") == 200
+[?2004l[?2004h>         ),
+[?2004l[?2004h>     },
+[?2004l[?2004h>     {
+[?2004l max_s[?2004h>         "number": 5,
+[?2004l[?2004h>         "name": "Scale and Flip",
+[?2004l[?2004h>         "description": "Take a 640x480 video, scale it to 320x240, AND apply a horizontal flip",
+[?2004l[?2004h>         "input_file": "level5_input.mp4",
+[?2004l[?2004h>         "output_file": "level5_output.mp4",
+[?2004l[?2004h>         "generate_cmd": lambda inp: [
+[?2004l[?2004h>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+[?2004l[?2004h>             "testsrc=duration=2:size=640x480:rate=25",
+[?2004l[?2004h>             "-c:v", "libx264", "-pix_fmt", "yuv420p", inp
+[?2004l[?2004h>         ],
+[?2004l[?2004h>         "solve_filter": "scale=320:240,hflip",
+[?2004l[?2004h>         "output_cmd": lambda inp, filt, out: [
+[?2004l[?2004h>             "ffmpeg", "-y", "-i", inp, "-vf", filt,
+[?2004l[?2004h>             "-c:v", "libx264", "-pix_fmt", "yuv420p", out
+[?2004l[?2004h>         ],
+[?2004l[?2004h>         "validate": lambda probe: (
+[?2004l[?2004h>             probe.get("width") == 320 and probe.get("height") == 240
+[?2004l[?2004h>         ),
+[?2004l[?2004h>     },
+[?2004l[?2004h> ]
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l [?2004h> def ensure_dirs():
+[?2004l[?2004h>     os.makedirs(ASSETS_DIR, exist_ok=True)
+[?2004l[?2004h>     os.makedirs(OUTPUT_DIR, exist_ok=True)
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def generate_input(level):
+[?2004l[?2004h>     inp = os.path.join(ASSETS_DIR, level["input_file"])
+[?2004l[?2004h>     cmd = level["generate_cmd"](inp)
+[?2004l[?2004h>     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+[?2004llve" in sys.argv:
+        auto_solve()
+    else:
+        interactive_mode()
+PYTHON_SCRIPT
+[?2004h>     return inp
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def run_filter(level, filtergraph):
+[?2004l[?2004h>     inp = os.path.join(ASSETS_DIR, level["input_file"])
+[?2004l[?2004h>     out = os.path.join(OUTPUT_DIR, level["output_file"])
+[?2004l[?2004h>     cmd = level["output_cmd"](inp, filtergraph, out)
+[?2004l[?2004h>     result = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+[?2004l[?2004h>     return result.returncode == 0, out
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def probe_file(filepath):
+[?2004l[?2004h>     cmd = [
+[?2004l[?2004h>         "ffprobe", "-v", "quiet", "-print_format", "json",
+[?2004l[?2004h>         "-show_streams", "-show_format", filepath
+[?2004l[?2004h>     ]
+[?2004l[?2004h>     result = subprocess.run(cmd, capture_output=True, text=True)
+[?2004l[?2004h>     if result.returncode != 0:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         data = json.loads(result.stdout)
+[?2004l[?2004h>     except json.JSONDecodeError:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     return data
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def extract_props(probe_data):
+[?2004l[?2004h>     """Extract relevant properties from ffprobe output."""
+[?2004l[?2004h>     props = {}
+[?2004l[?2004h>     if not probe_data or "streams" not in probe_data:
+[?2004l[?2004h>         return props
+[?2004l[?2004h>     for stream in probe_data["streams"]:
+[?2004l[?2004h>         if stream.get("codec_type") == "video":
+[?2004l[?2004h>             props["width"] = stream.get("width")
+[?2004l[?2004h>             props["height"] = stream.get("height")
+[?2004l[?2004h>             props["pix_fmt"] = stream.get("pix_fmt")
+[?2004l[?2004h>             if "duration" in stream:
+[?2004l[?2004h>                 try:
+[?2004l[?2004h>                     props["duration"] = float(stream["duration"])
+[?2004l[?2004h>                 except (ValueError, TypeError):
+[?2004l[?2004h>                     pass
+[?2004l[?2004h>         elif stream.get("codec_type") == "audio":
+[?2004l[?2004h>             if "duration" in stream:
+[?2004l[?2004h>                 try:
+[?2004l[?2004h>                     props["duration"] = float(stream["duration"])
+[?2004l[?2004h>                 except (ValueError, TypeError):
+[?2004l[?2004h>                     pass
+[?2004l[?2004h>     # Fallback to format duration if stream duration not available
+[?2004l[?2004h>     if "duration" not in props and "format" in probe_data:
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             props["duration"] = float(probe_data["format"].get("duration", 0))
+[?2004l[?2004h>         except (ValueError, TypeError):
+[?2004l[?2004h>             pass
+[?2004l[?2004h>     return props
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def validate_level(level, output_path):
+[?2004l[?2004h>     probe_data = probe_file(output_path)
+[?2004l[?2004h>     if probe_data is None:
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     props = extract_props(probe_data)
+[?2004l[?2004h>     return level["validate"](props)
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def auto_solve():
+[?2004l[?2004h>     ensure_dirs()
+[?2004l[?2004h>     manifest = []
+[?2004l[?2004h>     total_score = 0
+[?2004l[?2004h>     max_score = len(LEVELS) * 10
+[?2004l[?2004h> 
+[?2004l[?2004h>     for level in LEVELS:
+[?2004l[?2004h>         print(f"Level {level['number']}: {level['name']}")
+[?2004l[?2004h>         generate_input(level)
+[?2004l[?2004h>         success, out_path = run_filter(level, level["solve_filter"])
+[?2004l[?2004h>         passed = False
+[?2004l[?2004h>         if success and os.path.exists(out_path):
+[?2004l[?2004h>             passed = validate_level(level, out_path)
+[?2004l[?2004h>         if passed:
+[?2004l[?2004h>             total_score += 10
+[?2004l[?2004h>             print("  PASS")
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             print("  FAIL")
+[?2004l[?2004h>         manifest.append({
+[?2004l[?2004h>             "level": level["number"],
+[?2004l[?2004h>             "filename": level["output_file"],
+[?2004l[?2004h>             "passed": passed
+[?2004l[?2004h>         })
+[?2004l[?2004h> 
+[?2004l[?2004h>     print(f"Score: {total_score}/{max_score}")
+[?2004l[?2004h> 
+[?2004l[?2004h>     with open(MANIFEST_PATH, "w") as f:
+[?2004l[?2004h>         json.dump(manifest, f, indent=2)
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def interactive_mode():
+[?2004l[?2004h>     ensure_dirs()
+[?2004l[?2004h>     total_score = 0
+[?2004l[?2004h>     max_score = len(LEVELS) * 10
+[?2004l[?2004h> 
+[?2004l[?2004h>     for level in LEVELS:
+[?2004l[?2004h>         print(f"\n{'='*50}")
+[?2004l[?2004h>         print(f"Level {level['number']}: {level['name']}")
+[?2004l[?2004h>         print(f"{'='*50}")
+[?2004l[?2004h>         print(f"\nDescription: {level['description']}")
+[?2004l[?2004h>         print(f"Input file: {level['input_file']}")
+[?2004l[?2004h>         print(f"Output file: {level['output_file']}")
+[?2004l[?2004h>         print()
+[?2004l[?2004h> 
+[?2004l[?2004h>         generate_input(level)
+[?2004l[?2004h> 
+[?2004l[?2004h>         filtergraph = input("Enter your filtergraph expression: ").strip()
+[?2004l[?2004h>         if not filtergraph:
+[?2004l[?2004h>             print("  No filter provided. FAIL")
+[?2004l[?2004h>             continue
+[?2004l[?2004h> 
+[?2004l[?2004h>         success, out_path = run_filter(level, filtergraph)
+[?2004l[?2004h>         if not success:
+[?2004l[?2004h>             print("  FFmpeg failed to apply your filter. FAIL")
+[?2004l[?2004h>             continue
+[?2004l[?2004h> 
+[?2004l[?2004h>         passed = validate_level(level, out_path)
+[?2004l[?2004h>         if passed:
+[?2004l[?2004h>             total_score += 10
+[?2004l[?2004h>             print("  PASS")
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             print("  FAIL")
+[?2004l[?2004h> 
+[?2004l[?2004h>     print(f"\nScore: {total_score}/{max_score}")
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == "__main__":
+[?2004l[?2004h>     if "--auto-solve" in sys.argv:
+[?2004l[?2004h>         auto_solve()
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         interactive_mode()
+[?2004l[?2004h> PYTHON_SCRIPT
+[?2004l[?2004hroot@e75925ef2ee3:/app# python3 /app/ffpuzzle.py --auto-solve
+[?2004lLevel 1: Scale Down
+  PASS
+Level 2: Grayscale
+  PASS
+Level 3: Trim Audio
+  PASS
+Level 4: Center Crop
+  PASS
+Level 5: Scale and Flip
+  PASS
+Score: 50/50
+[?2004hroot@e75925ef2ee3:/app# ls /app/assets/
+[?2004llevel1_input.mp4  level2_input.avi  level3_input.wav  level4_input.mp4	level5_input.mp4
+[?2004hroot@e75925ef2ee3:/app# ls /app/output/
+[?2004llevel1_output.mp4  level2_output.avi  level3_output.wav  level4_output.mp4  level5_output.mp4
+[?2004hroot@e75925ef2ee3:/app# cat /app/manifest.json
+[?2004l[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.avi",
+    "passed": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "passed": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "passed": true
+  }
+][?2004hroot@e75925ef2ee3:/app# 

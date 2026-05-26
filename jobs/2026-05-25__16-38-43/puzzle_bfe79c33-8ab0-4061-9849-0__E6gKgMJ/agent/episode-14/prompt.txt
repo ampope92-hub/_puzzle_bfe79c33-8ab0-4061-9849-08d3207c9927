@@ -1,0 +1,16 @@
+New Terminal Output:
+
+root@cfac50873e20:/app# rm -f /app/output/level2_output.mp4
+root@cfac50873e20:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Scale Down
+PASS
+Level 2: Convert to Grayscale
+PASS
+Level 3: Trim Audio
+PASS
+Level 4: Crop Center
+PASS
+Level 5: Scale and Flip
+PASS
+Score: 50/50
+root@cfac50873e20:/app#

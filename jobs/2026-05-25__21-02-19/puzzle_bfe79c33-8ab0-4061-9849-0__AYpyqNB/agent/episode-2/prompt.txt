@@ -1,0 +1,60 @@
+Current terminal state:
+New Terminal Output:
+
+root@5f89586b89cd:/app# ls -la /app/assets /app/output
+/app/assets:
+total 8428
+drwxr-xr-x 2 root root    4096 May 26 02:03 .
+drwxr-xr-x 1 root root    4096 May 26 02:03 ..
+-rw-r--r-- 1 root root  243061 May 26 02:03 level1_input.mp4
+-rw-r--r-- 1 root root 6919202 May 26 02:03 level2_input.avi
+-rw-r--r-- 1 root root  960078 May 26 02:03 level3_input.wav
+-rw-r--r-- 1 root root  243061 May 26 02:03 level4_input.mp4
+-rw-r--r-- 1 root root  243061 May 26 02:03 level5_input.mp4
+
+/app/output:
+total 4912
+drwxr-xr-x 2 root root    4096 May 26 02:03 .
+drwxr-xr-x 1 root root    4096 May 26 02:03 ..
+-rw-r--r-- 1 root root   43289 May 26 02:03 level1_output.mp4
+-rw-r--r-- 1 root root 4615202 May 26 02:03 level2_output.avi
+-rw-r--r-- 1 root root  288078 May 26 02:03 level3_output.wav
+-rw-r--r-- 1 root root   23565 May 26 02:03 level4_output.mp4
+-rw-r--r-- 1 root root   44546 May 26 02:03 level5_output.mp4
+root@5f89586b89cd:/app# echo '--- manifest.json ---'
+--- manifest.json ---
+root@5f89586b89cd:/app# cat /app/manifest.json
+[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.avi",
+    "passed": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "passed": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "passed": true
+  }
+]
+root@5f89586b89cd:/app# python3 -c 'import json; p="/app/manifest.json"; a=json.load(open(p)); assert isinstance(a,list); assert len(a)==5; [set(x.keys())=={"le
+vel","filename","passed"} or (_ for _ in ()).throw(AssertionError(x.keys())) for x in a]; print("manifest OK")'
+manifest OK
+root@5f89586b89cd:/app#
+
+
+Are you sure you want to mark the task as complete? This will trigger your solution to be graded and you won't be able to make any further corrections. If so, include "task_complete": true in your JSON response again.

@@ -1,0 +1,329 @@
+New Terminal Output:
+root@0b806797d2eb:/app# ls -ლა
+ls: invalid option -- ''
+Try 'ls --help' for more information.
+root@0b806797d2eb:/app# mkdir -p /app/assets /app/output
+root@0b806797d2eb:/app# cat > /app/ffpuzzle.py <<'PY'
+> #!/usr/bin/env python3
+> import argparse
+> import json
+> import os
+> import shlex
+> import subprocess
+> import sys
+> from dataclasses import dataclass
+> from typing import Callable, Dict, List, Optional, Tuple
+>
+> APP_DIR = "/app"
+> ASSETS_DIR = os.path.join(APP_DIR, "assets")
+> OUTPUT_DIR = os.path.join(APP_DIR, "output")
+> MANIFEST_PATH = os.path.join(APP_DIR, "manifest.json")
+>
+>
+> def run(cmd: List[str]) -> Tuple[int, str, str]:
+>     p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+>     return p.returncode, p.stdout, p.stderr
+>
+2>
+4> def ffprobe_json(path: str) -> Dict:
+>     cmd = [
+>         "ffprobe",
+>         "-v",
+>         "error",
+ >         "-show_streams",
+: S>         "-show_format",
+>         "-print_format",
+>         "json",
+>         path,
+>     ]
+>     rc, out, err = run(cmd)
+>     if rc != 0:
+      "-f",
+    >         raise RuntimeError(f"ffprobe failed for {path}: {err.strip()}")
+>     return json.loads(out)
+>
+>
+> def get_first_stream(probe: Dict, codec_type: str) -> Optional[Dict]:
+t>     for s in probe.get("streams", []):
+>         if s.get("codec_type") == codec_type:
+te=validat>             return s
+>     return None
+>
+>
+> def parse_duration_seconds(probe: Dict) -> Optional[float]:
+   >     # Prefer stream duration if present, else format.duration
+>     v = None
+ video to gra>     for s in probe.get("streams", []):
+>         if "duration" in s and s["duration"] is not None:
+>             try:
+>                 v = float(s["duration"])
+>                 break
+>             except Exception:
+n=2",
+       >                 pass
+>     if v is None:
+>         fmt = probe.get("format", {})
+>         if "duration" in fmt and fmt["duration"] is not None:
+>             try:
+>                 v = float(fmt["duration"])
+>             except Exception:
+>                 v = None
+>     return v
+>
+>
+  > @dataclass
+> class Level:
+>     num: int
+>     name: str
+>     description: str
+actly 3 seconds.",
+  >     # ffmpeg input args (excluding -filter_complex / -vf etc.)
+>     input_args: List[str]
+>     # output extension/format container
+>     out_filename: str
+>     # which stream to validate: 'video' or 'audio'
+l>     stream_type: str
+>     # known correct filtergraph for auto-solve
+>     solution: str
+n="atrim=0:3,asetpts=N>     # validation function
+>     validate: Callable[[str], Tuple[bool, str]]
+>
+>
+> def ensure_dirs() -> None:
+>     os.makedirs(ASSETS_DIR, exist_ok=True)
+e="Level 4: >     os.makedirs(OUTPUT_DIR, exist_ok=True)
+>
+ >
+> def build_levels() -> List[Level]:
+>     levels: List[Level] = []
+>
+>     # Common deterministic sources
+>     # Video: testsrc2 gives deterministic pattern. Use fixed framerate and duration.
+rat>     # Audio: sine source deterministic.
+>
+ >     def validate_scaled_320x240(path: str) -> Tuple[bool, str]:
+>         pr = ffprobe_json(path)
+>         vs = get_first_stream(pr, "video")
+>         if not vs:
+>             return False, "no video stream"
+>         w = int(vs.get("width", -1))
+>         h = int(vs.get("height", -1))
+>         if w != 320 or h != 240:
+>             return False, f"expected 320x240, got {w}x{h}"
+z>         return True, "ok"
+>
+>     def validate_gray(path: str) -> Tuple[bool, str]:
+>         pr = ffprobe_json(path)
+>         vs = get_first_stream(pr, "video")
+>         if not vs:
+>             return False, "no video stream"
+>         pf = vs.get("pix_fmt")
+>         # Require exact gray pixel format
+>         if pf != "gray":
+>             return False, f"expected pix_fmt gray, got {pf}"
+>         return True, "ok"
+>
+>     def validate_audio_3s(path: str) -> Tuple[bool, str]:
+>         pr = ffprobe_json(path)
+>         a = get_first_stream(pr, "audio")
+>         if not a:
+e[bool, str, str]:>             return False, "no audio stream"
+>         dur = parse_duration_seconds(pr)
+>         if dur is None:
+>             return False, "could not read duration"
+>         # Strict: exactly 3.0 within tiny tolerance because containers/codecs are float.
+ >         if abs(dur - 3.0) > 0.02:
+>             return False, f"expected duration ~3.00s, got {dur:.3f}s"
+>         return True, "ok"
+>
+>     def validate_crop_200x200(path: str) -> Tuple[bool, str]:
+>         pr = ffprobe_json(path)
+>         vs = get_first_stream(pr, "video")
+>         if not vs:
+>             return False, "no video stream"
+>         w = int(vs.get("width", -1))
+>         h = int(vs.get("height", -1))
+>         if w != 200 or h != 200:
+>             return False, f"expected 200x200, got {w}x{h}"
+>         return True, "ok"
+>
+>     def validate_scaled_and_hflip(path: str) -> Tuple[bool, str]:
+>         # Validate only size; transformation correctness for hflip is hard to verify purely by metadata.
+>         pr = 
+[... output limited to 10000 bytes; 70 interior bytes omitted ...]
+      *level.input_args,
+>             "-vf",
+>             filtergraph,
+>             # Ensure we don't get odd sizes for some filters; and keep fps unchanged.
+>             "-an",
+>             "-c:v",
+>             "libx264",
+>             "-pix_fmt",
+>             # For grayscale level, user will set format=gray; but encoder/container might not support.
+>             # We'll only force yuv420p for non-gray levels by checking expected; for gray we don't force.
+>             # So we conditionally remove this below.
+>             "yuv420p",
+>             out_path,
+>         ]
+>         if level.num == 2:
+>             # Do not force pix_fmt; let user's format=gray persist.
+>             cmd = [c for c in cmd if c != "-pix_fmt" and c != "yuv420p"]
+>     else:
+>         cmd = [
+>             "ffmpeg",
+>             "-hide_banner",
+>             "-loglevel",
+>             "error",
+>             "-y",
+>             *level.input_args,
+>             "-af",
+>             filtergraph,
+>             "-vn",
+>             "-c:a",
+>             "pcm_s16le",
+>             out_path,
+>         ]
+>
+>     rc, _, err = run(cmd)
+>     if rc != 0:
+>         return False, f"ffmpeg failed: {err.strip()}", out_path
+>
+>     try:
+>         ok, msg = level.validate(out_path)
+>         return ok, msg, out_path
+>     except Exception as e:
+>         return False, f"validation error: {e}", out_path
+>
+>
+> def interactive(levels: List[Level]) -> int:
+>     score = 0
+>     for lvl in levels:
+>         print(f"\n{lvl.name}")
+>         print(lvl.description)
+>         print("Enter an FFmpeg filtergraph expression (no surrounding quotes):")
+>         try:
+>             fg = input("> ").strip()
+>         except EOFError:
+>             print("\nExiting.")
+>             break
+>         if not fg:
+>             print("No input provided.")
+>             continue
+>         ok, msg, out_path = run_level(lvl, fg)
+>         print(f"Output: {out_path}")
+>         print("PASS" if ok else "FAIL")
+>         if not ok:
+>             print(f"Reason: {msg}")
+>         else:
+>             score += 10
+>     total = len(levels) * 10
+>     print(f"Score: {score}/{total}")
+>     return 0
+>
+>
+> def auto_solve(levels: List[Level]) -> int:
+>     manifest = {"files": []}
+>     score = 0
+>     total = len(levels) * 10
+>
+>     for lvl in levels:
+>         print(lvl.name)
+>         ok, msg, out_path = run_level(lvl, lvl.solution)
+>         print("PASS" if ok else "FAIL")
+>         if ok:
+>             score += 10
+>         manifest["files"].append(
+>             {
+>                 "level": lvl.num,
+>                 "filename": os.path.basename(out_path),
+>                 "path": out_path,
+>                 "valid": bool(ok),
+>                 "message": msg,
+>             }
+>         )
+>
+>     with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
+>         json.dump(manifest, f, indent=2, sort_keys=True)
+>
+>     print(f"Score: {score}/{total}")
+>     return 0 if score == total else 1
+>
+>
+> def main(argv: List[str]) -> int:
+>     parser = argparse.ArgumentParser(description="FFmpeg Filtergraph Puzzle Game")
+>     parser.add_argument("--auto-solve", action="store_true", help="Run all levels with known solutions")
+>     args = parser.parse_args(argv)
+>
+>     ensure_dirs()
+>     levels = build_levels()
+>
+>     if args.auto_solve:
+>         return auto_solve(levels)
+>     return interactive(levels)
+>
+>
+> if __name__ == "__main__":
+>     raise SystemExit(main(sys.argv[1:]))
+> PY
+root@0b806797d2eb:/app# chmod +x /app/ffpuzzle.py
+root@0b806797d2eb:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Scale down
+PASS
+Level 2: Grayscale
+FAIL
+Level 3: Trim audio
+PASS
+Level 4: Center crop
+PASS
+Level 5: Scale + hflip
+PASS
+Score: 40/50
+root@0b806797d2eb:/app# ls -la /app/output
+total 576
+drwxr-xr-x 2 root root   4096 May 25 17:28 .
+drwxr-xr-x 1 root root   4096 May 25 17:28 ..
+-rw-r--r-- 1 root root  42599 May 25 17:28 level1.mp4
+-rw-r--r-- 1 root root 174967 May 25 17:28 level2.mp4
+-rw-r--r-- 1 root root 288078 May 25 17:28 level3.wav
+-rw-r--r-- 1 root root  23281 May 25 17:28 level4.mp4
+-rw-r--r-- 1 root root  44855 May 25 17:28 level5.mp4
+root@0b806797d2eb:/app# cat /app/manifest.json
+{
+  "files": [
+    {
+      "filename": "level1.mp4",
+      "level": 1,
+      "message": "ok",
+      "path": "/app/output/level1.mp4",
+      "valid": true
+    },
+    {
+      "filename": "level2.mp4",
+      "level": 2,
+      "message": "expected pix_fmt gray, got yuvj420p",
+      "path": "/app/output/level2.mp4",
+      "valid": false
+    },
+    {
+      "filename": "level3.wav",
+      "level": 3,
+      "message": "ok",
+      "path": "/app/output/level3.wav",
+      "valid": true
+    },
+    {
+      "filename": "level4.mp4",
+      "level": 4,
+      "message": "ok",
+      "path": "/app/output/level4.mp4",
+      "valid": true
+    },
+    {
+      "filename": "level5.mp4",
+      "level": 5,
+      "message": "ok",
+      "path": "/app/output/level5.mp4",
+      "valid": true
+    }
+  ]
+}root@0b806797d2eb:/app#

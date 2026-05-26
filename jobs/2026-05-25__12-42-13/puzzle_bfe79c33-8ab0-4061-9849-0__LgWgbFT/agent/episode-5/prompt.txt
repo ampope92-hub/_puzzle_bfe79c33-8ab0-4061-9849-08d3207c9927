@@ -1,0 +1,13 @@
+New Terminal Output:
+
+root@4a19ba4e37d0:/app# rm -rf /app/output/level2_output.mp4
+root@4a19ba4e37d0:/app# ffmpeg -y -i /app/assets/level2_input.mp4 -vf "format=gray" -c:v libx264 -pix_fmt gray /app/output/level2_output.mp4 2>&1 | tail -5
+[libx264 @ 0x5bcc4ddf4800] Weighted P-Frames: Y:0.0%
+[libx264 @ 0x5bcc4ddf4800] ref P L0: 77.3%  4.7% 16.8%  1.2%
+[libx264 @ 0x5bcc4ddf4800] ref B L0: 62.3% 33.2%  4.5%
+[libx264 @ 0x5bcc4ddf4800] ref B L1: 92.9%  7.1%
+[libx264 @ 0x5bcc4ddf4800] kb/s:44.76
+root@4a19ba4e37d0:/app# ffprobe -v quiet -print_format json -show_streams /app/output/level2_output.mp4 | python3 -c "import json,sys; d=json.load(sys.stdin); p
+rint(d['streams'][0]['pix_fmt'])"
+yuvj420p
+root@4a19ba4e37d0:/app#

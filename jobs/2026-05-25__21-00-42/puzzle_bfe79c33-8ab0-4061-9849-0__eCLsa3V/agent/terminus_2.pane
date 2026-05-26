@@ -1,0 +1,515 @@
+[?2004hroot@d96445ef63f5:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@d96445ef63f5:/app# clear
+[?2004l[H[J[3J[?2004hroot@d96445ef63f5:/app# ls -la /app
+[?2004ltotal 8
+drwxr-xr-x 2 root root 4096 May 25 16:41 .
+drwxr-xr-x 1 root root 4096 May 26 02:00 ..
+[?2004hroot@d96445ef63f5:/app# mkdir -p /app/assets /app/output
+[?2004l[?2004hroot@d96445ef63f5:/app# cat > /app/ffpuzzle.py <<'PY'
+[?2004l[?2004h> #!/usr/bin/env python3
+[?2004l[?2004h> import argparse
+[?2004l[?2004h> import json
+[?2004l[?2004h> import os
+[?2004l[?2004h> import shlex
+[?2004l[?2004h> import subprocess
+[?2004l[?2004h> import sys
+[?2004l[?2004h> from dataclasses import dataclass
+[?2004l[?2004h> from typing import Callable, Dict, List, Optional, Tuple
+[?2004l[?2004h> 
+[?2004l[?2004h> ASSETS_DIR = "/app/assets"
+[?2004l[?2004h> OUTPUT_DIR = "/app/output"
+[?2004l
+        "-c:a[?2004h> MANIFEST_PATH = "/app/manifest.json"
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def run_cmd(cmd: List[str]) -> Tuple[int, str, str]:
+[?2004l:
+  [?2004h>     p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+[?2004l None:
+    cm[?2004h>     return p.returncode, p.stdout, p.stderr
+[?2004l[?2004h> 
+[?2004l [?2004h> 
+[?2004l [?2004h> def ensure_dirs() -> None:
+[?2004l[?2004h>     os.makedirs(ASSETS_DIR, exist_ok=True)
+[?2004l [?2004h>     os.makedirs(OUTPUT_DIR, exist_ok=True)
+[?2004l[?2004h> 
+[?2004lduratio[?2004h> 
+[?2004l[?2004h> def ffprobe_json(path: str) -> Dict:
+[?2004l[?2004h>     cmd = [
+[?2004l[?2004h>         "ffprobe",
+[?2004l[?2004h>         "-v",
+[?2004l[?2004h>         "error",
+[?2004l
+    ]
+[?2004h>         "-print_format",
+[?2004l[?2004h>         "json",
+[?2004l[?2004h>         "-show_format",
+[?2004l[?2004h>         "-show_streams",
+[?2004l[?2004h>         path,
+[?2004l[?2004h>     ]
+[?2004l[?2004h>     rc, out, err = run_cmd(cmd)
+[?2004l[?2004h>     if rc != 0:
+[?2004l[?2004h>         raise RuntimeError(f"ffprobe failed for {path}: {err.strip()}")
+[?2004l[?2004h>     return json.loads(out)
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def get_first_stream(probe: Dict, codec_type: str) -> Optional[Dict]:
+[?2004l[?2004h>     for s in probe.get("streams", []):
+[?2004l[?2004h>         if s.get("codec_type") == codec_type:
+[?2004l[?2004h>             return s
+[?2004l[?2004h>     return None
+[?2004lrc != 0:
+        ra[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def validate_video_dims(path: str, w: int, h: int) -> Tuple[bool, str]:
+[?2004l[?2004h>     try:
+[?2004l str, output_path: [?2004h>         probe = ffprobe_json(path)
+[?2004l[?2004h>         s = get_first_stream(probe, "video")
+[?2004l[?2004h>         if not s:
+[?2004l[?2004h>             return False, "no video stream"
+[?2004l[?2004h>         if int(s.get("width", -1)) != w or int(s.get("height", -1)) != h:
+[?2004l[?2004h>             return False, f"expected {w}x{h}, got {s.get('width')}x{s.get('height')}"
+[?2004l[?2004h>         return True, "ok"
+[?2004lrgraph: str, extra: Optional[List[s[?2004h>     except Exception as e:
+[?2004l[?2004h>         return False, str(e)
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def validate_pix_fmt(path: str, pix_fmt: str) -> Tuple[bool, str]:
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         probe = ffprobe_json(path)
+[?2004l[?2004h>         s = get_first_stream(probe, "video")
+[?2004l[?2004h>         if not s:
+[?2004l[?2004h>             return False, "no video stream"
+[?2004l[?2004h>         got = s.get("pix_fmt")
+[?2004l[?2004h>         if got != pix_fmt:
+[?2004l[?2004h>             return False, f"expected pix_fmt={pix_fmt}, got {got}"
+[?2004l[?2004h>         return True, "ok"
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         return False, str(e)
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def validate_audio_duration_range(path: str, lo: float, hi: float) -> Tuple[bool, str]:
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         probe = ffprobe_json(path)
+[?2004l[?2004h>         s = get_first_stream(probe, "audio")
+[?2004l[?2004h>         if not s:
+[?2004l[?2004h>             return False, "no audio stream"
+[?2004l[?2004h> 
+[?2004l[?2004h>         dur = None
+[?2004l() -> List[Level]:
+ [?2004h>         if s.get("duration") is not None:
+[?2004l[?2004h>             try:
+[?2004l[?2004h>                 dur = float(s["duration"])
+[?2004l[?2004h>             except Exception:
+[?2004l[?2004h>                 dur = None
+[?2004l[?2004h>         if dur is None:
+[?2004lput.avi")
+    l2_out[?2004h>             fmt = probe.get("format", {})
+[?2004l[?2004h>             if fmt.get("duration") is not None:
+[?2004lle[?2004h>                 dur = float(fmt["duration"])
+[?2004l[?2004h> 
+[?2004l[?2004h>         if dur is None:
+[?2004l[?2004h>             return False, "could not determine duration"
+[?2004l[?2004h>         if not (lo <= dur <= hi):
+[?2004l[?2004h>             return False, f"expected duration in [{lo},{hi}] sec, got {dur}"
+[?2004lvel5[?2004h>         return True, "ok"
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         return False, str(e)
+[?2004l[?2004h> 
+[?2004ln[?2004h> 
+[?2004l[?2004h> @dataclass
+[?2004l[?2004h> class Level:
+[?2004level(
+       [?2004h>     number: int
+[?2004l[?2004h>     name: str
+[?2004l[?2004h>     description: str
+[?2004l[?2004h>     input_path: str
+[?2004l[?2004h>     output_path: str
+[?2004l[?2004h>     generate_input: Callable[[], None]
+[?2004l[?2004h>     build_ffmpeg_cmd: Callable[[str], List[str]]  # takes filtergraph
+[?2004l[?2004h>     validate: Callable[[], Tuple[bool, str]]
+[?2004l[?2004h>     solution: str
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def gen_level1_input(path: str) -> None:
+[?2004l[?2004h>     # 640x480 synthetic video, deterministic
+[?2004l[?2004h>     cmd = [
+[?2004l[?2004h>         "ffmpeg",
+[?2004l[?2004h>         "-y",
+[?2004l[?2004h>         "-v",
+[?2004l[?2004h>         "error",
+[?2004l[?2004h>         "-f",
+[?2004l[?2004h>         "lavfi",
+[?2004l[?2004h>         "-i",
+[?2004l[?2004h>         "testsrc2=size=640x480:rate=30:duration=2",
+[?2004l[?2004h>         "-c:v",
+[?2004l[?2004h>         "libx264",
+[?2004l[?2004h>         "-pix_fmt",
+[?2004l[?2004h>         "yuv420p",
+[?2004l[?2004h>         path,
+[?2004l[?2004h>     ]
+[?2004l descr[?2004h>     rc, _, err = run_cmd(cmd)
+[?2004l[?2004h>     if rc != 0:
+[?2004l[?2004h>         raise RuntimeError(err.strip())
+[?2004lgray'.",
+  [?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def gen_level2_input(path: str) -> None:
+[?2004l[?2004h>     # Input can be any video; output must be gray in rawvideo/avi.
+[?2004l[?2004h>     cmd = [
+[?2004l[?2004h>         "ffmpeg",
+[?2004l[?2004h>         "-y",
+[?2004l[?2004h>         "-v",
+[?2004l[?2004h>         "error",
+[?2004l[?2004h>         "-f",
+[?2004l[?2004h>         "lavfi",
+[?2004l[?2004h>         "-i",
+[?2004l[?2004h>         "testsrc2=size=320x240:rate=30:duration=2",
+[?2004l[?2004h>         "-c:v",
+[?2004le[?2004h>         "mpeg4",
+[?2004l[?2004h>         "-q:v",
+[?2004lgray"],
+        [?2004h>         "3",
+[?2004l    ),
+      [?2004h>         path,
+[?2004l[?2004h>     ]
+[?2004l[?2004h>     rc, _, err = run_cmd(cmd)
+[?2004l[?2004h>     if rc != 0:
+[?2004l[?2004h>         raise RuntimeError(err.strip())
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def gen_level3_input(path: str) -> None:
+[?2004l[?2004h>     # 10-second sine wave, deterministic
+[?2004l[?2004h>     cmd = [
+[?2004lscription="T[?2004h>         "ffmpeg",
+[?2004l[?2004h>         "-y",
+[?2004l[?2004h>         "-v",
+[?2004l[?2004h>         "error",
+[?2004l[?2004h>         "-f",
+[?2004l[?2004h>         "lavfi",
+[?2004l[?2004h>         "-i",
+[?2004l[?2004h>         "sine=frequency=440:sample_rate=48000:duration=10",
+[?2004l[?2004h>         "-c:a",
+[?2004l[?2004h>         "pcm_s16le",
+[?2004l[?2004h>         path,
+[?2004l[?2004h>     ]
+[?2004lild_ff[?2004h>     rc, _, err = run_cmd(cmd)
+[?2004l[?2004h>     if rc != 0:
+[?2004l[?2004h>         raise RuntimeError(err.strip())
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def gen_level4_input(path: str) -> None:
+[?2004l[?2004h>     cmd = [
+[?2004l[?2004h>         "ffmpeg",
+[?2004l[?2004h>         "-y",
+[?2004l[?2004h>         "-v",
+[?2004l[?2004h>         "error",
+[?2004l[?2004h>         "-f",
+[?2004l[?2004h>         "lavfi",
+[?2004ltio[?2004h>         "-i",
+[?2004l[?2004h>         "testsrc2=size=640x480:rate=30:duration=2",
+[?2004l[?2004h>         "-c:v",
+[?2004l[?2004h>         "libx264",
+[?2004l[?2004h>         "-pix_fmt",
+[?2004l[?2004h>         "yuv420p",
+[?2004l[?2004h>         path,
+[?2004l[?2004h>     ]
+[?2004l[?2004h>     rc, _, err = run_cmd(cmd)
+[?2004l[?2004h>     if rc != 0:
+[?2004l[?2004h>         raise RuntimeError(err.strip())
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def gen_level5_input(path: str) -> None:
+[?2004l[?2004h>     cmd = [
+[?2004l[?2004h>         "ffmpeg",
+[?2004l[?2004h>         "-y",
+[?2004l[?2004h>         "-v",
+[?2004l[?2004h>         "error",
+[?2004l[?2004h>         "-f",
+[?2004l       build_ffmpeg_cmd=lambda [?2004h>         "lavfi",
+[?2004l[?2004h>         "-i",
+[?2004l[?2004h>         "testsrc2=size=640x480:rate=30:duration=2",
+[?2004l[?2004h>         "-c:v",
+[?2004l   o,
+                fg,
+[?2004h>         "libx264",
+[?2004l[?2004h>         "-pix_fmt",
+[?2004l[?2004h>         "yuv420p",
+[?2004l[?2004h>         path,
+[?2004l[?2004h>     ]
+[?2004l[?2004h>     rc, _, err = run_cmd(cmd)
+[?2004l[?2004h>     if rc != 0:
+[?2004l[?2004h>         raise RuntimeError(err.strip())
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l s[?2004h> def ffmpeg_video_cmd(input_path: str, output_path: str, filtergraph: str, extra: Optional[List[str]] = None) -> List[str]:
+[?2004l[?2004h>     cmd = ["ffmpeg", "-y", "-v", "error", "-i", input_path, "-vf", filtergraph]
+[?2004l[?2004h>     if extra:
+[?2004l[?2004h>         cmd += extra
+[?2004l[?2004h>     cmd.append(output_path)
+[?2004l[?2004h>     return cmd
+[?2004l[?2004h> 
+[?2004l=[?2004h> 
+[?2004l[?2004h> def ffmpeg_audio_cmd(input_path: str, output_path: str, filtergraph: str, extra: Optional[List[str]] = None) -> List[str]:
+[?2004l[?2004h>     cmd = ["ffmpeg", "-y", "-v", "error", "-i", input_path, "-af", filtergraph]
+[?2004l[?2004h>     if extra:
+[?2004l[?2004h>         cmd += extra
+[?2004l[?2004h>     cmd.append(output_path)
+[?2004l[?2004h>     return cmd
+[?2004l[?2004h> 
+[?2004l [?2004h> 
+[?2004l[?2004h> def safe_remove(path: str) -> None:
+[?2004l[?2004h>     try:
+[?2004ll5_out: val[?2004h>         os.remove(path)
+[?2004lidate_video_dims(p, 320,[?2004h>     except FileNotFoundError:
+[?2004l[?2004h>         pass
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def run_level(level: Level, filtergraph: str) -> Tuple[bool, str]:
+[?2004l[?2004h>     # Ensure input exists
+[?2004l[?2004h>     if not os.path.exists(level.input_path):
+[?2004l[?2004h>         level.generate_input()
+[?2004l[?2004h> 
+[?2004l[?2004h>     safe_remove(level.output_path)
+[?2004l[?2004h> 
+[?2004l[?2004h>     cmd = level.build_ffmpeg_cmd(filtergraph)
+[?2004l[?2004h>     rc, _, err = run_cmd(cmd)
+[?2004l[?2004h>     if rc != 0:
+[?2004l t[?2004h>         return False, f"ffmpeg failed: {err.strip()}"
+[?2004l[?2004h> 
+[?2004lt[?2004h>     passed, msg = level.validate()
+[?2004l[?2004h>     return passed, msg
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def levels() -> List[Level]:
+[?2004l[?2004h>     l1_in = os.path.join(ASSETS_DIR, "level1_input.mp4")
+[?2004l[?2004h>     l1_out = os.path.join(OUTPUT_DIR, "level1_output.mp4")
+[?2004l[?2004h> 
+[?2004l[?2004h>     l2_in = os.path.join(ASSETS_DIR, "level2_input.avi")
+[?2004l[?2004h>     l2_out = os.path.join(OUTPUT_DIR, "level2_output.avi")
+[?2004l[?2004h> 
+[?2004l[?2004h>     l3_in = os.path.join(ASSETS_DIR, "level3_input.wav")
+[?2004l[?2004h>     l3_out = os.path.join(OUTPUT_DIR, "level3_output.wav")
+[?2004l[?2004h> 
+[?2004l[?2004h>     l4_in = os.path.join(ASSETS_DIR, "level4_input.mp4")
+[?2004l[?2004h>     l4_out = os.path.join(OUTPUT_DIR, "level4_output.mp4")
+[?2004l[?2004h> 
+[?2004l[?2004h>     l5_in = os.path.join(ASSETS_DIR, "level5_input.mp4")
+[?2004l[?2004h>     l5_out = os.path.join(OUTPUT_DIR, "level5_output.mp4")
+[?2004l[?2004h> 
+[?2004le[?2004h>     return [
+[?2004l[?2004h>         Level(
+[?2004l[?2004h>             number=1,
+[?2004l[?2004h>             name="Scale down",
+[?2004l[?2004h>             description="Scale a 640x480 video down to exactly 320x240.",
+[?2004l[?2004h>             input_path=l1_in,
+[?2004l[?2004h>             output_path=l1_out,
+[?2004l[?2004h>             generate_input=lambda p=l1_in: gen_level1_input(p),
+[?2004l[?2004h>             build_ffmpeg_cmd=lambda fg, i=l1_in, o=l1_out: ffmpeg_video_cmd(
+[?2004l[?2004h>                 i, o, fg, extra=["-c:v", "libx264", "-pix_fmt", "yuv420p"]
+[?2004l[?2004h>             ),
+[?2004l[?2004h>             validate=lambda p=l1_out: validate_video_dims(p, 320, 240),
+[?2004l[?2004h>             solution="scale=320:240",
+[?2004l[?2004h>         ),
+[?2004l[?2004h>         Level(
+[?2004l[?2004h>             number=2,
+[?2004lrgraph puzzle game")
+ [?2004h>             name="Grayscale",
+[?2004l[?2004h>             description="Convert a video to grayscale. Output pixel format must be exactly 'gray'.",
+[?2004l[?2004h>             input_path=l2_in,
+[?2004l[?2004h>             output_path=l2_out,
+[?2004l[?2004h>             generate_input=lambda p=l2_in: gen_level2_input(p),
+[?2004l[?2004h>             build_ffmpeg_cmd=lambda fg, i=l2_in, o=l2_out: ffmpeg_video_cmd(
+[?2004l[?2004h>                 i,
+[?2004l[?2004h>                 o,
+[?2004l[?2004h>                 fg,
+[?2004l[?2004h>                 extra=["-c:v", "rawvideo", "-pix_fmt", "gray"],
+[?2004l[?2004h>             ),
+[?2004l[?2004h>             validate=lambda p=l2_out: validate_pix_fmt(p, "gray"),
+[?2004l[?2004h>             solution="format=gray",
+[?2004l[?2004h>         ),
+[?2004l[?2004h>         Level(
+[?2004l[?2004h>             number=3,
+[?2004l[?2004h>             name="Audio trim",
+[?2004l[?2004h>             description="Trim a 10-second audio clip to exactly 3 seconds (duration must be 2.9-3.1s).",
+[?2004l[?2004h>             input_path=l3_in,
+[?2004l[?2004h>             output_path=l3_out,
+[?2004l[?2004h>             generate_input=lambda p=l3_in: gen_level3_input(p),
+[?2004l[?2004h>             build_ffmpeg_cmd=lambda fg, i=l3_in, o=l3_out: ffmpeg_audio_cmd(
+[?2004l[?2004h>                 i,
+[?2004l[?2004h>                 o,
+[?2004l[?2004h>                 fg,
+[?2004l[?2004h>                 extra=["-c:a", "pcm_s16le"],
+[?2004l[?2004h>             ),
+[?2004l[?2004h>             validate=lambda p=l3_out: validate_audio_duration_range(p, 2.9, 3.1),
+[?2004l[?2004h>             solution="atrim=0:3",
+[?2004l[?2004h>         ),
+[?2004l[?2004h>         Level(
+[?2004l[?2004h>             number=4,
+[?2004l[?2004h>             name="Center crop",
+[?2004l[?2004h>             description="Crop the center 200x200 region from a 640x480 video.",
+[?2004l[?2004h>             input_path=l4_in,
+[?2004l[?2004h>             output_path=l4_out,
+[?2004l[?2004h>             generate_input=lambda p=l4_in: gen_level4_input(p),
+[?2004l[?2004h>             build_ffmpeg_cmd=lambda fg, i=l4_in, o=l4_out: ffmpeg_video_cmd(
+[?2004l[?2004h>                 i,
+[?2004l[?2004h>                 o,
+[?2004l[?2004h>                 fg,
+[?2004l[?2004h>                 extra=["-c:v", "libx264", "-pix_fmt", "yuv420p"],
+[?2004l[?2004h>             ),
+[?2004l[?2004h>             validate=lambda p=l4_out: validate_video_dims(p, 200, 200),
+[?2004l[?2004h>             solution="crop=200:200:(in_w-200)/2:(in_h-200)/2",
+[?2004l[?2004h>         ),
+[?2004l[?2004h>         Level(
+[?2004l[?2004h>             number=5,
+[?2004l[?2004h>             name="Scale + hflip",
+[?2004l[?2004h>             description="Take a 640x480 video, scale to 320x240, and apply a horizontal flip.",
+[?2004l[?2004h>             input_path=l5_in,
+[?2004l[?2004h>             output_path=l5_out,
+[?2004l[?2004h>             generate_input=lambda p=l5_in: gen_level5_input(p),
+[?2004l[?2004h>             build_ffmpeg_cmd=lambda fg, i=l5_in, o=l5_out: ffmpeg_video_cmd(
+[?2004l[?2004h>                 i,
+[?2004l[?2004h>                 o,
+[?2004l[?2004h>                 fg,
+[?2004l[?2004h>                 extra=["-c:v", "libx264", "-pix_fmt", "yuv420p"],
+[?2004l[?2004h>             ),
+[?2004l[?2004h>             validate=lambda p=l5_out: validate_video_dims(p, 320, 240),
+[?2004l[?2004h>             solution="scale=320:240,hflip",
+[?2004l[?2004h>         ),
+[?2004l[?2004h>     ]
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def interactive_mode(all_levels: List[Level]) -> int:
+[?2004l[?2004h>     score = 0
+[?2004l[?2004h>     manifest = []
+[?2004l[?2004h> 
+[?2004l[?2004h>     for lvl in all_levels:
+[?2004l[?2004h>         print(f"Level {lvl.number}: {lvl.name}")
+[?2004l[?2004h>         print(lvl.description)
+[?2004l[?2004h>         print("Enter a filtergraph expression (e.g. scale=320:240):")
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             fg = input("> ").strip()
+[?2004l[?2004h>         except EOFError:
+[?2004l[?2004h>             fg = ""
+[?2004l[?2004h>         passed, msg = run_level(lvl, fg)
+[?2004l[?2004h>         if passed:
+[?2004l[?2004h>             score += 10
+[?2004l[?2004h>             print("  PASS")
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             print("  FAIL")
+[?2004l[?2004h>             print(f"  Reason: {msg}")
+[?2004l[?2004h> 
+[?2004l[?2004h>         manifest.append({"level": lvl.number, "filename": os.path.basename(lvl.output_path), "passed": bool(passed)})
+[?2004l[?2004h> 
+[?2004l[?2004h>     with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
+[?2004l[?2004h>         json.dump(manifest, f, indent=2)
+[?2004l[?2004h>         f.write("\n")
+[?2004l[?2004h> 
+[?2004l[?2004h>     print(f"Score: {score}/{len(all_levels)*10}")
+[?2004l[?2004h>     return 0
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def autosolve_mode(all_levels: List[Level]) -> int:
+[?2004l[?2004h>     score = 0
+[?2004l[?2004h>     manifest = []
+[?2004l[?2004h> 
+[?2004l[?2004h>     for lvl in all_levels:
+[?2004l[?2004h>         print(f"Level {lvl.number}: {lvl.name}")
+[?2004l[?2004h>         passed, _msg = run_level(lvl, lvl.solution)
+[?2004l[?2004h>         if passed:
+[?2004l[?2004h>             score += 10
+[?2004l[?2004h>             print("  PASS")
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             print("  FAIL")
+[?2004l[?2004h>         manifest.append({"level": lvl.number, "filename": os.path.basename(lvl.output_path), "passed": bool(passed)})
+[?2004l[?2004h> 
+[?2004l[?2004h>     with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
+[?2004l[?2004h>         json.dump(manifest, f, indent=2)
+[?2004l[?2004h>         f.write("\n")
+[?2004l[?2004h> 
+[?2004l[?2004h>     print(f"Score: {score}/{len(all_levels)*10}")
+[?2004l[?2004h>     return 0
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> def main(argv: List[str]) -> int:
+[?2004l[?2004h>     parser = argparse.ArgumentParser(description="FFmpeg filtergraph puzzle game")
+[?2004l[?2004h>     parser.add_argument("--auto-solve", action="store_true", help="run all levels with known correct solutions")
+[?2004l[?2004h>     args = parser.parse_args(argv)
+[?2004l[?2004h> 
+[?2004l[?2004h>     ensure_dirs()
+[?2004l[?2004h>     all_lvls = levels()
+[?2004l[?2004h> 
+[?2004l[?2004h>     if args.auto_solve:
+[?2004l[?2004h>         return autosolve_mode(all_lvls)
+[?2004l[?2004h>     return interactive_mode(all_lvls)
+[?2004l[?2004h> 
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == "__main__":
+[?2004l[?2004h>     raise SystemExit(main(sys.argv[1:]))
+[?2004l[?2004h> PY
+[?2004l[?2004hroot@d96445ef63f5:/app# chmod +x /app/ffpuzzle.py
+[?2004l[?2004hroot@d96445ef63f5:/app# python3 /app/ffpuzzle.py --auto-solve
+[?2004lLevel 1: Scale down
+  PASS
+Level 2: Grayscale
+  PASS
+Level 3: Audio trim
+  PASS
+Level 4: Center crop
+  PASS
+Level 5: Scale + hflip
+  PASS
+Score: 50/50
+[?2004hroot@d96445ef63f5:/app# ls -la /app/assets /app/output /app/manifest.json
+[?2004l-rw-r--r-- 1 root root  408 May 26 02:01 /app/manifest.json
+
+/app/assets:
+total 2016
+drwxr-xr-x 2 root root   4096 May 26 02:01 .
+drwxr-xr-x 1 root root   4096 May 26 02:01 ..
+-rw-r--r-- 1 root root 243061 May 26 02:01 level1_input.mp4
+-rw-r--r-- 1 root root 355470 May 26 02:01 level2_input.avi
+-rw-r--r-- 1 root root 960078 May 26 02:01 level3_input.wav
+-rw-r--r-- 1 root root 243061 May 26 02:01 level4_input.mp4
+-rw-r--r-- 1 root root 243061 May 26 02:01 level5_input.mp4
+
+/app/output:
+total 4912
+drwxr-xr-x 2 root root    4096 May 26 02:01 .
+drwxr-xr-x 1 root root    4096 May 26 02:01 ..
+-rw-r--r-- 1 root root   43289 May 26 02:01 level1_output.mp4
+-rw-r--r-- 1 root root 4615202 May 26 02:01 level2_output.avi
+-rw-r--r-- 1 root root  288078 May 26 02:01 level3_output.wav
+-rw-r--r-- 1 root root   23565 May 26 02:01 level4_output.mp4
+-rw-r--r-- 1 root root   44546 May 26 02:01 level5_output.mp4
+[?2004hroot@d96445ef63f5:/app# cat /app/manifest.json
+[?2004l[
+  {
+    "level": 1,
+    "filename": "level1_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 2,
+    "filename": "level2_output.avi",
+    "passed": true
+  },
+  {
+    "level": 3,
+    "filename": "level3_output.wav",
+    "passed": true
+  },
+  {
+    "level": 4,
+    "filename": "level4_output.mp4",
+    "passed": true
+  },
+  {
+    "level": 5,
+    "filename": "level5_output.mp4",
+    "passed": true
+  }
+]
+[?2004hroot@d96445ef63f5:/app# 

@@ -1,0 +1,23 @@
+{
+  "analysis": "I have the pre-encoded obfuscated solution strings. Now I need to update the script to store these encoded values directly instead of calling encode_solution() with plaintext strings. This way, the actual filtergraph solutions won't be visible in the source code.",
+  "plan": "I'll use sed to replace the SOLUTIONS block in the script with the pre-computed obfuscated values, and also remove the encode_solution function since it's no longer needed at runtime.",
+  "commands": [
+    {
+      "keystrokes": "python3 << 'EOF'\nimport re\n\nwith open('/app/ffpuzzle.py', 'r') as f:\n    content = f.read()\n\n# Replace the SOLUTIONS block\nold_solutions = '''SOLUTIONS = [\n    encode_solution(\"scale=320:240\"),\n    encode_solution(\"format=gray\"),\n    encode_solution(\"atrim=0:3\"),\n    encode_solution(\"crop=200:200\"),\n    encode_solution(\"scale=320:240,hflip\"),\n]'''\n\nnew_solutions = '''SOLUTIONS = [\n    \"MDQyOjAyMz1lbGFjcw==\",\n    \"eWFyZz10YW1yb2Y=\",\n    \"MzowPW1pcnRh\",\n    \"MDAyOjAwMj1wb3Jj\",\n    \"cGlsZmgsMDQyOjAyMz1lbGFjcw==\",\n]'''\n\ncontent = content.replace(old_solutions, new_solutions)\n\n# Remove the encode_solution function since it's no longer used\nold_encode = '''def encode_solution(s):\n    \"\"\"Obfuscate a solution string.\"\"\"\n    return base64.b64encode(s[::-1].encode()).decode()\n'''\n\ncontent = content.replace(old_encode, '')\n\nwith open('/app/ffpuzzle.py', 'w') as f:\n    f.write(content)\n\nprint(\"Done\")\nEOF\n",
+      "duration": 0.5
+    },
+    {
+      "keystrokes": "grep -A 7 'SOLUTIONS = ' /app/ffpuzzle.py\n",
+      "duration": 0.1
+    },
+    {
+      "keystrokes": "grep 'scale\\|format=gray\\|atrim\\|crop=200\\|hflip' /app/ffpuzzle.py\n",
+      "duration": 0.1
+    },
+    {
+      "keystrokes": "python3 /app/ffpuzzle.py --auto-solve\n",
+      "duration": 30.0
+    }
+  ],
+  "task_complete": false
+}

@@ -1,0 +1,308 @@
+New Terminal Output:
+root@e75925ef2ee3:/app# cat > /app/ffpuzzle.py << 'PYTHON_SCRIPT'
+> import subprocess
+> import json
+> import sys
+> import os
+>
+> ASSETS_DIR = "/app/assets"
+> OUTPUT_DIR = "/app/output"
+> MANIFEST_PATH = "/app/manifest.json"
+>
+     probe.get("width") == 200 and probe.get("height") == 200
+        ),
+    },
+    {
+        "number": 5,
+        "name": "Scale and Flip",
+        "description": "Take a 640x480 video, scale it to 320x240, AND apply a horizontal flip",
+        "input_file": "level5_input.mp4",
+        "output_file": "level5_output.mp4",
+        "generate_cmd": lambda inp: [
+            "ffmpeg", "-y", "-f", "lavfi", "-i",
+            "testsrc=duration=2:size=640x480:rate=25",
+            "-c:v", "libx264", "-pix_fmt", "yuv420p", inp
+        ],
+        "solve_filter": "scale=320:240,hflip",
+        "output_cmd": lambda inp, filt, out: [
+            "ffmpeg", "-y", "-i", inp, "-vf", filt,
+            "-c:v", "libx264", "-pix_fmt", "yuv420p", out
+        ],
+        "validate": lambda probe: (
+            probe.get("width") == 320 and probe.get("height") == 240
+        ),
+    },
+]
+
+
+def ensure_dirs():
+    os.makedirs(ASSETS_DIR, exist_ok=True)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+def generate_input(level):
+    inp = os.path.join(ASSETS_DIR, level["input_file"])
+    cmd = level["generate_cmd"](inp)
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    return inp
+> LEVELS = [
+
+
+def run_f>     {
+>         "number": 1,
+>         "name": "Scale Down",
+>         "description": "Scale a 640x480 video down to 320x240",
+>         "input_file": "level1_input.mp4",
+>         "output_file": "level1_output.mp4",
+>         "generate_cmd": lambda inp: [
+>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+ss.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    return result>             "testsrc=duration=2:size=640x480:rate=25",
+th):
+    c>             "-c:v", "libx264", "-pix_fmt", "yuv420p", inp
+>         ],
+>         "solve_filter": "scale=320:240",
+>         "output_cmd": lambda inp, filt, out: [
+>             "ffmpeg", "-y", "-i", inp, "-vf", filt,
+>             "-c:v", "libx264", "-pix_fmt", "yuv420p", out
+>         ],
+>         "validate": lambda probe: (
+t.stdout)
+    except json.JSONDecode>             probe.get("width") == 320 and probe.get("height") == 240
+>         ),
+>     },
+>     {
+>         "number": 2,
+>         "name": "Grayscale",
+>         "description": "Convert a video to grayscale (output pixel format must be gray). Use .avi container with rawvideo codec.",
+>         "input_file": "level2_input.avi",
+>         "output_file": "level2_output.avi",
+      if stream.get("codec_type") == "video":
+            props["width"] = stream.get("width>         "generate_cmd": lambda inp: [
+>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+>             "testsrc=duration=2:size=640x480:rate=25",
+>             "-c:v", "rawvideo", "-pix_fmt", "rgb24", inp
+>         ],
+         props["duration"] = float>         "solve_filter": "format=gray",
+>         "output_cmd": lambda inp, filt, out: [
+>             "ffmpeg", "-y", "-i", inp, "-vf", filt,
+>             "-c:v", "rawvideo", "-pix_fmt", "gray", out
+>         ],
+>         "validate": lambda probe: (
+>             probe.get("pix_fmt") == "gray"
+>         ),
+except (Val>     },
+>     {
+>         "number": 3,
+>         "name": "Trim Audio",
+>         "description": "Trim a 10-second audio clip to exactly 3 seconds",
+>         "input_file": "level3_input.wav",
+>         "output_file": "level3_output.wav",
+>         "generate_cmd": lambda inp: [
+>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+>             "sine=frequency=440:duration=10",
+>             inp
+>         ],
+>         "solve_filter": "atrim=0:3",
+ >         "output_cmd": lambda inp, filt, out: [
+>             "ffmpeg", "-y", "-i", inp, "-af", filt, out
+>         ],
+>         "validate": lambda probe: (
+>             2.9 <= probe.get("duration", 0) <= 3.1
+>         ),
+>     },
+>     {
+>         "number": 4,
+>         "name": "Center Crop",
+>         "description": "Crop the center 200x200 region from a 640x480 video",
+>         "input_file": "level4_input.mp4",
+>         "output_file": "level4_output.mp4",
+>         "generate_cmd": lambda inp: [
+>             "ffmpeg", "-y", "-f", "lavfi", "-i",
+>             "testsrc=duration=2:size=640x480:rate=25",
+>             "-c:v", "libx264", "-pix_fmt", "yuv420p", inp
+>         ],
+>         "solve_filter": "crop=200:200:(iw-200)/2:(ih-200)/2",
+>         "output_cmd": lambda inp, filt, out: [
+>             "ffmpeg", "-y", "-i", inp, "-vf", filt,
+>             "-c:v", "libx264", "-pix_fmt", "yuv420p", out
+>         ],
+>         "validate": lambda probe: (
+n(MANIFEST_PATH, "w") as f:
+        json.dump(man>             probe.get("width") == 200 and probe.get("height") == 200
+>         ),
+>     },
+>     {
+ max_s>         "number": 5,
+>         "name": "Scale and Flip",
+>         "descriptio
+[... output limited to 10000 bytes; 69 interior bytes omitted ...]
+
+>         ),
+>     },
+> ]
+>
+>
+ > def ensure_dirs():
+>     os.makedirs(ASSETS_DIR, exist_ok=True)
+>     os.makedirs(OUTPUT_DIR, exist_ok=True)
+>
+>
+> def generate_input(level):
+>     inp = os.path.join(ASSETS_DIR, level["input_file"])
+>     cmd = level["generate_cmd"](inp)
+>     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+lve" in sys.argv:
+        auto_solve()
+    else:
+        interactive_mode()
+PYTHON_SCRIPT
+>     return inp
+>
+>
+> def run_filter(level, filtergraph):
+>     inp = os.path.join(ASSETS_DIR, level["input_file"])
+>     out = os.path.join(OUTPUT_DIR, level["output_file"])
+>     cmd = level["output_cmd"](inp, filtergraph, out)
+>     result = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+>     return result.returncode == 0, out
+>
+>
+> def probe_file(filepath):
+>     cmd = [
+>         "ffprobe", "-v", "quiet", "-print_format", "json",
+>         "-show_streams", "-show_format", filepath
+>     ]
+>     result = subprocess.run(cmd, capture_output=True, text=True)
+>     if result.returncode != 0:
+>         return None
+>     try:
+>         data = json.loads(result.stdout)
+>     except json.JSONDecodeError:
+>         return None
+>     return data
+>
+>
+> def extract_props(probe_data):
+>     """Extract relevant properties from ffprobe output."""
+>     props = {}
+>     if not probe_data or "streams" not in probe_data:
+>         return props
+>     for stream in probe_data["streams"]:
+>         if stream.get("codec_type") == "video":
+>             props["width"] = stream.get("width")
+>             props["height"] = stream.get("height")
+>             props["pix_fmt"] = stream.get("pix_fmt")
+>             if "duration" in stream:
+>                 try:
+>                     props["duration"] = float(stream["duration"])
+>                 except (ValueError, TypeError):
+>                     pass
+>         elif stream.get("codec_type") == "audio":
+>             if "duration" in stream:
+>                 try:
+>                     props["duration"] = float(stream["duration"])
+>                 except (ValueError, TypeError):
+>                     pass
+>     # Fallback to format duration if stream duration not available
+>     if "duration" not in props and "format" in probe_data:
+>         try:
+>             props["duration"] = float(probe_data["format"].get("duration", 0))
+>         except (ValueError, TypeError):
+>             pass
+>     return props
+>
+>
+> def validate_level(level, output_path):
+>     probe_data = probe_file(output_path)
+>     if probe_data is None:
+>         return False
+>     props = extract_props(probe_data)
+>     return level["validate"](props)
+>
+>
+> def auto_solve():
+>     ensure_dirs()
+>     manifest = []
+>     total_score = 0
+>     max_score = len(LEVELS) * 10
+>
+>     for level in LEVELS:
+>         print(f"Level {level['number']}: {level['name']}")
+>         generate_input(level)
+>         success, out_path = run_filter(level, level["solve_filter"])
+>         passed = False
+>         if success and os.path.exists(out_path):
+>             passed = validate_level(level, out_path)
+>         if passed:
+>             total_score += 10
+>             print("  PASS")
+>         else:
+>             print("  FAIL")
+>         manifest.append({
+>             "level": level["number"],
+>             "filename": level["output_file"],
+>             "passed": passed
+>         })
+>
+>     print(f"Score: {total_score}/{max_score}")
+>
+>     with open(MANIFEST_PATH, "w") as f:
+>         json.dump(manifest, f, indent=2)
+>
+>
+> def interactive_mode():
+>     ensure_dirs()
+>     total_score = 0
+>     max_score = len(LEVELS) * 10
+>
+>     for level in LEVELS:
+>         print(f"\n{'='*50}")
+>         print(f"Level {level['number']}: {level['name']}")
+>         print(f"{'='*50}")
+>         print(f"\nDescription: {level['description']}")
+>         print(f"Input file: {level['input_file']}")
+>         print(f"Output file: {level['output_file']}")
+>         print()
+>
+>         generate_input(level)
+>
+>         filtergraph = input("Enter your filtergraph expression: ").strip()
+>         if not filtergraph:
+>             print("  No filter provided. FAIL")
+>             continue
+>
+>         success, out_path = run_filter(level, filtergraph)
+>         if not success:
+>             print("  FFmpeg failed to apply your filter. FAIL")
+>             continue
+>
+>         passed = validate_level(level, out_path)
+>         if passed:
+>             total_score += 10
+>             print("  PASS")
+>         else:
+>             print("  FAIL")
+>
+>     print(f"\nScore: {total_score}/{max_score}")
+>
+>
+> if __name__ == "__main__":
+>     if "--auto-solve" in sys.argv:
+>         auto_solve()
+>     else:
+>         interactive_mode()
+> PYTHON_SCRIPT
+root@e75925ef2ee3:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Scale Down
+  PASS
+Level 2: Grayscale
+  PASS
+Level 3: Trim Audio
+  PASS
+Level 4: Center Crop
+  PASS
+Level 5: Scale and Flip
+  PASS
+Score: 50/50
+root@e75925ef2ee3:/app#

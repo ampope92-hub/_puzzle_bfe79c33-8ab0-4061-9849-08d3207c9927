@@ -1,0 +1,45 @@
+New Terminal Output:
+
+root@4a19ba4e37d0:/app# sed -i 's/"ffmpeg", "-y", "-i", os.path.join(ASSETS_DIR, "level2_input.mp4"),/"ffmpeg", "-y", "-i", os.path.join(ASSETS_DIR, "level2_inp
+ut.mp4"),/' /app/ffpuzzle.py
+root@4a19ba4e37d0:/app# python3 -c "
+> import re
+>
+> with open('/app/ffpuzzle.py', 'r') as f:
+>     content = f.read()
+>
+> # Fix level 2 template - add pix_fmt gray
+> old = '''\"ffmpeg\", \"-y\", \"-i\", os.path.join(ASSETS_DIR, \"level2_input.mp4\"),
+>             \"-vf\", \"{filtergraph}\",
+>             \"-c:v\", \"libx264\",
+>             os.path.join(OUTPUT_DIR, \"level2_output.mp4\")'''
+>
+> new = '''\"ffmpeg\", \"-y\", \"-i\", os.path.join(ASSETS_DIR, \"level2_input.mp4\"),
+>             \"-vf\", \"{filtergraph}\",
+>             \"-c:v\", \"libx264\", \"-pix_fmt\", \"gray\",
+>             os.path.join(OUTPUT_DIR, \"level2_output.mp4\")'''
+>
+> content = content.replace(old, new)
+>
+> with open('/app/ffpuzzle.py', 'w') as f:
+>     f.write(content)
+>
+> print('Done')
+> "
+Done
+root@4a19ba4e37d0:/app# rm -rf /app/assets /app/output /app/manifest.json
+root@4a19ba4e37d0:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Scale Down
+  PASS
+Level 2: Grayscale Conversion
+  FAIL - Pixel format: expected 'gray', got 'yuvj420p'
+Level 3: Trim Audio
+  PASS
+Level 4: Center Crop
+  PASS
+Level 5: Scale and Flip
+  PASS
+
+Score: 40/50
+Manifest written to /app/manifest.json
+root@4a19ba4e37d0:/app#

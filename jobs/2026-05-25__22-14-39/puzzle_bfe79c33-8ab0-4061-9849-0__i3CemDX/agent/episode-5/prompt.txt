@@ -1,0 +1,67 @@
+New Terminal Output:
+
+root@505f01f97e68:/app# python3 << 'EOF'
+> import re
+>
+> with open('/app/ffpuzzle.py', 'r') as f:
+>     content = f.read()
+>
+> # Replace the SOLUTIONS block
+> old_solutions = '''SOLUTIONS = [
+>     encode_solution("scale=320:240"),
+>     encode_solution("format=gray"),
+>     encode_solution("atrim=0:3"),
+>     encode_solution("crop=200:200"),
+>     encode_solution("scale=320:240,hflip"),
+> ]'''
+>
+> new_solutions = '''SOLUTIONS = [
+>     "MDQyOjAyMz1lbGFjcw==",
+>     "eWFyZz10YW1yb2Y=",
+>     "MzowPW1pcnRh",
+>     "MDAyOjAwMj1wb3Jj",
+>     "cGlsZmgsMDQyOjAyMz1lbGFjcw==",
+> ]'''
+>
+> content = content.replace(old_solutions, new_solutions)
+>
+> # Remove the encode_solution function since it's no longer used
+> old_encode = '''def encode_solution(s):
+>     """Obfuscate a solution string."""
+>     return base64.b64encode(s[::-1].encode()).decode()
+> '''
+>
+> content = content.replace(old_encode, '')
+>
+> with open('/app/ffpuzzle.py', 'w') as f:
+>     f.write(content)
+>
+> print("Done")
+> EOF
+Done
+root@505f01f97e68:/app# grep -A 7 'SOLUTIONS = ' /app/ffpuzzle.py
+SOLUTIONS = [
+    "MDQyOjAyMz1lbGFjcw==",
+    "eWFyZz10YW1yb2Y=",
+    "MzowPW1pcnRh",
+    "MDAyOjAwMj1wb3Jj",
+    "cGlsZmgsMDQyOjAyMz1lbGFjcw==",
+]
+
+root@505f01f97e68:/app# grep 'scale\|format=gray\|atrim\|crop=200\|hflip' /app/ffpuzzle.py
+        "name": "Grayscale Conversion",
+        "description": "Convert a video to grayscale (output pixel format must be gray). Uses .avi container with rawvideo codec.",
+        "description": "Take a 640x480 video, scale it to 320x240, AND apply a horizontal flip.",
+root@505f01f97e68:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Scale Down
+  PASS
+Level 2: Grayscale Conversion
+  PASS
+Level 3: Audio Trim
+  PASS
+Level 4: Center Crop
+  PASS
+Level 5: Scale and Flip
+  PASS
+Score: 50/50
+root@505f01f97e68:/app#

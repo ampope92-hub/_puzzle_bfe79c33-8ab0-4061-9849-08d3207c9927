@@ -1,0 +1,10 @@
+New Terminal Output:
+
+root@4a19ba4e37d0:/app# ffmpeg -y -i /app/assets/level2_input.mp4 -vf "format=gray" -c:v ffv1 /app/output/level2_test.mkv 2>&1 | tail -3
+      encoder         : Lavc59.37.100 ffv1
+frame=   50 fps=0.0 q=-0.0 Lsize=     335kB time=00:00:01.96 bitrate=1400.0kbits/s speed=10.8x
+video:334kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.369699%
+root@4a19ba4e37d0:/app# ffprobe -v quiet -print_format json -show_streams /app/output/level2_test.mkv | python3 -c "import json,sys; d=json.load(sys.stdin); pri
+nt(d['streams'][0]['pix_fmt'])"
+gray
+root@4a19ba4e37d0:/app#

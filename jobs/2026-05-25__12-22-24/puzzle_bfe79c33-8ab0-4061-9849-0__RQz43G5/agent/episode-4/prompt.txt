@@ -1,0 +1,99 @@
+Current terminal state:
+New Terminal Output:
+
+root@e300ae72ec2b:/app# rm -f /app/assets/level5_input.mp4
+root@e300ae72ec2b:/app# python3 - <<'PY'
+> import re
+> path = '/app/ffpuzzle.py'
+> with open(path,'r',encoding='utf-8') as f:
+>     s = f.read()
+>
+> # Insert helper is_media_valid after ffprobe_json definition.
+> if 'def is_media_valid(' not in s:
+>     s = s.replace(
+>         'def ffprobe_json(path: str) -> Dict:\n',
+>         'def ffprobe_json(path: str) -> Dict:\n'
+>     )
+>     marker = 'def get_first_stream'
+>     insert = (
+>         '\n\n'
+>         'def is_media_valid(path: str) -> bool:\n'
+>         '    try:\n'
+>         '        _ = ffprobe_json(path)\n'
+>         '        return True\n'
+>         '    except Exception:\n'
+>         '        return False\n\n\n'
+>     )
+>     s = s.replace('def get_first_stream', insert + 'def get_first_stream', 1)
+>
+> # In play_level: regenerate if missing OR invalid.
+> s = s.replace(
+>     '    if not os.path.exists(in_path):\n        ffmpeg_generate_input(level.number, level.kind, in_path)\n',
+>     '    if (not os.path.exists(in_path)) or (not is_media_valid(in_path)):\n'
+>     '        try:\n'
+>     '            if os.path.exists(in_path):\n'
+>     '                os.remove(in_path)\n'
+>     '        except OSError:\n'
+>     '            pass\n'
+>     '        ffmpeg_generate_input(level.number, level.kind, in_path)\n'
+> )
+>
+> with open(path,'w',encoding='utf-8') as f:
+>     f.write(s)
+> print('patched')
+> PY
+patched
+root@e300ae72ec2b:/app# python3 -m py_compile /app/ffpuzzle.py
+root@e300ae72ec2b:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Downscale
+PASS
+Level 2: Grayscale
+PASS
+Level 3: Trim Audio
+PASS
+Level 4: Center Crop
+PASS
+Level 5: Scale + Flip
+PASS
+Score: 50/50
+root@e300ae72ec2b:/app# cat /app/manifest.json
+[
+  {
+    "filename": "level1_auto_output.mp4",
+    "level": 1,
+    "status": true
+  },
+  {
+    "filename": "level2_auto_output.mkv",
+    "level": 2,
+    "status": true
+  },
+  {
+    "filename": "level3_auto_output.m4a",
+    "level": 3,
+    "status": true
+  },
+  {
+    "filename": "level4_auto_output.mp4",
+    "level": 4,
+    "status": true
+  },
+  {
+    "filename": "level5_auto_output.mp4",
+    "level": 5,
+    "status": true
+  }
+]
+root@e300ae72ec2b:/app# ls -la /app/output
+total 5936
+drwxr-xr-x 2 root root    4096 May 25 17:25 .
+drwxr-xr-x 1 root root    4096 May 25 17:23 ..
+-rw-r--r-- 1 root root  222409 May 25 17:25 level1_auto_output.mp4
+-rw-r--r-- 1 root root 5461701 May 25 17:25 level2_auto_output.mkv
+-rw-r--r-- 1 root root   27741 May 25 17:25 level3_auto_output.m4a
+-rw-r--r-- 1 root root  120950 May 25 17:25 level4_auto_output.mp4
+-rw-r--r-- 1 root root  225699 May 25 17:25 level5_auto_output.mp4
+root@e300ae72ec2b:/app#
+
+
+Are you sure you want to mark the task as complete? This will trigger your solution to be graded and you won't be able to make any further corrections. If so, include "task_complete": true in your JSON response again.

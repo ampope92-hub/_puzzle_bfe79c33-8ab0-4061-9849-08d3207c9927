@@ -1,0 +1,74 @@
+New Terminal Output:
+
+root@e300ae72ec2b:/app# python3 - <<'PY'
+> from ffpuzzle import mk_levels, play_level
+> levels = mk_levels()
+> lvl = levels[4]
+> ok, out_path, detail = play_level(lvl, lvl.autosolve_filter, tag='debug')
+> print('OK?', ok)
+> print('OUT', out_path)
+> print('DETAIL', detail)
+> PY
+OK? False
+OUT /app/output/level5_debug_output.mp4
+DETAIL ffmpeg failed: [mov,mp4,m4a,3gp,3g2,mj2 @ 0x5d3e86b93c80] moov atom not found
+/app/assets/level5_input.mp4: Invalid data found when processing input
+root@e300ae72ec2b:/app# ls -la /app/output | sed -n '1,200p'
+total 5712
+drwxr-xr-x 2 root root    4096 May 25 17:23 .
+drwxr-xr-x 1 root root    4096 May 25 17:23 ..
+-rw-r--r-- 1 root root  222409 May 25 17:23 level1_auto_output.mp4
+-rw-r--r-- 1 root root 5461701 May 25 17:23 level2_auto_output.mkv
+-rw-r--r-- 1 root root   27741 May 25 17:23 level3_auto_output.m4a
+-rw-r--r-- 1 root root  120950 May 25 17:23 level4_auto_output.mp4
+root@e300ae72ec2b:/app# if [ -f /app/output/level5_debug_output.mp4 ]; then ffprobe -v error -print_format json -show_streams -show_format /app/output/level5_de
+bug_output.mp4 | head -c 1200; echo; fi
+root@e300ae72ec2b:/app# python3 /app/ffpuzzle.py --auto-solve
+Level 1: Downscale
+PASS
+Level 2: Grayscale
+PASS
+Level 3: Trim Audio
+PASS
+Level 4: Center Crop
+PASS
+Level 5: Scale + Flip
+FAIL
+Score: 40/50
+root@e300ae72ec2b:/app# cat /app/manifest.json
+[
+  {
+    "filename": "level1_auto_output.mp4",
+    "level": 1,
+    "status": true
+  },
+  {
+    "filename": "level2_auto_output.mkv",
+    "level": 2,
+    "status": true
+  },
+  {
+    "filename": "level3_auto_output.m4a",
+    "level": 3,
+    "status": true
+  },
+  {
+    "filename": "level4_auto_output.mp4",
+    "level": 4,
+    "status": true
+  },
+  {
+    "filename": "level5_auto_output.mp4",
+    "level": 5,
+    "status": false
+  }
+]
+root@e300ae72ec2b:/app# ls -la /app/output
+total 5712
+drwxr-xr-x 2 root root    4096 May 25 17:23 .
+drwxr-xr-x 1 root root    4096 May 25 17:23 ..
+-rw-r--r-- 1 root root  222409 May 25 17:24 level1_auto_output.mp4
+-rw-r--r-- 1 root root 5461701 May 25 17:24 level2_auto_output.mkv
+-rw-r--r-- 1 root root   27741 May 25 17:24 level3_auto_output.m4a
+-rw-r--r-- 1 root root  120950 May 25 17:24 level4_auto_output.mp4
+root@e300ae72ec2b:/app#
