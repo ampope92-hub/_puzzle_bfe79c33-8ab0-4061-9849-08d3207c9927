@@ -20,6 +20,18 @@ def run_auto_solve():
     return result.stdout, result.stderr, result.returncode
 
 
+def run_interactive_with_input(user_input):
+    """Run the game interactively with piped stdin."""
+    result = subprocess.run(
+        ["python", str(GAME_SCRIPT)],
+        input=user_input,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    return result.stdout, result.stderr, result.returncode
+
+
 def ffprobe_stream(filepath, stream_type="video"):
     """Probe a stream and return its info dict."""
     select = "v:0" if stream_type == "video" else "a:0"
@@ -50,6 +62,18 @@ def ffprobe_format(filepath):
     return data.get("format", {})
 
 
+def frame_hash(path):
+    """Compute MD5 hash of all decoded frames."""
+    result = subprocess.run(
+        ["ffmpeg", "-i", str(path), "-f", "hash", "-hash", "md5", "-"],
+        capture_output=True, text=True,
+    )
+    for line in result.stdout.strip().split("\n"):
+        if line.startswith("MD5="):
+            return line.strip()
+    return None
+
+
 class TestGameScriptExists:
     def test_script_exists(self):
         """The main game script must exist."""
@@ -58,7 +82,8 @@ class TestGameScriptExists:
     def test_script_is_python(self):
         """The game script should be valid Python (importable without errors)."""
         result = subprocess.run(
-            ["python", "-c", f"import py_compile; py_compile.compile('{GAME_SCRIPT}', doraise=True)"],
+            ["python", "-c",
+             f"import py_compile; py_compile.compile('{GAME_SCRIPT}', doraise=True)"],
             capture_output=True,
             text=True,
         )
@@ -69,17 +94,21 @@ class TestAutoSolveMode:
     def test_auto_solve_flag_accepted(self):
         """The game must accept --auto-solve flag and exit cleanly."""
         stdout, stderr, rc = run_auto_solve()
-        assert rc == 0, f"Auto-solve exited with code {rc}.\nstdout: {stdout}\nstderr: {stderr}"
+        assert rc == 0, (
+            f"Auto-solve exited with code {rc}.\nstdout: {stdout}\nstderr: {stderr}"
+        )
 
     def test_score_line_present(self):
         """Auto-solve output must contain a 'Score: X/Y' line."""
         stdout, _, _ = run_auto_solve()
         lines = stdout.strip().split("\n")
         score_lines = [line for line in lines if line.startswith("Score:")]
-        assert len(score_lines) == 1, f"Expected exactly one Score line, got: {score_lines}"
+        assert len(score_lines) == 1, (
+            f"Expected exactly one Score line, got: {score_lines}"
+        )
 
     def test_perfect_score(self):
-        """All levels must pass with known solutions — score should be 50/50."""
+        """All levels must pass with known solutions -- score should be 50/50."""
         stdout, _, _ = run_auto_solve()
         lines = stdout.strip().split("\n")
         score_lines = [line for line in lines if line.startswith("Score:")]
@@ -89,13 +118,17 @@ class TestAutoSolveMode:
         earned = int(parts[0])
         total = int(parts[1])
         assert earned == total, f"Not a perfect score: {score_line}"
-        assert total >= 50, f"Expected at least 50 total points (5 levels × 10), got {total}"
+        assert total >= 50, (
+            f"Expected at least 50 total points (5 levels x 10), got {total}"
+        )
 
     def test_all_levels_printed(self):
         """Auto-solve should print each level name."""
         stdout, _, _ = run_auto_solve()
         for level_id in range(1, 6):
-            assert f"Level {level_id}:" in stdout, f"Level {level_id} not mentioned in output"
+            assert f"Level {level_id}:" in stdout, (
+                f"Level {level_id} not mentioned in output"
+            )
 
 
 class TestAssetGeneration:
@@ -148,7 +181,28 @@ class TestLevel1ScaleDown:
         run_auto_solve()
         info = ffprobe_stream(OUTPUT_DIR / "level1_output.mp4", "video")
         assert int(info["width"]) == 320, f"Expected width 320, got {info['width']}"
-        assert int(info["height"]) == 240, f"Expected height 240, got {info['height']}"
+        assert int(info["height"]) == 240, (
+            f"Expected height 240, got {info['height']}"
+        )
+
+    def test_output_derived_from_input(self):
+        """Level 1 output must be derived from the 640x480 input, not generated independently."""
+        run_auto_solve()
+        input_path = ASSETS_DIR / "level1_input.mp4"
+        output_path = OUTPUT_DIR / "level1_output.mp4"
+        input_info = ffprobe_stream(input_path, "video")
+        output_info = ffprobe_stream(output_path, "video")
+        assert int(input_info["width"]) == 640, (
+            "Input should be 640x480 (generated from testsrc2)"
+        )
+        assert int(input_info["height"]) == 480
+        in_frames = int(input_info.get("nb_frames", 0))
+        out_frames = int(output_info.get("nb_frames", 0))
+        assert in_frames > 0 and out_frames > 0, "Could not read frame counts"
+        assert in_frames == out_frames, (
+            f"Frame count mismatch: input has {in_frames}, output has {out_frames} "
+            "-- output must be derived from input, not generated independently"
+        )
 
 
 class TestLevel2Grayscale:
@@ -156,7 +210,21 @@ class TestLevel2Grayscale:
         """Level 2 output must have gray pixel format."""
         run_auto_solve()
         info = ffprobe_stream(OUTPUT_DIR / "level2_output.avi", "video")
-        assert info["pix_fmt"] == "gray", f"Expected pix_fmt 'gray', got '{info['pix_fmt']}'"
+        assert info["pix_fmt"] == "gray", (
+            f"Expected pix_fmt 'gray', got '{info['pix_fmt']}'"
+        )
+
+    def test_output_derived_from_input(self):
+        """Level 2 output must be derived from the input, not generated independently."""
+        run_auto_solve()
+        input_info = ffprobe_stream(ASSETS_DIR / "level2_input.avi", "video")
+        output_info = ffprobe_stream(OUTPUT_DIR / "level2_output.avi", "video")
+        assert int(input_info["width"]) == int(output_info["width"]), (
+            "Grayscale conversion should preserve dimensions"
+        )
+        assert int(input_info["height"]) == int(output_info["height"]), (
+            "Grayscale conversion should preserve dimensions"
+        )
 
 
 class TestLevel3TrimAudio:
@@ -165,7 +233,19 @@ class TestLevel3TrimAudio:
         run_auto_solve()
         fmt = ffprobe_format(OUTPUT_DIR / "level3_output.wav")
         duration = float(fmt["duration"])
-        assert 2.9 <= duration <= 3.1, f"Expected ~3s duration, got {duration:.3f}s"
+        assert 2.9 <= duration <= 3.1, (
+            f"Expected ~3s duration, got {duration:.3f}s"
+        )
+
+    def test_input_is_longer(self):
+        """Level 3 input must be ~10s to prove trimming occurred."""
+        run_auto_solve()
+        in_fmt = ffprobe_format(ASSETS_DIR / "level3_input.wav")
+        in_dur = float(in_fmt["duration"])
+        assert in_dur >= 9.5, (
+            f"Input should be ~10s but is {in_dur:.1f}s -- "
+            "trim cannot be verified without a longer input"
+        )
 
 
 class TestLevel4CenterCrop:
@@ -174,7 +254,23 @@ class TestLevel4CenterCrop:
         run_auto_solve()
         info = ffprobe_stream(OUTPUT_DIR / "level4_output.mp4", "video")
         assert int(info["width"]) == 200, f"Expected width 200, got {info['width']}"
-        assert int(info["height"]) == 200, f"Expected height 200, got {info['height']}"
+        assert int(info["height"]) == 200, (
+            f"Expected height 200, got {info['height']}"
+        )
+
+    def test_output_derived_from_input(self):
+        """Level 4 output must be cropped from the 640x480 input."""
+        run_auto_solve()
+        input_info = ffprobe_stream(ASSETS_DIR / "level4_input.mp4", "video")
+        output_info = ffprobe_stream(OUTPUT_DIR / "level4_output.mp4", "video")
+        assert int(input_info["width"]) == 640, "Input must be 640x480"
+        in_frames = int(input_info.get("nb_frames", 0))
+        out_frames = int(output_info.get("nb_frames", 0))
+        assert in_frames > 0 and out_frames > 0
+        assert in_frames == out_frames, (
+            f"Frame count mismatch: input {in_frames}, output {out_frames} "
+            "-- crop should preserve frame count"
+        )
 
 
 class TestLevel5ScaleAndFlip:
@@ -183,14 +279,19 @@ class TestLevel5ScaleAndFlip:
         run_auto_solve()
         info = ffprobe_stream(OUTPUT_DIR / "level5_output.mp4", "video")
         assert int(info["width"]) == 320, f"Expected width 320, got {info['width']}"
-        assert int(info["height"]) == 240, f"Expected height 240, got {info['height']}"
+        assert int(info["height"]) == 240, (
+            f"Expected height 240, got {info['height']}"
+        )
 
     def test_hflip_applied(self):
-        """Level 5 output frames must differ from a scale-only version (hflip applied)."""
+        """Level 5 output must have hflip applied -- verified by re-deriving from the actual input."""
         run_auto_solve()
         input_path = ASSETS_DIR / "level5_input.mp4"
         output_path = OUTPUT_DIR / "level5_output.mp4"
-        ref_path = OUTPUT_DIR / "level5_ref_nohflip.mp4"
+
+        assert input_path.exists(), "Input file must exist for hflip verification"
+
+        ref_path = Path("/tmp/level5_ref_nohflip.mp4")
         subprocess.run(
             [
                 "ffmpeg", "-y", "-i", str(input_path),
@@ -201,20 +302,96 @@ class TestLevel5ScaleAndFlip:
             capture_output=True,
         )
 
-        def frame_hash(path):
-            r = subprocess.run(
-                ["ffmpeg", "-i", str(path), "-f", "hash", "-hash", "md5", "-"],
-                capture_output=True, text=True,
-            )
-            for line in r.stdout.strip().split("\n"):
-                if line.startswith("MD5="):
-                    return line.strip()
-            return None
-
         ref_hash = frame_hash(ref_path)
         out_hash = frame_hash(output_path)
-        assert ref_hash is not None and out_hash is not None, "Could not compute frame hashes"
-        assert ref_hash != out_hash, "Output frames match scale-only reference — hflip not applied"
+        assert ref_hash is not None and out_hash is not None, (
+            "Could not compute frame hashes"
+        )
+        assert ref_hash != out_hash, (
+            "Output frames match scale-only reference -- hflip not applied"
+        )
+
+    def test_hflip_matches_expected(self):
+        """Level 5 output must match scale+hflip applied to the actual input."""
+        run_auto_solve()
+        input_path = ASSETS_DIR / "level5_input.mp4"
+        output_path = OUTPUT_DIR / "level5_output.mp4"
+
+        expected_path = Path("/tmp/level5_expected.mp4")
+        subprocess.run(
+            [
+                "ffmpeg", "-y", "-i", str(input_path),
+                "-vf", "scale=320:240,hflip",
+                "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                str(expected_path),
+            ],
+            capture_output=True,
+        )
+
+        expected_hash = frame_hash(expected_path)
+        out_hash = frame_hash(output_path)
+        assert expected_hash is not None and out_hash is not None, (
+            "Could not compute frame hashes"
+        )
+        assert expected_hash == out_hash, (
+            "Output does not match scale=320:240,hflip applied to the input -- "
+            "output must be derived from the input file, not generated independently"
+        )
+
+
+class TestInputOutputDerivation:
+    """Verify that outputs are produced by processing inputs, not generated from scratch."""
+
+    def test_swapped_input_changes_output(self):
+        """Replacing an input with different content must change the output."""
+        run_auto_solve()
+
+        original_hash = frame_hash(OUTPUT_DIR / "level1_output.mp4")
+        assert original_hash is not None, "Could not hash original output"
+
+        subprocess.run(
+            [
+                "ffmpeg", "-y", "-f", "lavfi", "-i",
+                "color=c=red:size=640x480:rate=25:duration=1",
+                "-pix_fmt", "yuv420p", "-c:v", "libx264", "-t", "1",
+                str(ASSETS_DIR / "level1_input.mp4"),
+            ],
+            capture_output=True,
+        )
+
+        if (OUTPUT_DIR / "level1_output.mp4").exists():
+            (OUTPUT_DIR / "level1_output.mp4").unlink()
+
+        run_auto_solve()
+        new_hash = frame_hash(OUTPUT_DIR / "level1_output.mp4")
+        assert new_hash is not None, "Could not hash new output"
+        assert original_hash != new_hash, (
+            "Output did not change after replacing input with different content -- "
+            "outputs must be derived from inputs via filtergraph processing"
+        )
+
+    def test_custom_filtergraph_via_interactive(self):
+        """Interactive mode must accept and apply a user-provided filtergraph."""
+        run_auto_solve()
+
+        output_path = OUTPUT_DIR / "level1_output.mp4"
+        if output_path.exists():
+            output_path.unlink()
+
+        user_input = "scale=160:120\nskip\nskip\nskip\nskip\n"
+        stdout, _, _ = run_interactive_with_input(user_input)
+
+        assert output_path.exists(), (
+            "Interactive mode did not produce level1_output.mp4"
+        )
+        info = ffprobe_stream(output_path, "video")
+        assert int(info["width"]) == 160, (
+            f"Expected width 160 from custom filtergraph, got {info['width']} -- "
+            "game must apply the user's filtergraph, not a hardcoded one"
+        )
+        assert int(info["height"]) == 120, (
+            f"Expected height 120 from custom filtergraph, got {info['height']}"
+        )
 
 
 class TestManifest:
@@ -244,8 +421,12 @@ class TestManifest:
         data = json.loads(MANIFEST_PATH.read_text())
         for entry in data:
             assert "level" in entry, f"Missing 'level' in manifest entry: {entry}"
-            assert "filename" in entry, f"Missing 'filename' in manifest entry: {entry}"
-            assert "passed" in entry, f"Missing 'passed' in manifest entry: {entry}"
+            assert "filename" in entry, (
+                f"Missing 'filename' in manifest entry: {entry}"
+            )
+            assert "passed" in entry, (
+                f"Missing 'passed' in manifest entry: {entry}"
+            )
 
     def test_manifest_all_passed(self):
         """In auto-solve mode all manifest entries should show passed=true."""
@@ -259,7 +440,7 @@ class TestManifest:
 
 class TestInteractiveMode:
     def test_auto_solve_documented(self):
-        """The --auto-solve flag should be discoverable via --help or visible in the source."""
+        """The --auto-solve flag should be visible in the source."""
         source = GAME_SCRIPT.read_text()
         assert "auto-solve" in source or "auto_solve" in source, (
             "Neither 'auto-solve' nor 'auto_solve' found in game source"
@@ -278,9 +459,25 @@ class TestSolutionObfuscation:
         ]
         for sol in plaintext_solutions:
             assert sol not in source, (
-                f"Plaintext solution '{sol}' found in source — "
+                f"Plaintext solution '{sol}' found in source -- "
                 "solutions must be obfuscated (base64, reversed, etc.)"
             )
+
+    def test_encoding_mechanism_exists(self):
+        """Source must contain evidence of a decoding mechanism for solutions."""
+        source = GAME_SCRIPT.read_text().lower()
+        has_encoding = any(
+            marker in source
+            for marker in [
+                "base64", "b64decode", "b64encode",
+                "codecs.decode", "rot13", "rot_13",
+                "[::-1]", "reversed(", "decode(",
+            ]
+        )
+        assert has_encoding, (
+            "No encoding/decoding mechanism found in source -- "
+            "solutions must be obfuscated, not just absent"
+        )
 
 
 class TestDeterminism:
@@ -288,6 +485,12 @@ class TestDeterminism:
         """Running auto-solve twice should produce the same score line."""
         stdout1, _, _ = run_auto_solve()
         stdout2, _, _ = run_auto_solve()
-        score1 = [line for line in stdout1.split("\n") if line.startswith("Score:")][0]
-        score2 = [line for line in stdout2.split("\n") if line.startswith("Score:")][0]
-        assert score1 == score2, f"Non-deterministic scores: '{score1}' vs '{score2}'"
+        score1 = [
+            line for line in stdout1.split("\n") if line.startswith("Score:")
+        ][0]
+        score2 = [
+            line for line in stdout2.split("\n") if line.startswith("Score:")
+        ][0]
+        assert score1 == score2, (
+            f"Non-deterministic scores: '{score1}' vs '{score2}'"
+        )
