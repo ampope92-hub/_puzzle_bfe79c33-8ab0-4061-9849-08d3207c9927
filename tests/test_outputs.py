@@ -204,6 +204,33 @@ class TestLevel1ScaleDown:
             "-- output must be derived from input, not generated independently"
         )
 
+    def test_scale_matches_expected(self):
+        """Level 1 output must match scale=320:240 applied to the actual input."""
+        run_auto_solve()
+        input_path = ASSETS_DIR / "level1_input.mp4"
+        output_path = OUTPUT_DIR / "level1_output.mp4"
+
+        expected_path = Path("/tmp/level1_expected.mp4")
+        subprocess.run(
+            [
+                "ffmpeg", "-y", "-i", str(input_path),
+                "-vf", "scale=320:240",
+                "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                str(expected_path),
+            ],
+            capture_output=True,
+        )
+
+        expected_hash = frame_hash(expected_path)
+        out_hash = frame_hash(output_path)
+        assert expected_hash is not None and out_hash is not None, (
+            "Could not compute frame hashes"
+        )
+        assert expected_hash == out_hash, (
+            "Output does not match scale=320:240 applied to the input -- "
+            "output must be derived from the input file, not generated independently"
+        )
+
 
 class TestLevel2Grayscale:
     def test_pixel_format(self):
@@ -270,6 +297,34 @@ class TestLevel4CenterCrop:
         assert in_frames == out_frames, (
             f"Frame count mismatch: input {in_frames}, output {out_frames} "
             "-- crop should preserve frame count"
+        )
+
+    def test_center_crop_matches_expected(self):
+        """Level 4 output must match crop=200:200:220:140 (center of 640x480) applied to input."""
+        run_auto_solve()
+        input_path = ASSETS_DIR / "level4_input.mp4"
+        output_path = OUTPUT_DIR / "level4_output.mp4"
+
+        expected_path = Path("/tmp/level4_center_expected.mp4")
+        subprocess.run(
+            [
+                "ffmpeg", "-y", "-i", str(input_path),
+                "-vf", "crop=200:200:220:140",
+                "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                str(expected_path),
+            ],
+            capture_output=True,
+        )
+
+        expected_hash = frame_hash(expected_path)
+        out_hash = frame_hash(output_path)
+        assert expected_hash is not None and out_hash is not None, (
+            "Could not compute frame hashes"
+        )
+        assert expected_hash == out_hash, (
+            "Output does not match center crop=200:200:220:140 applied to input -- "
+            "the 200x200 region must be taken from the center (x=220, y=140), "
+            "not from an arbitrary position such as the top-left corner"
         )
 
 
@@ -341,34 +396,6 @@ class TestLevel5ScaleAndFlip:
 
 class TestInputOutputDerivation:
     """Verify that outputs are produced by processing inputs, not generated from scratch."""
-
-    def test_swapped_input_changes_output(self):
-        """Replacing an input with different content must change the output."""
-        run_auto_solve()
-
-        original_hash = frame_hash(OUTPUT_DIR / "level1_output.mp4")
-        assert original_hash is not None, "Could not hash original output"
-
-        subprocess.run(
-            [
-                "ffmpeg", "-y", "-f", "lavfi", "-i",
-                "color=c=red:size=640x480:rate=25:duration=1",
-                "-pix_fmt", "yuv420p", "-c:v", "libx264", "-t", "1",
-                str(ASSETS_DIR / "level1_input.mp4"),
-            ],
-            capture_output=True,
-        )
-
-        if (OUTPUT_DIR / "level1_output.mp4").exists():
-            (OUTPUT_DIR / "level1_output.mp4").unlink()
-
-        run_auto_solve()
-        new_hash = frame_hash(OUTPUT_DIR / "level1_output.mp4")
-        assert new_hash is not None, "Could not hash new output"
-        assert original_hash != new_hash, (
-            "Output did not change after replacing input with different content -- "
-            "outputs must be derived from inputs via filtergraph processing"
-        )
 
     def test_custom_filtergraph_via_interactive(self):
         """Interactive mode must accept and apply a user-provided filtergraph."""
