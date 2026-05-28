@@ -12,7 +12,7 @@ number_of_milestones = 0
 codebase_size = "minimal"
 languages = [ "python", "bash" ]
 tags = [ "ffmpeg", "filtergraph", "media-processing", "game", "subprocess", "validation" ]
-expert_time_estimate_min = 45
+expert_time_estimate_min = 50
 junior_time_estimate_min = 120
 
 # Verifier: runs the test script to check task completion
