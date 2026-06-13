@@ -38,6 +38,8 @@ For interactive mode (just `python ffpuzzle.py`), show the level description, ac
 
 Each level's validation should use ffprobe's JSON output to check the relevant stream properties. Be strict about it: if the level says 320x240, check that width==320 and height==240 exactly. For the audio trim, check the duration is between 2.9 and 3.1 seconds.
 
+One thing on the video levels (1, 4, and 5): encode the MP4 outputs with plain libx264 — just `-c:v libx264 -pix_fmt yuv420p`, no `-crf` or `-preset` tweaks. Our CI re-derives the expected frames the exact same way and compares them, so sticking to the defaults is what keeps the outputs reproducible.
+
 Both `/app/assets/` and `/app/output/` directories should be created automatically by the script if they don't exist.
 
 Oh — one more thing. Don't store the level solutions as plaintext strings in the source code. It's a puzzle game, we don't want someone to just open ffpuzzle.py and read all the answers. Base64-encode them, reverse the strings, ROT13, whatever you want — just make sure the actual filtergraph solutions aren't sitting there in the clear.
