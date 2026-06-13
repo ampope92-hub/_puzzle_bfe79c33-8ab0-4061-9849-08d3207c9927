@@ -350,7 +350,7 @@ class TestLevel5ScaleAndFlip:
         subprocess.run(
             [
                 "ffmpeg", "-y", "-i", str(input_path),
-                "-vf", "scale=320:240",
+                "-vf", "scale=320:240:flags=neighbor",
                 "-c:v", "libx264", "-pix_fmt", "yuv420p",
                 str(ref_path),
             ],
@@ -367,7 +367,7 @@ class TestLevel5ScaleAndFlip:
         )
 
     def test_hflip_matches_expected(self):
-        """Level 5 output must match scale+hflip applied to the actual input."""
+        """Level 5 output must match nearest-neighbor scale+hflip applied to the actual input."""
         run_auto_solve()
         input_path = ASSETS_DIR / "level5_input.mp4"
         output_path = OUTPUT_DIR / "level5_output.mp4"
@@ -376,7 +376,7 @@ class TestLevel5ScaleAndFlip:
         subprocess.run(
             [
                 "ffmpeg", "-y", "-i", str(input_path),
-                "-vf", "scale=320:240,hflip",
+                "-vf", "scale=320:240:flags=neighbor,hflip",
                 "-c:v", "libx264", "-pix_fmt", "yuv420p",
                 str(expected_path),
             ],
@@ -389,8 +389,8 @@ class TestLevel5ScaleAndFlip:
             "Could not compute frame hashes"
         )
         assert expected_hash == out_hash, (
-            "Output does not match scale=320:240,hflip applied to the input -- "
-            "output must be derived from the input file, not generated independently"
+            "Output does not match scale=320:240:flags=neighbor,hflip applied to the input -- "
+            "level 5 must use nearest-neighbor scaling (flags=neighbor), not the default scaler"
         )
 
 
@@ -481,7 +481,7 @@ class TestSolutionObfuscation:
         plaintext_solutions = [
             "atrim=duration=3",
             "crop=200:200:(iw-200)/2:(ih-200)/2",
-            "scale=320:240,hflip",
+            "scale=320:240:flags=neighbor,hflip",
             "format=gray",
         ]
         for sol in plaintext_solutions:

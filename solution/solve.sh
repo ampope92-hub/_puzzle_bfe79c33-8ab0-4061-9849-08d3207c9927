@@ -104,9 +104,9 @@ LEVELS = [
         "id": 5,
         "name": "Scale and Flip",
         "description": (
-            "Take the 640x480 input video, scale it to 320x240, AND flip it\n"
-            "horizontally. Chain two filters together.\n"
-            "Hint: use a comma to chain filters in a filtergraph."
+            "Take the 640x480 input video, scale it to 320x240 using\n"
+            "nearest-neighbor scaling, AND flip it horizontally.\n"
+            "Chain two filters together with a comma."
         ),
         "gen_args": [
             "-f", "lavfi", "-i", "testsrc2=size=640x480:rate=25:duration=1",
@@ -115,7 +115,7 @@ LEVELS = [
         "input_file": "level5_input.mp4",
         "output_file": "level5_output.mp4",
         "output_args": ["-c:v", "libx264", "-pix_fmt", "yuv420p"],
-        "solution": _d("c2NhbGU9MzIwOjI0MCxoZmxpcA=="),
+        "solution": _d("c2NhbGU9MzIwOjI0MDpmbGFncz1uZWlnaGJvcixoZmxpcA=="),
         "checks": {"width": 320, "height": 240, "hflip": True},
         "stream_type": "video",
         "points": 10,
