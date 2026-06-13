@@ -11,7 +11,7 @@ subcategories = [ "tool_specific" ]
 number_of_milestones = 0
 codebase_size = "minimal"
 languages = [ "python", "bash" ]
-tags = [ "ffmpeg", "filtergraph", "media-processing", "game", "subprocess", "validation" ]
+tags = [ "ffmpeg", "filtergraph", "media-processing", "game" ]
 expert_time_estimate_min = 50
 junior_time_estimate_min = 120
 

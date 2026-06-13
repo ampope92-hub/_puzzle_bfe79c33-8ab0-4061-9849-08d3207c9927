@@ -1,2 +1,4 @@
+.snorkel_config
+CLAUDE.md
 jobs/
-.git/
+*.Zone.Identifier

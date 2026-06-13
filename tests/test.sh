@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$PWD" = "/" ]; then
+    echo "Error: No working directory set."
+    exit 1
+fi
+
 mkdir -p /logs/verifier
 
 python -m pytest -o cache_dir=/tmp/pytest_cache \
